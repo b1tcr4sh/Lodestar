@@ -5,14 +5,16 @@ using System.Net.Http.Json;
 using System.Net.Http.Headers;
 
 namespace Mercurius.Commands {
-    public class Search : BaseCommand {
-        public override async Task Execute(string query) {
+    public class Search : IBaseCommand {
+        public string Alias { get; private set; }
+        public string Description { get; private set; }
+        public async Task Execute(string[] args) {
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("Application/Json"));
             client.DefaultRequestHeaders.Add("User-Agent", "Mercurius");
 
-            string response = await client.GetStringAsync(@$"https://api.modrinth.com/v2/search?query={query}");
+            string response = await client.GetStringAsync(@$"https://api.modrinth.com/v2/search?query={args[0]}");
             Console.WriteLine(response);
         }
     }
