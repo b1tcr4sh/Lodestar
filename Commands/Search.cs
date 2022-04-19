@@ -5,10 +5,10 @@ using System.Net.Http.Json;
 using System.Net.Http.Headers;
 
 namespace Mercurius.Commands {
-    public class Search : IBaseCommand {
+    public class Search : BaseCommand {
         public string Alias { get; private set; }
         public string Description { get; private set; }
-        public async Task Execute(string[] args) {
+        public override async Task Execute(string[] args) {
             HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("Application/Json"));

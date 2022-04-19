@@ -1,9 +1,10 @@
 using System.Threading.Tasks;
 
 namespace Mercurius.Commands {
-    public interface IBaseCommand {
+    public abstract class BaseCommand {
+        public BaseCommand() {}
         string Alias => this.GetType().Name.ToLower();
         string Description { get; }
-        Task Execute(string[] args);
+        public abstract Task Execute(string[] args);
     }
 }
