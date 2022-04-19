@@ -1,6 +1,29 @@
 namespace Mercurius.Modrinth.Models {
     public struct SearchResponse {
-
+        public Hits[] hits { get; set; };
+        public int offset;
+        public int limit;
+        public int total_hits;
+    }
+    public struct Hits {
+        public string slug;
+        public string title;
+        public string description;
+        public string[] categories;
+        public string client_side;
+        public string server_side;
+        public string project_type;
+        public int downloads;
+        public string icon_url;
+        public string project_id;
+        public string author;
+        public string[] versions;
+        public int follows;
+        public string date_created;
+        public string date_modified;
+        public string latest_version;
+        public string license;
+        public string[] gallery;
     }
 }
 
