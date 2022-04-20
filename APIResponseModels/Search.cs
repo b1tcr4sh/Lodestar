@@ -1,6 +1,6 @@
 namespace Mercurius.Modrinth.Models {
     public struct SearchResponse {
-        public Hits[] hits { get; set; };
+        public Hits[] hits { get; set; }
         public int offset;
         public int limit;
         public int total_hits;

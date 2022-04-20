@@ -1,10 +1,11 @@
 ﻿using Mercurius.Modrinth;
+using Mercurius.Modrinth.Models;
 using System.Threading.Tasks;
 
 namespace Mercurius {
     public static class Program {
-        public static void Main(string[] args) {
-            
+        public static async Task Main(string[] args) {
+            await ParseArgs(args);
         }
         private static async Task ParseArgs(string[] args) {
             APIClient client = new APIClient();
@@ -12,7 +13,9 @@ namespace Mercurius {
             switch (args[0])
             {
                 case "search":
-                    await client.SearchAsync(args[1]);
+                    SearchResponse response = await client.SearchAsync(args[1]);
+
+                    Console.WriteLine(response);
                     break;
                 
             }
