@@ -13,11 +13,11 @@ namespace Mercurius {
             switch (args[0])
             {
                 case "search":
-                    SearchResponse response = await client.SearchAsync(args[1]);
-
-                    Console.WriteLine(response);
+                    await client.SearchAsync(args[1]);
                     break;
-                
+                default: 
+                    Console.WriteLine($"Command {args[0]} not found...   ?");
+                    break;
             }
         }
     }
