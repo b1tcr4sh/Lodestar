@@ -55,7 +55,13 @@ namespace Mercurius.Modrinth {
             using HttpResponseMessage response = await client.GetAsync(version.files[0].url, HttpCompletionOption.ResponseContentRead);
             using Stream readStream = await response.Content.ReadAsStreamAsync();
             using Stream writeStream = File.Open(@$"./{version.files[0].filename}", FileMode.Create);
+
             await readStream.CopyToAsync(writeStream);
+
+            readStream.Close();
+            readStream.Dispose();
+            writeStream.Close();
+            writeStream.Dispose();
         }
     }
 }
