@@ -22,7 +22,7 @@ namespace Mercurius.Modrinth.Models {
         public string dependency_type { get; set; }
     }
     public struct file {
-        public hash[] hashes { get; set; }
+        public hash hashes { get; set; }
         public string url { get; set; }
         public string filename { get; set; }
         public bool primary { get; set; }
