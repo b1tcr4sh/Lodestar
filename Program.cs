@@ -15,6 +15,9 @@ namespace Mercurius {
                 case "search":
                     await client.SearchAsync(args[1]);
                     break;
+                case "view":
+                    await client.ViewAsync(args[1]);
+                    break;
                 default: 
                     Console.WriteLine($"Command {args[0]} not found...   ?");
                     break;
