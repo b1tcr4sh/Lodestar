@@ -2,7 +2,7 @@ using System;
 
 namespace Mercurius {
     public class CommandHandler {
-        private string[] Args;
+        public string[] Args { get; private set; }
         private string Command;
         public CommandHandler(string[] args) {
             if (args is null) throw new ArgumentNullException("args was null");
@@ -10,8 +10,8 @@ namespace Mercurius {
             Args = ParseArgs(args);
         }
 
-        public ExecuteCommand() {
-            
+        public async Task ExecuteCommand() {
+
         }
 
         private string[] ParseArgs(string[] args) {

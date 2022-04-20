@@ -1,11 +1,11 @@
 namespace Mercurius.Modrinth.Models {
     public struct SearchModel {
-        public Hits[] hits { get; set; }
+        public Hit[] hits { get; set; }
         public int offset { get; set; }
         public int limit { get; set; }
         public int total_hits { get; set; }
     }
-    public struct Hits {
+    public struct Hit {
         public string slug { get; set; }
         public string title { get; set; }
         public string description { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
+using Mercurius.Commands;
 using System.Threading.Tasks;
 
 namespace Mercurius {
@@ -7,7 +8,12 @@ namespace Mercurius {
         private static APIClient client = new APIClient();
 
         public static async Task Main(string[] args) {
-            await ParseArgs(args);
+            CommandHandler handler = new CommandHandler(args);
+
+            SearchCommand command = new SearchCommand(handler.);
+            command.Execute()
+
+            // await ParseArgs(args);
         }
         private static async Task ParseArgs(string[] args) {
             
