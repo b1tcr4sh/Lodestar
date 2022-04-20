@@ -1,5 +1,3 @@
-using System;
-
 namespace Mercurius.Modrinth.Models {
     public struct ProjectModel {
         public string slug { get; set; }
