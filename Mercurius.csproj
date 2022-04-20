@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Version>0.0.10</Version>
     <VersionPrefix>0.0.10</VersionPrefix>
-    <Authors>Vivid</Version>
+    <Authors>Vivid</Authors>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
