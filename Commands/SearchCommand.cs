@@ -10,7 +10,9 @@ namespace Mercurius.Commands {
             Name = "Search";
             Description = "Gets top 10 results for query from Labrynth.";
         }
-        public override async Task Execute(string[] args, APIClient client) {
+        public override async Task Execute(string[] args) {
+            APIClient client = new APIClient();
+
             SearchModel searchResults = await client.SearchAsync(args[0]);
 
             Console.WriteLine($"Found {searchResults.total_hits} results:\n");

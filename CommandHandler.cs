@@ -5,14 +5,11 @@ using Mercurius.Modrinth;
 
 namespace Mercurius.Commands {
     public class CommandHandler {
-        private APIClient client;
         public string[] Args { get; private set; }
         private string Command;
         public Dictionary<string, BaseCommand> Commands { get; private set; }
         public CommandHandler(string[] args) {
             if (args is null) throw new ArgumentNullException("args was null");
-            
-            client = new APIClient();
 
             Command = args[0];
             Args = args.Skip<string>(1).ToArray<string>();
@@ -21,7 +18,7 @@ namespace Mercurius.Commands {
 
         public async Task ExecuteCommandAsync() {
             if (Commands.ContainsKey(Command)) {
-                await Commands.GetValueOrDefault(Command).Execute(Args, client);
+                await Commands.GetValueOrDefault(Command).Execute(Args);
             } else Console.WriteLine($"Command {Command} not found... ?");
         }
 
