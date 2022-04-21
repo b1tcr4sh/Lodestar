@@ -9,20 +9,24 @@ namespace Mercurius.Commands {
         private string Command;
         public Dictionary<string, BaseCommand> Commands { get; private set; }
         public CommandHandler(string[] args) {
-            if (args is null) throw new ArgumentNullException("args was null");
+            Commands = GetCommands();
+            if (args.Length == 0) HelpCommand();
 
             Command = args[0].ToLower();
             Args = args.Skip<string>(1).ToArray<string>();
-            Commands = GetCommands();
         }
 
         public async Task ExecuteCommandAsync() {
             if (Command.Equals("help") || Command.Equals("-h") || Command.Equals("--help")) {
                 HelpCommand();
-                System.Environment.Exit(0);
             }
 
             if (Commands.ContainsKey(Command)) {
+                if (Args.All<string>(item => item is null || item.Equals(string.Empty))) {
+                    Console.WriteLine($"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}");
+                    return;
+                }
+
                 await Commands.GetValueOrDefault(Command).Execute(Args);
             } else Console.WriteLine($"Command {Command} not found... ?");
         }
@@ -34,6 +38,8 @@ namespace Mercurius.Commands {
             foreach (KeyValuePair<string, BaseCommand> command in Commands) {
                 Console.WriteLine(" {0, -10} Format: {1, -20} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
             }
+
+            System.Environment.Exit(0);
         }
 
 
