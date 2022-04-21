@@ -1,37 +1,42 @@
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using Mercurius.Modrinth;
 
 namespace Mercurius.Commands {
     public class CommandHandler {
+        private APIClient client;
         public string[] Args { get; private set; }
         private string Command;
+        public Dictionary<string, BaseCommand> Commands { get; private set; }
         public CommandHandler(string[] args) {
             if (args is null) throw new ArgumentNullException("args was null");
             
+            client = new APIClient();
+
+            Command = args[0];
             Args = args.Skip<string>(1).ToArray<string>();
-            GetCommands();
+            Commands = GetCommands();
         }
 
+        public async Task ExecuteCommandAsync() {
+            if (Commands.ContainsKey(Command)) {
+                await Commands.GetValueOrDefault(Command).Execute(Args, client);
+            } else Console.WriteLine($"Command {Command} not found... ?");
+        }
+
+
         private Dictionary<string, BaseCommand> GetCommands() {
-            List<BaseCommand> commandObjects = new List<BaseCommand>();
+            Dictionary<string, BaseCommand> commands = new Dictionary<string, BaseCommand>();
             Type[] commandTypes = GetCommandTypes();
 
             foreach (Type commandObject in commandTypes) {
                 BaseCommand command = commandObject.GetConstructor(new Type[0]).Invoke(new object[0]) as BaseCommand;
-                commandObjects.Add(command);
-
-                Console.WriteLine(command.Name);
+                commands.Add(command.Name.ToLower(), command);
             }
 
-
-            return null;
+            return commands;
         }
-
-        public async Task ExecuteCommand() {
-            
-        }
-
         private static Type[] GetCommandTypes() {
             return Assembly.GetAssembly(typeof(BaseCommand)).GetTypes().Where(t => t.IsSubclassOf(typeof(BaseCommand))).ToArray<Type>();
         }
