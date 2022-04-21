@@ -6,9 +6,11 @@ namespace Mercurius.Commands {
     public class SearchCommand : BaseCommand {
         public override string Name { get; set; }
         public override string Description { get; set; }
+        public override string Format { get; set; }
         public SearchCommand() {
             Name = "Search";
             Description = "Gets top 10 results for query from Labrynth.";
+            Format = "search [query]";
         }
         public override async Task Execute(string[] args) {
             APIClient client = new APIClient();

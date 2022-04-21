@@ -11,15 +11,29 @@ namespace Mercurius.Commands {
         public CommandHandler(string[] args) {
             if (args is null) throw new ArgumentNullException("args was null");
 
-            Command = args[0];
+            Command = args[0].ToLower();
             Args = args.Skip<string>(1).ToArray<string>();
             Commands = GetCommands();
         }
 
         public async Task ExecuteCommandAsync() {
+            if (Command.Equals("help") || Command.Equals("-h") || Command.Equals("--help")) {
+                HelpCommand();
+                System.Environment.Exit(0);
+            }
+
             if (Commands.ContainsKey(Command)) {
                 await Commands.GetValueOrDefault(Command).Execute(Args);
             } else Console.WriteLine($"Command {Command} not found... ?");
+        }
+
+        private void HelpCommand() {
+            Console.WriteLine("Mercurius - A package manager-like thing for Minecraft mods.\nThis app uses the Modrinth (https://modrinth.com) api to source mods, so uncountable thank yous to that team.");
+            Console.WriteLine("\nCommands:");
+            
+            foreach (KeyValuePair<string, BaseCommand> command in Commands) {
+                Console.WriteLine(" {0, -10} Format: {1, -20} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
+            }
         }
 
 
