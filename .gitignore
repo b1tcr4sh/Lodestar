@@ -456,4 +456,5 @@ $RECYCLE.BIN/
 
 ## Project Specific 
 config.json
+settings.json
 ./*.Jar
