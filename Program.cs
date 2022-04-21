@@ -1,5 +1,4 @@
-﻿using Mercurius.Modrinth;
-using Mercurius.Commands;
+﻿using Mercurius.Commands;
 using System.Threading.Tasks;
 
 namespace Mercurius {
