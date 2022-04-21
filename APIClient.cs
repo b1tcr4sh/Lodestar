@@ -18,15 +18,20 @@ namespace Mercurius.Modrinth {
             client.DefaultRequestHeaders.Add("user-agent", "Mercurius");
         }
         public async Task<SearchModel> SearchAsync(string query) {
-            Console.WriteLine($"Querying Labrynth with {query}");
+            Console.WriteLine($"Querying Labrynth with {query}...");
 
             Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"search?query={query}");
             SearchModel deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
 
+            if (deserializedRes.hits.Length <= 0) {
+                Console.WriteLine("No results found... Sorry");
+                System.Environment.Exit(0);
+            }
+
             return deserializedRes;
         }
         public async Task<ProjectModel> GetProjectAsync(string projectId) {
-            Console.WriteLine($"Getting Project with ID {projectId}");
+            Console.WriteLine($"Getting Project with ID {projectId}...");
 
             Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
             ProjectModel deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
@@ -34,7 +39,7 @@ namespace Mercurius.Modrinth {
             return deserializedRes;
         }
         public async Task<VersionModel> GetVersionInfoAsync(string versionId) {
-            Console.WriteLine($"Getting Project Version with ID {versionId}");
+            Console.WriteLine($"Getting Project Version with ID {versionId}...");
 
             Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
             VersionModel deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
@@ -42,7 +47,7 @@ namespace Mercurius.Modrinth {
             return deserializedRes;
         }
         public async Task<VersionModel[]> ListVersionsAsync(ProjectModel project) {
-            Console.WriteLine($"Getting List of Versions for {project.title}");
+            Console.WriteLine($"Getting List of Versions for {project.title}...");
 
             Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
             VersionModel[] deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
