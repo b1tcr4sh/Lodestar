@@ -12,13 +12,14 @@ namespace Mercurius.Commands {
         }
         public override async Task Execute(string[] args) {
             APIClient client = new APIClient();
+            SearchModel searchResults;
 
-            SearchModel searchResults = await client.SearchAsync(args[0]);
+            searchResults = await client.SearchAsync(string.Join(" ", args));
 
-            Console.WriteLine($"Found {searchResults.total_hits} results:\n");
-            Console.WriteLine("{0, 10} {1, 10} {2, 10}", "Project Title", "Latest Version", "Downloads");
+            Console.WriteLine($"Found {searchResults.total_hits} results, displaying 10:\n");
+            Console.WriteLine("{0, -30} {1, -20} {2, 15}", "Project Title", "Latest Minecraft Version", "Downloads");
             foreach (Hit result in searchResults.hits) {
-                Console.WriteLine("{0, 10} {1, 10} {2, 10}", result.title, result.latest_version, result.downloads);
+                Console.WriteLine("{0, -30} {1, -20} {2, 15}", result.title, result.latest_version, result.downloads);
             }
         }
     }
