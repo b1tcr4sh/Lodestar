@@ -10,8 +10,7 @@ namespace Mercurius {
         public static async Task Main(string[] args) {
             CommandHandler handler = new CommandHandler(args);
 
-            SearchCommand command = new SearchCommand(handler.);
-            command.Execute()
+            
 
             // await ParseArgs(args);
         }

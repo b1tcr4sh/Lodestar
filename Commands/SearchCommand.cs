@@ -3,10 +3,14 @@ using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
 
 namespace Mercurius.Commands {
-    public class SearchCommand : ICommand {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public async Task Execute(string[] args, APIClient client) {
+    public class SearchCommand : BaseCommand {
+        public override string Name { get; set; }
+        public override string Description { get; set; }
+        public SearchCommand() {
+            Name = "Search";
+            Description = "Gets top 10 results for query from Labrynth.";
+        }
+        public override async Task Execute(string[] args, APIClient client) {
             SearchModel searchResults = await client.SearchAsync(args[0]);
 
             Console.WriteLine($"Found {searchResults.total_hits} results:\n");
