@@ -2,6 +2,7 @@ namespace Mercurius.Modrinth.Models {
     public struct ProjectModel {
         public string slug { get; set; }
         public string title { get; set; }
+        public string description { get; set; }
         public string[] categories { get; set; } 
         public string client_side { get; set; } 
         public string server_side { get; set; } 
