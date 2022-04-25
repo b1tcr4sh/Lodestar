@@ -8,6 +8,6 @@ namespace Mercurius.Profiles {
         public UnknownMod[] UnknownMods = null;
     }
     public enum ClientType {
-        clientSide, serverSide
+        ClientSideRequired, serverSideRequired, ClientServerDependent
     }
 }
