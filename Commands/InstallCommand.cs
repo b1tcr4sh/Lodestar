@@ -29,6 +29,8 @@ namespace Mercurius.Commands {
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
 
             // TODO: Update profile with appropriate mod info
+            // TODO: Some flag for a dry-run to update profile without installing anything
+            // TODO: Checks for client/server side, install respective mods.
 
             await client.DownloadVersionAsync(version);
             if (version.dependencies.Length >= 1) {

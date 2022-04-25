@@ -29,10 +29,11 @@ namespace Mercurius.Configuration {
                 else minecraftDirectory = string.Empty;
 
             Configuration config = new Configuration {
-                Minecraft_Directory = minecraftDirectory
+                Minecraft_Directory = minecraftDirectory,
+                Server_Mod_Directory = string.Empty
             };
 
-            string contents = JsonSerializer.Serialize<Configuration>(config);
+            string contents = JsonSerializer.Serialize<Configuration>(config, new JsonSerializerOptions { WriteIndented = true });
 
             using FileStream file = new FileStream("./settings.json", FileMode.CreateNew, FileAccess.Write);
             await file.WriteAsync(Encoding.ASCII.GetBytes(contents));
