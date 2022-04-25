@@ -1,5 +1,7 @@
 namespace Mercurius.Profiles {
     public class Profile {
+        // Make a reference to it's respective json file, with methods to update, delete, etc.
+
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
         public ClientType ClientType { get; set; }
@@ -8,6 +10,6 @@ namespace Mercurius.Profiles {
         public UnknownMod[] UnknownMods = null;
     }
     public enum ClientType {
-        ClientSideRequired, serverSideRequired, ClientServerDependent
+        ClientSide, ServerSide
     }
 }

@@ -25,7 +25,7 @@ namespace Mercurius.Configuration {
             string minecraftDirectory;
             PlatformID platform = Environment.OSVersion.Platform;
             if (platform == PlatformID.Win32NT) minecraftDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/AppData/Roaming/.minecraft/";
-                else if (platform == PlatformID.Unix) minecraftDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/.Minecraft/";
+                else if (platform == PlatformID.Unix) minecraftDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/.minecraft/";
                 else minecraftDirectory = string.Empty;
 
             Configuration config = new Configuration {

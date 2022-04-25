@@ -4,14 +4,9 @@ using Mercurius.Modrinth.Models;
 
 namespace Mercurius.Commands {
     public class ViewCommand : BaseCommand {
-        public override string Name { get; set; }
-        public override string Description { get; set; }
-        public override string Format { get; set; }
-        public ViewCommand() {
-            Name = "View";
-            Description = "Gets details about a specific mod.";
-            Format = "view [project name]";
-        }
+        public override string Name { get => "View"; }
+        public override string Description { get => "Gets the details of a mod."; }
+        public override string Format { get => "view [Mod Name]"; }
         public override async Task Execute(string[] args) {
             APIClient client = new APIClient();
             string query = string.Join<string>(" ", args);
