@@ -30,6 +30,7 @@ namespace Mercurius.Configuration {
 
             Configuration config = new Configuration {
                 Minecraft_Directory = minecraftDirectory,
+                Profile_Directory = "./Profiles/",
                 Server_Mod_Directory = string.Empty
             };
 
