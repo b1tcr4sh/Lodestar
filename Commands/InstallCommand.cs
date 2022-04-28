@@ -9,16 +9,18 @@ namespace Mercurius.Commands {
     public class InstallCommand : BaseCommand {
         public override string Name { get => "Install"; }
         public override string Description { get => "Installs a mod and its dependencies."; }
-        public override string Format { get => "install [Mod Name]"; }
+        public override string Format { get => "install [Mod Name] {--dry-run | -d}"; }
         public override async Task Execute(string[] args) {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
             APIClient client = new APIClient();
 
-            if (ProfileManager.SelectedProfile == null) await CreateProfile();
+            if (ProfileManager.SelectedProfile == null) await CreateProfileDialogue();
+
+            string query = string.Join(" ", args);
 
             string id;
             SearchModel search = await client.SearchAsync(string.Join<string>(" ", args));
-            if (!args[0].ToLower().Equals(search.hits[0].title.ToLower())) {
+            if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
                 id = SelectFromList(search);
             } else id = search.hits[0].project_id;
 
@@ -43,7 +45,7 @@ namespace Mercurius.Commands {
             }            
         }
 
-        private async Task CreateProfile() {
+        private async Task CreateProfileDialogue() {
             string name;
             string minecraftVersion;
 

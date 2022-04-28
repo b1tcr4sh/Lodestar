@@ -14,7 +14,7 @@ namespace Mercurius.Commands {
 
             string modTitle = searchResponse.hits[0].title;
             string modId = searchResponse.hits[0].project_id;
-            if (!query.Equals(modTitle)) {
+            if (!query.Equals(modTitle.ToLower())) {
                 modId = SelectFromList(searchResponse);
             }
 
