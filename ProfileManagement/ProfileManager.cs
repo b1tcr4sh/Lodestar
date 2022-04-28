@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Mercurius.Profiles {
-    public static class ProfileManager {
+    public class ProfileManager {
         public static Dictionary<string, Profile> LoadedProfiles { get; private set;}
         public static Profile SelectedProfile { get; private set; }
         private static string ProfilePath;
@@ -49,11 +49,35 @@ namespace Mercurius.Profiles {
             await WriteProfileAsync(profile);
             SelectedProfile = profile;
         }
-        public static async Task WriteProfileAsync(Profile profile) {
+        public static Profile CreateProfile(string name, string minecraftVersion, ClientType clientType, bool select = false) {
+            Profile profile = new Profile {
+                Name = name,
+                MinecraftVersion = minecraftVersion,
+                ClientType = clientType
+            };
+            if (select) SelectedProfile = profile;
+
+            return profile;
+        }
+        internal static async Task WriteProfileAsync(Profile profile) {
             using FileStream stream = new FileStream($@"./Profiles/{profile.Name.Replace(" ", "_")}.profile.json", FileMode.CreateNew, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
+        }
+        internal static async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
+            using FileStream stream = new FileStream($@"./Profiles/{existingProfileName.Replace(" ", "_")}.profile.json", FileMode.Create, FileAccess.Write);
+
+            await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
+            stream.Close();
+        }
+        internal static bool RemoveProfileFileAsync(string profileName) {
+            if (File.Exists($"{ProfilePath}/{profileName.Replace(" ", "_")}.json")) {
+                return false;
+            }
+
+            File.Delete($"{ProfilePath}/{profileName.Replace(" ", "_")}.json");
+            return true;
         }
     }
 }
