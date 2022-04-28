@@ -5,13 +5,17 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Mercurius.Profiles {
-    public class ProfileManager {
+    public static class ProfileManager {
         public static Dictionary<string, Profile> LoadedProfiles { get; private set;}
         public static Profile SelectedProfile { get; private set; }
         private static string ProfilePath;
         public static void InitializeDirectory(string profileDirectoryPath) {
+            LoadedProfiles = new Dictionary<string, Profile>();
+
             ProfilePath = profileDirectoryPath;
             if (!Directory.Exists(ProfilePath)) Directory.CreateDirectory(ProfilePath); 
+
+            LoadAllProfiles();
         }
 
         public static Profile SelectProfile(string name) {
@@ -22,6 +26,17 @@ namespace Mercurius.Profiles {
                 }
             }
             throw new ProfileException($"Profile {name} Not Found.");
+        }
+        private static void LoadAllProfiles() {
+            string[] files = Directory.GetFiles(ProfilePath);
+
+            foreach (string file in files) {
+                string contents = File.ReadAllText(file, Encoding.ASCII);
+                Profile profile = JsonSerializer.Deserialize<Profile>(contents);
+
+                if (!LoadedProfiles.ContainsKey(profile.Name.ToLower()))
+                    LoadedProfiles.Add(profile.Name.ToLower(), profile); 
+            }
         }
         public static async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
