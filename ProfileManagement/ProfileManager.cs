@@ -37,6 +37,8 @@ namespace Mercurius.Profiles {
                 if (!LoadedProfiles.ContainsKey(profile.Name.ToLower()))
                     LoadedProfiles.Add(profile.Name.ToLower(), profile); 
             }
+
+            SelectedProfile = LoadedProfiles["fabric"];
         }
         public static async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
@@ -58,7 +60,7 @@ namespace Mercurius.Profiles {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
                 ClientType = ClientType.ClientSide,
-                Mods = new Mod[0],
+                Mods = new List<Mod>(),
                 UnknownMods = null
             };
             await WriteProfileAsync(profile);
