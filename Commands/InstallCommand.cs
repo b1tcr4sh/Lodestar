@@ -14,7 +14,10 @@ namespace Mercurius.Commands {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
             APIClient client = new APIClient();
 
-            if (ProfileManager.SelectedProfile == null) await CreateProfileDialogue();
+            if (ProfileManager.SelectedProfile == null) {
+                Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
+                return;
+            }
 
             string query = string.Join(" ", args);
 
@@ -43,23 +46,6 @@ namespace Mercurius.Commands {
                     await client.DownloadVersionAsync(dependencyVersion);
                 }
             }            
-        }
-
-        private async Task CreateProfileDialogue() {
-            string name;
-            string minecraftVersion;
-
-            Console.Write("No profile is currently selected, create one? (y/N) > ");
-            string response = Console.ReadLine();
-            if (!response.ToLower().Equals("y")) Environment.Exit(0);
-
-            Console.Write("\nProfile Name? > ");
-            name = Console.ReadLine();
-
-            Console.Write("\n Minecraft Version? > ");
-            minecraftVersion = Console.ReadLine();
-
-            await ProfileManager.CreateDefaultProfileAsync(name, minecraftVersion);
         }
         private string SelectFromList(SearchModel response) {
             Console.WriteLine($"Found {response.total_hits} results, displaying 10:\n");
