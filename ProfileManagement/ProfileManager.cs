@@ -37,8 +37,6 @@ namespace Mercurius.Profiles {
                 if (!LoadedProfiles.ContainsKey(profile.Name.ToLower()))
                     LoadedProfiles.Add(profile.Name.ToLower(), profile); 
             }
-
-            SelectedProfile = LoadedProfiles["fabric"];
         }
         public static async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
