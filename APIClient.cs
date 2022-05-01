@@ -63,11 +63,6 @@ namespace Mercurius.Modrinth {
             using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{version.files[0].filename}", FileMode.Create);
 
             await readStream.CopyToAsync(writeStream);
-
-            readStream.Close();
-            readStream.Dispose();
-            writeStream.Close();
-            writeStream.Dispose();
         }
     }
 }

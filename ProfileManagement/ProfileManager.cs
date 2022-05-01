@@ -53,7 +53,7 @@ namespace Mercurius.Profiles {
             }
             throw new ProfileException($"Profile {name} not found!");
         }
-        public static async Task CreateDefaultProfileAsync(string name, string minecraftVersion) {
+        public static async Task<Profile> CreateDefaultProfileAsync(string name, string minecraftVersion) {
             Profile profile = new Profile {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
@@ -63,6 +63,7 @@ namespace Mercurius.Profiles {
             };
             await WriteProfileAsync(profile);
             SelectedProfile = profile;
+            return profile;
         }
         public static Profile CreateProfile(string name, string minecraftVersion, ClientType clientType, bool select = false) {
             Profile profile = new Profile {
@@ -86,13 +87,22 @@ namespace Mercurius.Profiles {
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
         }
-        internal static bool RemoveProfileFileAsync(string profileName) {
-            if (File.Exists($"{ProfilePath}/{profileName.Replace(" ", "_")}.json")) {
+        internal static bool DeleteProfileFile(string profileName) {
+            if (!File.Exists($"{ProfilePath}/{profileName.Replace(" ", "_")}.profile.json")) {
                 return false;
             }
 
-            File.Delete($"{ProfilePath}/{profileName.Replace(" ", "_")}.json");
+            File.Delete($"{ProfilePath}/{profileName.Replace(" ", "_")}.profile.json");
             return true;
+        }
+        internal static void UnloadProfile(Profile profile) {
+            if (SelectedProfile.Equals(profile)) {
+                SelectedProfile = null;
+            }
+
+            if (LoadedProfiles.ContainsKey(profile.Name.ToLower())) {
+                LoadedProfiles.Remove(profile.Name.ToLower());
+            }
         }
     }
 }
