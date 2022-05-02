@@ -4,7 +4,7 @@ namespace Mercurius.Profiles {
     public class UnknownMod : Mod {
         public string HostURL { get; set; }
 
-        public UnknownMod(VersionModel version, bool isDependency = false) : base(version, isDependency = false) {
+        public UnknownMod(VersionModel version, ProjectModel project, bool isDependency = false) : base(version, project, isDependency = false) {
             
         }
     }

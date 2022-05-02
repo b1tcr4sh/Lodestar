@@ -15,8 +15,9 @@ namespace Mercurius.Configuration {
                 try {
                     FileStream settings = File.OpenRead("./settings.json");
                     Settings = await JsonSerializer.DeserializeAsync<Configuration>(settings);
-                } catch {
+                } catch (JsonException e) {
                     Console.WriteLine("Error loading config file... ?");
+                    Console.WriteLine(e.Message);
                     Environment.Exit(0);
                 }
             }

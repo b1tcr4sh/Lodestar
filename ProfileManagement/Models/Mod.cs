@@ -11,8 +11,8 @@ namespace Mercurius.Profiles {
         public List<string> DependencyOf { get; set; }
         // public ClientDependency ClientDependency { get; set; }
 
-        public Mod(VersionModel version, bool isDependency = false) {
-            Title = version.name;
+        public Mod(VersionModel version, ProjectModel project, bool isDependency = false) {
+            Title = project.title;
             ModrinthProjectId = version.project_id;
             VersionId = version.id;
             MinecraftVersion = version.game_versions[0];

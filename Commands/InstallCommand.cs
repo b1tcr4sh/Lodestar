@@ -39,20 +39,21 @@ namespace Mercurius.Commands {
 
             // TODO: Differentiate between the installation and adding of mods to the profile.  Even if mods is alrady in profile, it can still be installed if
             // currently not.  Should have 'add' command, which adds a mod to the profile, then install should blindly install.
-            if (ProfileManager.SelectedProfile.Mods.Contains(new Mod(version))) {
+            if (ProfileManager.SelectedProfile.Mods.Contains(new Mod(version, project))) {
                 Console.WriteLine($"Mod {version.name} already installed");
             }
 
             List<Mod> mods = new List<Mod>();
 
             await client.DownloadVersionAsync(version);
-            mods.Add(new Mod(version));
+            mods.Add(new Mod(version, project));
 
             if (version.dependencies.Length >= 1) {
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                    ProjectModel depenencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
                     
-                    mods.Add(new Mod(dependencyVersion, true));
+                    mods.Add(new Mod(dependencyVersion, depenencyProject, true));
                     Console.WriteLine($"Installing dependency: {dependencyVersion.name}");
                     await client.DownloadVersionAsync(dependencyVersion);
                 }
