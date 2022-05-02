@@ -3,6 +3,7 @@ using Mercurius.Modrinth.Models;
 namespace Mercurius.Profiles {
     public class Mod {
         public string Title { get; set; }
+        public string FileName { get; set; }
         public string ModrinthProjectId { get; set; }
         public string VersionId { get; set; }
         public string MinecraftVersion { get; set; }
@@ -17,6 +18,7 @@ namespace Mercurius.Profiles {
             VersionId = version.id;
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
+            FileName = version.files[0].filename;
 
             if (isDependency) {
                 Dependency = true;

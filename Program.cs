@@ -8,8 +8,9 @@ namespace Mercurius {
         public static async Task Main(string[] args) {
             SettingsManager.Init();
             ProfileManager.InitializeDirectory("./Profiles");
+            ProfileManager.LoadAllProfiles();
 
-            // await ProfileManager.CreateDefaultProfileAsync("Vox", "1.17");
+            // await Profile.CreateDefaultAsync("Vox", "1.17");
 
             CommandHandler handler = new CommandHandler(args);
             await handler.ExecuteCommandAsync();

@@ -15,6 +15,32 @@ namespace Mercurius.Profiles {
         public string Path => string.Format("{0}\\{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private bool _disposed = false;
 
+        public static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, ClientType clientType, bool select = false) {
+            Profile profile = new Profile {
+                Name = name,
+                MinecraftVersion = minecraftVersion,
+                ClientType = clientType,
+                Loader = loader
+            };
+            await ProfileManager.WriteProfileAsync(profile);
+            if (select) ProfileManager.SelectProfile(profile.Name);
+
+            return profile;
+        }
+        public static async Task<Profile> CreateDefaultAsync(string name, string minecraftVersion) {
+            Profile profile = new Profile {
+                Name = name,
+                MinecraftVersion = minecraftVersion,
+                ClientType = ClientType.ClientSide,
+                Loader = "fabric",
+                Mods = new List<Mod>(),
+                UnknownMods = null
+            };
+            await ProfileManager.WriteProfileAsync(profile);
+            ProfileManager.SelectProfile(profile.Name);
+            return profile;
+        }
+
         public async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
             if (oldProfile.Equals(newProfile)) return oldProfile;
 

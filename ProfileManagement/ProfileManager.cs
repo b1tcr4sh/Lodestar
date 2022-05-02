@@ -7,34 +7,36 @@ using Mercurius.Configuration;
 
 namespace Mercurius.Profiles {
     public static class ProfileManager {
-        public static Dictionary<string, Profile> LoadedProfiles { get; private set;}
+        private static Dictionary<string, Profile> LoadedProfiles;
         public static Profile SelectedProfile { get; private set; }
         private static string ProfilePath;
         public static void InitializeDirectory() {
             LoadedProfiles = new Dictionary<string, Profile>();
             ProfilePath = SettingsManager.Settings.Profile_Directory;
             if (!Directory.Exists(ProfilePath)) Directory.CreateDirectory(ProfilePath); 
-
-            LoadAllProfiles();
         }
         public static void InitializeDirectory(string path) {
             LoadedProfiles = new Dictionary<string, Profile>();
             ProfilePath = @path;
             if (!Directory.Exists(ProfilePath)) Directory.CreateDirectory(ProfilePath); 
-
-            LoadAllProfiles();
         }
-
+        
+        public static Profile GetLoadedProfile(string name) {
+            if (LoadedProfiles.Keys.Contains(name)) return LoadedProfiles[name];
+            else throw new ProfileException($"Profile {name} doesn't exist!");
+        }
         public static Profile SelectProfile(string name) {
             foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {
                 if (profile.Key.Equals(name)) {
                     SelectedProfile = profile.Value;
+
+                    Console.WriteLine($"Selected profile {name}");
                     return profile.Value;
                 }
             }
             throw new ProfileException($"Profile {name} Not Found.");
         }
-        private static void LoadAllProfiles() {
+        public static void LoadAllProfiles() {
             string[] files = Directory.GetFiles(ProfilePath);
 
             foreach (string file in files) {
@@ -67,30 +69,7 @@ namespace Mercurius.Profiles {
             }
             throw new ProfileException($"Profile {name} not found!");
         }
-        public static async Task<Profile> CreateDefaultProfileAsync(string name, string minecraftVersion) {
-            Profile profile = new Profile {
-                Name = name,
-                MinecraftVersion = minecraftVersion,
-                ClientType = ClientType.ClientSide,
-                Loader = "fabric",
-                Mods = new List<Mod>(),
-                UnknownMods = null
-            };
-            await WriteProfileAsync(profile);
-            SelectedProfile = profile;
-            return profile;
-        }
-        public static async Task<Profile> CreateProfile(string name, string minecraftVersion, ClientType clientType, bool select = false) {
-            Profile profile = new Profile {
-                Name = name,
-                MinecraftVersion = minecraftVersion,
-                ClientType = clientType
-            };
-            await WriteProfileAsync(profile);
-            if (select) SelectedProfile = profile;
-
-            return profile;
-        }
+        
         internal static async Task WriteProfileAsync(Profile profile) {
             if (File.Exists($@"{ProfilePath}/{profile.Name.ToLower().Replace(" ", "_")}.profile.json")) return;
             using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name.ToLower().Replace(" ", "_")}.profile.json", FileMode.CreateNew, FileAccess.Write);
