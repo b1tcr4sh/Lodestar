@@ -58,7 +58,12 @@ namespace Mercurius.Modrinth {
         public async Task DownloadVersionAsync(VersionModel version) {
             Console.WriteLine($"Starting Download of {version.name}: version {version.version_number}");
 
-            using HttpResponseMessage response = await client.GetAsync(version.files[0].url, HttpCompletionOption.ResponseContentRead);
+            file fileToDownload = version.files[0];
+            foreach (file file in version.files) {
+                if (file.primary) fileToDownload = file;
+            }
+
+            using HttpResponseMessage response = await client.GetAsync(fileToDownload.url, HttpCompletionOption.ResponseContentRead);
             using Stream readStream = await response.Content.ReadAsStreamAsync();
             using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{version.files[0].filename}", FileMode.Create);
 

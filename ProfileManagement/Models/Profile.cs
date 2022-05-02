@@ -23,6 +23,7 @@ namespace Mercurius.Profiles {
                 Loader = loader
             };
             await ProfileManager.WriteProfileAsync(profile);
+            await ProfileManager.LoadProfileAsync(profile.Name);
             if (select) ProfileManager.SelectProfile(profile.Name);
 
             return profile;
@@ -37,6 +38,7 @@ namespace Mercurius.Profiles {
                 UnknownMods = null
             };
             await ProfileManager.WriteProfileAsync(profile);
+            await ProfileManager.LoadProfileAsync(profile.Name);
             ProfileManager.SelectProfile(profile.Name);
             return profile;
         }

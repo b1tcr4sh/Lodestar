@@ -18,7 +18,12 @@ namespace Mercurius.Profiles {
             VersionId = version.id;
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
-            FileName = version.files[0].filename;
+
+            file primaryFile = version.files[0];
+            foreach (file file in version.files) {
+                if (file.primary) primaryFile = file;
+            }
+            FileName = primaryFile.filename;
 
             if (isDependency) {
                 Dependency = true;

@@ -26,7 +26,7 @@ namespace Mercurius.Profiles {
             else throw new ProfileException($"Profile {name} doesn't exist!");
         }
         public static Profile SelectProfile(string name) {
-            foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {
+            foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
                 if (profile.Key.Equals(name)) {
                     SelectedProfile = profile.Value;
 
@@ -62,7 +62,11 @@ namespace Mercurius.Profiles {
                     string fileContents = await File.ReadAllTextAsync(file, Encoding.ASCII);
                     Profile profile = JsonSerializer.Deserialize<Profile>(fileContents);
 
-                    if (profile.Name.ToLower().Equals(name.ToLower())) return profile;
+                    if (profile.Name.ToLower().Equals(name.ToLower())) {
+                        Console.WriteLine($"Loaded profile {profile.Name}");
+                        LoadedProfiles.Add(profile.Name, profile);
+                        return profile;
+                    }
                 } catch (Exception e) {
                     Console.WriteLine(@$"Error occurred loading profile at {file}: {e.Message}");
                 } 
