@@ -43,7 +43,7 @@ namespace Mercurius.Configuration {
             
             Settings = config;
 
-            Console.WriteLine($"Created a new configuration file at {Environment.ProcessPath}/settings.json");
+            Console.WriteLine($"Created a new configuration file at {Environment.CurrentDirectory}/settings.json");
         }
     }
 }
