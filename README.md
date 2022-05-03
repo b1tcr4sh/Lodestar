@@ -32,6 +32,7 @@
   - Importing profiles made by other users as "modpacks".
   - Checks for server-side and client-side mod compatibility.
   - Server-side profiles which an be created on a server and check for server-side mod compatibility.   
+   - Generate server-side profiles to accompany client-side profiles.
   - Installing a profile's respective mod loader.
   - Profile prefabs/templates which can be customized. (E.g. Creating all Fabric profiles with Fabric-API as a default dependency.) 
   - Install scripts.
