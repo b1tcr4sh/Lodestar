@@ -1,5 +1,12 @@
-# Mercurius
-#### An easy to use, feature-rich package manager for Minecraft mods.
+<div align="center">
+ <h1>Mercurius</h1>
+ 
+ <p>An easy to use, feature-rich package manager for Minecraft mods.</p>
+</div>
+<br>
+<br>
+<br>
+<br>
 
 ## How to Use:
 ### Installation   
