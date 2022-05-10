@@ -7,7 +7,7 @@ namespace Mercurius.Commands {
     public class CreateCommand : BaseCommand {
         public override string Name => "Create";
         public override string Description => "Generates a new profile according to entered values.";
-        public override string Format => "create [Profile Name]";
+        public override string Format => "create <Profile Name>";
         private string minecraftVersion;
         private string loader;
         private bool serverSide;

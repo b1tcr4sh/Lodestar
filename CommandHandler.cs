@@ -36,7 +36,7 @@ namespace Mercurius.Commands {
             Console.WriteLine("\nCommands:");
             
             foreach (KeyValuePair<string, BaseCommand> command in Commands) {
-                Console.WriteLine(" {0, -10} Format: {1, -20} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
+                Console.WriteLine(" {0, -10} Format: {1, -30} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
             }
 
             System.Environment.Exit(0);

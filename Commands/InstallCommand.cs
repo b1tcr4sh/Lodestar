@@ -9,7 +9,7 @@ namespace Mercurius.Commands {
     public class InstallCommand : BaseCommand {
         public override string Name { get => "Install"; }
         public override string Description { get => "Installs a mod and its dependencies."; }
-        public override string Format { get => "install [Mod Name]"; }
+        public override string Format { get => "install <Mod Name>"; }
         public override async Task Execute(string[] args) {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
             APIClient client = new APIClient();

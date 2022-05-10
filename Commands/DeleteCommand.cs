@@ -6,7 +6,7 @@ namespace Mercurius.Commands {
     public class DeleteCommand : BaseCommand {
         public override string Name => "Delete";
         public override string Description => "Deletes a profile";
-        public override string Format => "delete [Profile Name]";
+        public override string Format => "delete <Profile Name>";
         public override Task Execute(string[] args) {
             Profile profile = ProfileManager.GetLoadedProfile(args[0]);
             

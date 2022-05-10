@@ -21,7 +21,7 @@ namespace Mercurius.Profiles {
                 MinecraftVersion = minecraftVersion,
                 ServerSide = serverSide,
                 Loader = loader,
-                Mods = new List<Mod>(),
+                Mods = null,
                 UnknownMods = null
             };
             await ProfileManager.WriteProfileAsync(profile);
