@@ -37,18 +37,21 @@ namespace Mercurius.Profiles {
             throw new ProfileException($"Profile {name} Not Found.");
         }
         public static void LoadAllProfiles() {
+            LoadedProfiles = new Dictionary<string, Profile>();
             string[] files = Directory.GetFiles(ProfilePath);
 
             foreach (string file in files) {
                 string contents = File.ReadAllText(file, Encoding.ASCII);
                 Profile profile = JsonSerializer.Deserialize<Profile>(contents);
 
-                if (!LoadedProfiles.ContainsKey(profile.Name))
+                if (profile.Name.Contains(" "))
+                    Console.WriteLine($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
+                else if (!LoadedProfiles.ContainsKey(profile.Name))
                     LoadedProfiles.Add(profile.Name, profile); 
             }
 
             foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {
-                if (!File.Exists($@"{ProfilePath}/{profile.Key.ToLower().Replace(" ", "_")}.profile.json"))
+                if (!File.Exists($@"{ProfilePath}/{profile.Key.ToLower()}.profile.json"))
                     LoadedProfiles.Remove(profile.Key);
             }
 
@@ -75,35 +78,42 @@ namespace Mercurius.Profiles {
         }
         
         internal static async Task WriteProfileAsync(Profile profile) {
-            if (File.Exists($@"{ProfilePath}/{profile.Name.ToLower().Replace(" ", "_")}.profile.json")) return;
-            using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name.ToLower().Replace(" ", "_")}.profile.json", FileMode.CreateNew, FileAccess.Write);
+            if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) return;
+            using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name}.profile.json", FileMode.CreateNew, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
         }
         internal static async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
-            if (!File.Exists($@"./Profiles/{existingProfileName.ToLower().Replace(" ", "_")}.profile.json")) throw new ProfileException($"Profile {existingProfileName} doesn't exist!");
-            using FileStream stream = new FileStream($@"./Profiles/{existingProfileName.ToLower().Replace(" ", "_")}.profile.json", FileMode.Create, FileAccess.Write);
+            if (!File.Exists($@"./Profiles/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile {existingProfileName} doesn't exist!");
+            using FileStream stream = new FileStream($@"./Profiles/{existingProfileName.ToLower()}.profile.json", FileMode.Create, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
         }
         internal static bool DeleteProfileFile(string profileName) {
-            if (!File.Exists($"{ProfilePath}/{profileName.ToLower().Replace(" ", "_")}.profile.json")) {
+            if (!File.Exists($"{ProfilePath}/{profileName.ToLower()}.profile.json")) {
                 return false;
             }
 
-            File.Delete($"{ProfilePath}/{profileName.ToLower().Replace(" ", "_")}.profile.json");
+            File.Delete($"{ProfilePath}/{profileName.ToLower()}.profile.json");
             return true;
         }
         internal static void UnloadProfile(Profile profile) {
+            // if (SelectedProfile is null) {
+            //     Console.WriteLine("No profile selected... ?");
+            //     return;
+            // }
+            // else 
             if (SelectedProfile.Equals(profile)) {
                 SelectedProfile = null;
+                Console.WriteLine($"Profile {profile.Name} deselected");
             }
 
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);
-            }
+                LoadAllProfiles();
+            } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
     }
 }

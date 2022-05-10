@@ -12,7 +12,7 @@ namespace Mercurius.Profiles {
         public List<Mod> Mods { get; set; }
         public UnknownMod[] UnknownMods = null;
 
-        public string Path => string.Format("{0}\\{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
+        public string Path => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private bool _disposed = false;
 
         public static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide, bool select = false) {
@@ -20,7 +20,9 @@ namespace Mercurius.Profiles {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
                 ServerSide = serverSide,
-                Loader = loader
+                Loader = loader,
+                Mods = new List<Mod>(),
+                UnknownMods = null
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
@@ -50,8 +52,12 @@ namespace Mercurius.Profiles {
             return await ProfileManager.LoadProfileAsync(newProfile.Name);
         }
         public async Task UpdateModListAsync(List<Mod> mods) {
-            foreach (Mod mod in mods)
-                Mods.Add(mod);
+            if (Mods is null) {
+                Mods = mods;
+            } else {
+                foreach (Mod mod in mods)
+                    Mods.Add(mod);
+            }
 
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
@@ -61,15 +67,20 @@ namespace Mercurius.Profiles {
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
         public void Delete() {
-            // Dipose/unload
-            ProfileManager.UnloadProfile(this);
-
             if (File.Exists(Path))
                 ProfileManager.DeleteProfileFile(Name);
+            else {
+                Console.WriteLine($"No file exists for profile {Name}... Unloading...");
+                ProfileManager.UnloadProfile(this);
+                return;
+            }
+
+            // Dipose/unload
+            ProfileManager.UnloadProfile(this);            
         }
 
         public void Dispose() {
-            Dispose(true);
+            Dispose(false);
             GC.SuppressFinalize(this);
         }
         private void Dispose(bool disposing) {

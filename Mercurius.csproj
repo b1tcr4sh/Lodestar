@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.6.12</Version>
-    <VersionPrefix>0.6.12</VersionPrefix>
+    <Version>0.7.13</Version>
+    <VersionPrefix>0.7.13</VersionPrefix>
     <Authors>Vivid</Authors>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
