@@ -10,7 +10,7 @@ namespace Mercurius.Profiles {
         public string ModVersion { get; set; }
         public bool Dependency { get; set; }
         public List<string> DependencyOf { get; set; }
-        // public ClientDependency ClientDependency { get; set; }
+        public ClientDependency ClientDependency { get; set; }
 
         public Mod(VersionModel version, ProjectModel project, bool isDependency = false) {
             Title = project.title;
@@ -32,9 +32,32 @@ namespace Mercurius.Profiles {
                 Dependency = false;
                 DependencyOf = null;
             }
+
+            string serverSideDependency = project.server_side;
+            string clientSideDependence = project.client_side;
+
+            switch (clientSideDependence) {
+                case "required":
+                    if (clientSideDependence.Equals("required"))
+                        ClientDependency = ClientDependency.ClientServerDependent;
+                    break;
+                case "optional":
+                    if (serverSideDependency.Equals("required"))
+                        ClientDependency = ClientDependency.ClientServerDependent;
+                    else if (serverSideDependency.Equals("optinoal") || serverSideDependency.Equals("unsupported"))
+                        ClientDependency = ClientDependency.ClientSide;
+                    break;
+                case "unsupported":
+                    if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
+                        ClientDependency = ClientDependency.ServerSide;
+                    break;
+                default:
+                    ClientDependency = ClientDependency.Unknown;
+                    break;
+            }
         }
     }
     public enum ClientDependency {
-        ClientSideRequired, serverSideRequired, ClientServerDependent, Unknown
+        ClientSide, ServerSide, ClientServerDependent, Unknown
     }
 }

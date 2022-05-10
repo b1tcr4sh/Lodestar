@@ -6,7 +6,7 @@ namespace Mercurius.Profiles {
         // Make a reference to it's respective json file, with methods to update, delete, etc.
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
-        public ClientType ClientType { get; set; }
+        public bool ServerSide { get; set; }
         public string Loader { get; set; }
         public bool ContainsUnknownMods = false;
         public List<Mod> Mods { get; set; }
@@ -15,11 +15,11 @@ namespace Mercurius.Profiles {
         public string Path => string.Format("{0}\\{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private bool _disposed = false;
 
-        public static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, ClientType clientType, bool select = false) {
+        public static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide, bool select = false) {
             Profile profile = new Profile {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
-                ClientType = clientType,
+                ServerSide = serverSide,
                 Loader = loader
             };
             await ProfileManager.WriteProfileAsync(profile);
@@ -32,7 +32,7 @@ namespace Mercurius.Profiles {
             Profile profile = new Profile {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
-                ClientType = ClientType.ClientSide,
+                ServerSide = false,
                 Loader = "fabric",
                 Mods = new List<Mod>(),
                 UnknownMods = null
