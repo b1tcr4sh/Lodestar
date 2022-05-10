@@ -30,7 +30,7 @@
   - Compatibility with Windows and Linux.
   - Searching, viewing, and installing mods from [Modrinth's](https://modrinth.com) web API.
   - Dependency management.
-  - Under-the-hood compatibility checks for mod versions, Minecraft versions, and supported mod loaders ((Forge)[https://forums.minecraftforge.net/] and (Fabric)[https://fabricmc.net].
+  - Under-the-hood compatibility checks for mod versions, Minecraft versions, and supported mod loaders ([Forge](https://forums.minecraftforge.net/) and [Fabric](https://fabricmc.net)).
   - Profiles designed to be easily shareable with other users.
   - Rudimentary profile management.
     - Creating profiles, loading, and selecting profiles as individually contained instances.
