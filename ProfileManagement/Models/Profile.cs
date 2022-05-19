@@ -10,7 +10,7 @@ namespace Mercurius.Profiles {
         public string Loader { get; set; }
         public bool ContainsUnknownMods = false;
         public List<Mod> Mods { get; set; }
-        public UnknownMod[] UnknownMods = null;
+        public List<UnknownMod> UnknownMods = null;
 
         public string Path => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private bool _disposed = false;
@@ -21,8 +21,8 @@ namespace Mercurius.Profiles {
                 MinecraftVersion = minecraftVersion,
                 ServerSide = serverSide,
                 Loader = loader,
-                Mods = null,
-                UnknownMods = null
+                Mods = new List<Mod>(),
+                UnknownMods = new List<UnknownMod>()
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
@@ -37,7 +37,7 @@ namespace Mercurius.Profiles {
                 ServerSide = false,
                 Loader = "fabric",
                 Mods = new List<Mod>(),
-                UnknownMods = null
+                UnknownMods = new List<UnknownMod>()
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);

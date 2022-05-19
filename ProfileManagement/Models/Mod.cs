@@ -4,7 +4,7 @@ namespace Mercurius.Profiles {
     public class Mod {
         public string Title { get; set; }
         public string FileName { get; set; }
-        public string ModrinthProjectId { get; set; }
+        public string ProjectId { get; set; }
         public string VersionId { get; set; }
         public string MinecraftVersion { get; set; }
         public string ModVersion { get; set; }
@@ -12,9 +12,10 @@ namespace Mercurius.Profiles {
         public List<string> DependencyOf { get; set; }
         public ClientDependency ClientDependency { get; set; }
 
-        public Mod(VersionModel version, ProjectModel project, bool isDependency = false) {
+        public Mod() {}
+        internal Mod(VersionModel version, ProjectModel project, bool isDependency = false) {
             Title = project.title;
-            ModrinthProjectId = version.project_id;
+            ProjectId = version.project_id;
             VersionId = version.id;
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
