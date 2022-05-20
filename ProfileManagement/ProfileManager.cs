@@ -25,6 +25,11 @@ namespace Mercurius.Profiles {
             if (LoadedProfiles.Keys.Contains(name)) return LoadedProfiles[name];
             else throw new ProfileException($"Profile {name} doesn't exist!");
         }
+        public static IReadOnlyDictionary<string, Profile> GetLoadedProfiles() {
+            if (LoadedProfiles is null || LoadedProfiles.Count <= 0) return new Dictionary<string, Profile>() as IReadOnlyDictionary<string, Profile>;
+
+            return LoadedProfiles as IReadOnlyDictionary<string, Profile>;
+        }
         public static Profile SelectProfile(string name) {
             foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
                 if (profile.Key.Equals(name)) {

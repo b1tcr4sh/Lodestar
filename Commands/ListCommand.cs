@@ -7,11 +7,11 @@ namespace Mercurius.Commands {
         public override string Name => "List";
         public override string Description => "Lists either currently loaded profiles or mods of selected profile.";
         public override string Format => "list [mods | profiles]";
-        public override async Task Execute(string[] args)
+        public override Task Execute(string[] args)
         {
             if (args.Length == 0) {
                 Console.WriteLine("What to list? ... (mods or profiles)");
-                return;
+                return Task.CompletedTask;
             }
 
             switch (args[0].ToLower()) {
@@ -27,6 +27,8 @@ namespace Mercurius.Commands {
                     Console.WriteLine("What to list? ... (mods or profiles)");
                     break;
             }
+
+            return Task.CompletedTask;
         }
         private void ListMods() {
             if (ProfileManager.SelectedProfile is null) {
@@ -46,7 +48,18 @@ namespace Mercurius.Commands {
             }
         }
         private void ListProfiles() {
+            IReadOnlyDictionary<string, Profile> profiles = ProfileManager.GetLoadedProfiles();
 
+            if (profiles.Count <= 0) {
+                Console.WriteLine("There are 0 profiles loaded.  (Is this intentional... ?");
+                return;
+            }
+            Console.WriteLine($"Listing {profiles.Count} currrently loaded profiles\n");
+            Console.WriteLine("{0, -30} {1, -20} {2, 15}", "Profile Name", "Minecraft Version", "Loader");
+
+            foreach (KeyValuePair<string, Profile> pair in ProfileManager.GetLoadedProfiles()) {
+                Console.WriteLine("{0, -30} {1, -20} {2, 15}", pair.Value.Name, pair.Value.MinecraftVersion, pair.Value.Loader);
+            }
         }
     }
 }
