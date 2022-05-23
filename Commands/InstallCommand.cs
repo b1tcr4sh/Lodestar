@@ -10,19 +10,27 @@ namespace Mercurius.Commands {
         public override string Name { get => "Install"; }
         public override string Description { get => "Installs a mod and its dependencies."; }
         public override string Format { get => "install <Mod Name>"; }
+        private bool dryRun = false;
+        private APIClient client;  
+        private List<Mod> mods;
         public override async Task Execute(string[] args) {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
-            APIClient client = new APIClient();
+
+            string query = string.Join(" ", args);
+            if (args.Contains<string>("-d") || args.Contains<string>("--dry-run")) {
+                dryRun = true;
+                query = string.Join(" ", args.Skip(Array.IndexOf<string>(args, "-d") + 1));
+            }
+
+            client = new APIClient();
 
             if (ProfileManager.SelectedProfile == null) {
                 Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
                 return;
             } 
 
-            string query = string.Join(" ", args);
-
             string id;
-            SearchModel search = await client.SearchAsync(string.Join<string>(" ", args));
+            SearchModel search = await client.SearchAsync(query);
             if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
                 id = SelectFromList(search);
             } else id = search.hits[0].project_id;
@@ -43,23 +51,28 @@ namespace Mercurius.Commands {
                 Console.WriteLine($"Mod {version.name} already installed");
             }
 
-            List<Mod> mods = new List<Mod>();
-
-            await client.DownloadVersionAsync(version);
-            mods.Add(new Mod(version, project));
+            mods = new List<Mod>();
+            await Install(version, project);
 
             if (version.dependencies.Length >= 1) {
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                     ProjectModel depenencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
                     
-                    mods.Add(new Mod(dependencyVersion, depenencyProject, true));
-                    Console.WriteLine($"Installing dependency: {dependencyVersion.name}");
-                    await client.DownloadVersionAsync(dependencyVersion);
+                    await Install(dependencyVersion, depenencyProject, true);
                 }
             } 
             Console.WriteLine("Updating Profile...");
             await ProfileManager.SelectedProfile.UpdateModListAsync(mods);
+        }
+        private async Task Install(VersionModel version, ProjectModel project, bool isDependency = false) {
+            Mod modToInstall = new Mod(version, project);
+            if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId == modToInstall.ProjectId).Count() >= 1) {
+                Console.WriteLine($"Mod {modToInstall.Title} is already contained within this profile!");
+            } else {
+                mods.Add(modToInstall);
+                if (!dryRun) await client.DownloadVersionAsync(version);
+            }
         }
         private string SelectFromList(SearchModel response) {
             Console.WriteLine($"Found {response.total_hits} results, displaying 10:\n");
