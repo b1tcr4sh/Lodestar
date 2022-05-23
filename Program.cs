@@ -11,7 +11,7 @@ namespace Mercurius {
             ProfileManager.LoadAllProfiles();
 
             // await Profile.CreateDefaultAsync("Vox", "1.17");
-            // ProfileManager.SelectProfile("vox_sucks");
+            ProfileManager.SelectProfile("vox_sucks");
 
             CommandHandler handler = new CommandHandler(args);
             await handler.ExecuteCommandAsync();

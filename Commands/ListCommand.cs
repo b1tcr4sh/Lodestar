@@ -51,10 +51,10 @@ namespace Mercurius.Commands {
             IReadOnlyDictionary<string, Profile> profiles = ProfileManager.GetLoadedProfiles();
 
             if (profiles.Count <= 0) {
-                Console.WriteLine("There are 0 profiles loaded.  (Is this intentional... ?");
+                Console.WriteLine("There are 0 profiles loaded.  (Is this intentional... ?)");
                 return;
             }
-            Console.WriteLine($"Listing {profiles.Count} currrently loaded profiles\n");
+            Console.WriteLine($"Listing {profiles.Count} currrently loaded profile(s)\n");
             Console.WriteLine("{0, -30} {1, -20} {2, 15}", "Profile Name", "Minecraft Version", "Loader");
 
             foreach (KeyValuePair<string, Profile> pair in ProfileManager.GetLoadedProfiles()) {

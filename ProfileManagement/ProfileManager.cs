@@ -110,7 +110,7 @@ namespace Mercurius.Profiles {
             //     return;
             // }
             // else 
-            if (SelectedProfile.Equals(profile)) {
+            if (SelectedProfile is not null && SelectedProfile.Equals(profile)) {
                 SelectedProfile = null;
                 Console.WriteLine($"Profile {profile.Name} deselected");
             }
