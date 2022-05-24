@@ -38,19 +38,26 @@ namespace Mercurius.Commands {
             ProjectModel project = await client.GetProjectAsync(id);
             VersionModel[] versions = await client.ListVersionsAsync(project);
 
-            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions[0].Equals(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
+            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
+
+            // List<VersionModel> viableVersions = new List<VersionModel>();
+            // foreach (VersionModel modVersion in versions) {
+            //     if (modVersion.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion))
+            //         viableVersions.Add(modVersion);
+            // }
+
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
 
-            // TODO: Some flag for a dry-run to update profile without installing anything (add command??)
             // TODO: Checks for client/server side compatibility;
             // TODO: Check for loader, and make sure mod is compatible.
 
-            // TODO: Differentiate between the installation and adding of mods to the profile.  Even if mods is alrady in profile, it can still be installed if
-            // currently not.  Should have 'add' command, which adds a mod to the profile, then install should blindly install.
+            // TODO: Install should also check if mod with filename is already present before installing, and if so, just add mod to profile.  Prevents duplicate mod files. 
+            // TODO: Update command
             if (ProfileManager.SelectedProfile.Mods is not null && ProfileManager.SelectedProfile.Mods.Contains(new Mod(version, project))) {
                 Console.WriteLine($"Mod {version.name} already installed");
             }
 
+            // Look over this again and refactor, dependency logic is a dumpster fire at best.
             mods = new List<Mod>();
             await Install(version, project);
 
@@ -58,14 +65,14 @@ namespace Mercurius.Commands {
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                     ProjectModel depenencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
-                    
-                    await Install(dependencyVersion, depenencyProject, true);
+            
+                    await InstallDependency(dependencyVersion, depenencyProject, version);
                 }
             } 
             Console.WriteLine("Updating Profile...");
             await ProfileManager.SelectedProfile.UpdateModListAsync(mods);
         }
-        private async Task Install(VersionModel version, ProjectModel project, bool isDependency = false) {
+        private async Task Install(VersionModel version, ProjectModel project) {
             Mod modToInstall = new Mod(version, project);
             if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId == modToInstall.ProjectId).Count() >= 1) {
                 Console.WriteLine($"Mod {modToInstall.Title} is already contained within this profile!");
@@ -73,6 +80,22 @@ namespace Mercurius.Commands {
                 mods.Add(modToInstall);
                 if (!dryRun) await client.DownloadVersionAsync(version);
             }
+        }
+        private async Task InstallDependency(VersionModel version, ProjectModel project, VersionModel parent) {
+            Mod modToInstall = new Mod(version, project, true, parent.name);
+            if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId.Equals(modToInstall.ProjectId)).Count() >= 1) {
+                if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId.Equals(modToInstall.ProjectId)).ToArray<Mod>()[0].DependencyOf.Contains(parent.name)) {
+                    Console.WriteLine($"Mod {modToInstall.Title} is already contained within this profile!");
+                    return;
+                } else {
+
+                    // Currently creates duplicate JSON objects (One with dependencies and one without)
+                    modToInstall.DependencyOf.Add(parent.name); 
+                    Console.WriteLine($"Mod {modToInstall.Title} is already present as dependency, updating dependency listings...");
+                }
+            } 
+            mods.Add(modToInstall);
+            if (!dryRun) await client.DownloadVersionAsync(version);
         }
         private string SelectFromList(SearchModel response) {
             Console.WriteLine($"Found {response.total_hits} results, displaying 10:\n");

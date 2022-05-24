@@ -13,7 +13,7 @@ namespace Mercurius.Profiles {
         public ClientDependency ClientDependency { get; set; }
 
         public Mod() {}
-        internal Mod(VersionModel version, ProjectModel project, bool isDependency = false) {
+        internal Mod(VersionModel version, ProjectModel project, bool isDependency = false, string parent = null) {
             Title = project.title;
             ProjectId = version.project_id;
             VersionId = version.id;
@@ -28,7 +28,8 @@ namespace Mercurius.Profiles {
 
             if (isDependency) {
                 Dependency = true;
-                DependencyOf.Add(version.name);
+                DependencyOf = new List<string>(); 
+                DependencyOf.Add(parent);
             } else {
                 Dependency = false;
                 DependencyOf = null;
@@ -39,8 +40,10 @@ namespace Mercurius.Profiles {
 
             switch (clientSideDependence) {
                 case "required":
-                    if (clientSideDependence.Equals("required"))
+                    if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
                         ClientDependency = ClientDependency.ClientServerDependent;
+                    else if (serverSideDependency.Equals("unsupported"))
+                        ClientDependency = ClientDependency.ClientSide;
                     break;
                 case "optional":
                     if (serverSideDependency.Equals("required"))
