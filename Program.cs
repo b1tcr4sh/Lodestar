@@ -10,8 +10,7 @@ namespace Mercurius {
             ProfileManager.InitializeDirectory("./Profiles");
             ProfileManager.LoadAllProfiles();
 
-            // await Profile.CreateDefaultAsync("Vox", "1.17");
-            ProfileManager.SelectProfile("vox_sucks");
+            ProfileManager.SelectProfile("uwu");
 
             CommandHandler handler = new CommandHandler(args);
             await handler.ExecuteCommandAsync();

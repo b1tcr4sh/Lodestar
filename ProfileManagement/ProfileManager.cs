@@ -44,15 +44,19 @@ namespace Mercurius.Profiles {
         public static void LoadAllProfiles() {
             LoadedProfiles = new Dictionary<string, Profile>();
             string[] files = Directory.GetFiles(ProfilePath);
-
+            
             foreach (string file in files) {
-                string contents = File.ReadAllText(file, Encoding.ASCII);
-                Profile profile = JsonSerializer.Deserialize<Profile>(contents);
+                try {
+                    string contents = File.ReadAllText(file, Encoding.ASCII);
+                    Profile profile = JsonSerializer.Deserialize<Profile>(contents);
 
-                if (profile.Name.Contains(" "))
-                    Console.WriteLine($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
-                else if (!LoadedProfiles.ContainsKey(profile.Name))
-                    LoadedProfiles.Add(profile.Name, profile); 
+                    if (profile.Name.Contains(" "))
+                        Console.WriteLine($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
+                    else if (!LoadedProfiles.ContainsKey(profile.Name))
+                        LoadedProfiles.Add(profile.Name, profile); 
+                } catch (Exception e) {
+                    Console.WriteLine(@$"Error occurred loading profile at {file}: {e.Message}");
+                }
             }
 
             foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {
