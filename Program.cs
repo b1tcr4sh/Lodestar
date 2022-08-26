@@ -10,7 +10,7 @@ namespace Mercurius {
             ProfileManager.InitializeDirectory("./Profiles");
             ProfileManager.LoadAllProfiles();
 
-            ProfileManager.SelectProfile("uwu");
+            ProfileManager.SelectProfile("owo");
 
             CommandHandler handler = new CommandHandler(args);
             await handler.ExecuteCommandAsync();

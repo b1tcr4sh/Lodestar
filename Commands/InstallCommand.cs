@@ -12,7 +12,8 @@ namespace Mercurius.Commands {
         public override string Format { get => "install <Mod Name>"; }
         private bool dryRun = false;
         private APIClient client;  
-        private List<Mod> mods;
+        private List<Mod> queuedMods;
+        private List<Mod> successfullyInstalled;
         public override async Task Execute(string[] args) {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
 
@@ -22,12 +23,12 @@ namespace Mercurius.Commands {
                 query = string.Join(" ", args.Skip(Array.IndexOf<string>(args, "-d") + 1));
             }
 
-            client = new APIClient();
-
             if (ProfileManager.SelectedProfile == null) {
                 Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
                 return;
             } 
+
+            client = new APIClient();
 
             string id;
             SearchModel search = await client.SearchAsync(query);
@@ -55,47 +56,81 @@ namespace Mercurius.Commands {
             // TODO: Update command
             if (ProfileManager.SelectedProfile.Mods is not null && ProfileManager.SelectedProfile.Mods.Contains(new Mod(version, project))) {
                 Console.WriteLine($"Mod {version.name} already installed");
+                return;
             }
 
             // Look over this again and refactor, dependency logic is a dumpster fire at best.
-            mods = new List<Mod>();
-            await Install(version, project);
+            queuedMods = new List<Mod>();
+
+
+            Mod baseMod = new Mod(version, project);
+            queuedMods.Add(baseMod);
 
             if (version.dependencies.Length >= 1) {
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                     ProjectModel depenencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
             
-                    await InstallDependency(dependencyVersion, depenencyProject, version);
+                    // await InstallDependency(dependencyVersion, depenencyProject);
+                    Mod dependencyMod = new Mod(dependencyVersion, depenencyProject);
+                    baseMod.AddDependency(dependencyMod);
+                    queuedMods.Add(dependencyMod);
                 }
             } 
-            Console.WriteLine("Updating Profile...");
-            await ProfileManager.SelectedProfile.UpdateModListAsync(mods);
-        }
-        private async Task Install(VersionModel version, ProjectModel project) {
-            Mod modToInstall = new Mod(version, project);
-            if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId == modToInstall.ProjectId).Count() >= 1) {
-                Console.WriteLine($"Mod {modToInstall.Title} is already contained within this profile!");
-            } else {
-                mods.Add(modToInstall);
-                if (!dryRun) await client.DownloadVersionAsync(version);
-            }
-        }
-        private async Task InstallDependency(VersionModel version, ProjectModel project, VersionModel parent) {
-            Mod modToInstall = new Mod(version, project, true, parent.name);
-            if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId.Equals(modToInstall.ProjectId)).Count() >= 1) {
-                if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId.Equals(modToInstall.ProjectId)).ToArray<Mod>()[0].DependencyOf.Contains(parent.name)) {
-                    Console.WriteLine($"Mod {modToInstall.Title} is already contained within this profile!");
-                    return;
-                } else {
 
-                    // Currently creates duplicate JSON objects (One with dependencies and one without)
-                    modToInstall.DependencyOf.Add(parent.name); 
-                    Console.WriteLine($"Mod {modToInstall.Title} is already present as dependency, updating dependency listings...");
-                }
+            if (ProfileManager.SelectedProfile.Mods.Where<Mod>(mod => mod.ProjectId == baseMod.ProjectId).Count() >= 1) {
+                Console.WriteLine($"Mod {baseMod.Title} is already contained within this profile!");
+                CheckForFiles();
             } 
-            mods.Add(modToInstall);
-            if (!dryRun) await client.DownloadVersionAsync(version);
+
+            if (!(await Install(baseMod))) return;
+
+            Console.WriteLine("Updating Profile...");
+            await ProfileManager.SelectedProfile.UpdateModListAsync(successfullyInstalled);
+        }
+        private async Task<bool> Install(Mod modToInstall) {
+            if (queuedMods.Count < 1) {
+                Console.WriteLine("There is nothing to do");
+                return false;
+            }
+
+            Console.WriteLine("Mods Queued for Install: ");
+            Console.WriteLine("- {0} (Base)", modToInstall.Title);
+
+            foreach (Mod mod in modToInstall.Dependencies) {
+                Console.WriteLine("- {0} (Dependency)", mod.Title);
+            }
+            Console.Write("\nContinue with Operation? (Y/n) ");
+
+            if (Console.ReadLine().ToLower().Equals("n")) {
+                Console.WriteLine("Aborting...");
+                return false;
+            }
+
+            successfullyInstalled = new List<Mod>();
+            if (!dryRun) {
+                foreach (Mod mod in queuedMods) {
+                    if (!dryRun) await client.DownloadVersionAsync(mod);
+                    successfullyInstalled.Add(mod);
+                }
+            }
+            
+            return true;
+        }
+        private void CheckForFiles() {
+            List<Mod> modsToRemove = new List<Mod>();
+
+            foreach (Mod mod in queuedMods) {
+                if (!mod.FileExists()) {
+                    Console.WriteLine("File for Mod {0} doesn't exist...?");
+                } else {
+                    modsToRemove.Remove(mod);
+                }
+            }
+
+            foreach (Mod mod in modsToRemove) {
+                queuedMods.Remove(mod);
+            }
         }
         private string SelectFromList(SearchModel response) {
             Console.WriteLine($"Found {response.total_hits} results, displaying 10:\n");
