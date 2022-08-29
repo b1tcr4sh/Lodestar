@@ -122,7 +122,7 @@ namespace Mercurius.Commands {
 
             foreach (Mod mod in queuedMods) {
                 if (!mod.FileExists()) {
-                    Console.WriteLine("File for Mod {0} doesn't exist...?");
+                    Console.WriteLine("File for Mod {0} doesn't exist...?", mod.Title);
                 } else {
                     modsToRemove.Remove(mod);
                 }

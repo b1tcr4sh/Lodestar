@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
+using Mercurius.Configuration;
 
 namespace Mercurius.Commands {
     public class ListCommand : BaseCommand {
@@ -41,10 +42,17 @@ namespace Mercurius.Commands {
             }
 
             Console.WriteLine("Listing {0} mods in currently loaded profile {1}\n", ProfileManager.SelectedProfile.Mods.Count, ProfileManager.SelectedProfile.Name);
-            Console.WriteLine("{0, -30} {1, -20} {2, 15}", "Mod Name", "Mod Version", "Filename");
+            Console.WriteLine("{0, -30} {1, -20} {2, 15} {3, 15}", "Mod Name", "Mod Version", "Filename", "Installed");
 
+
+            string[] files = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods");
             foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
-                Console.WriteLine("{0, -30} {1, -20} {2, 15}", mod.Title, mod.ModVersion, mod.FileName);
+                bool installed = false;
+
+                if (files.Contains($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}"))
+                    installed = true;
+
+                Console.WriteLine("{0, -30} {1, -20} {2, 15} {3, 15}", mod.Title, mod.ModVersion, mod.FileName, installed);
             }
         }
         private void ListProfiles() {
