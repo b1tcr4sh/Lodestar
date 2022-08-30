@@ -33,9 +33,9 @@ public class SyncCommand : BaseCommand {
             }
         }
         
-        // if (modPaths.Count <= 0 && existingFiles.Count > 0) {
-            //TODO: Generate Version from Mod file
-        // }
+        if (modPaths.Count <= 0 && existingFiles.Count > 0) {            
+            await GenerateModsFromFiles(existingFiles);
+        }
 
         List<string> keepers = existingFiles.Intersect<string>(modPaths).ToList<string>();
 
@@ -44,9 +44,9 @@ public class SyncCommand : BaseCommand {
         }
 
         if (existingFiles.Count <= 0) {
-            Console.WriteLine("There are no residiual unassociated mods to remove");
+            Console.WriteLine("There are no Residiual Mod jars to Remove");
         } else {
-            Console.WriteLine("Removing Unrecognized Mod jars...");
+            Console.WriteLine("Removing Residual Mod jars...");
             foreach (string file in existingFiles)
                 File.Delete(file);
         }
@@ -98,5 +98,22 @@ public class SyncCommand : BaseCommand {
             await client.DownloadVersionAsync(mod);
         }
         return true;
+    }
+    private async Task GenerateModsFromFiles(List<string> filePaths) {
+        Console.WriteLine("\nThere are no mods in the current profile, but files in mods directory.  Generate mods from jars?\n**WARNING** This feature is still a heavy WIP and may require manual profile editing to clean up dependencies.");
+        Console.Write("(y/N) > ");
+
+        if (!Console.ReadLine().ToLower().Equals("y")) return;
+
+        APIClient client = new APIClient();
+
+        foreach (string path in filePaths) {
+            string query = path.Substring(path.LastIndexOf("/") + 1);
+
+            Console.WriteLine("Generating mod for {0}", query);
+
+            await ProfileManager.AddModAsync(client, query, false);
+        }
+
     }
 }

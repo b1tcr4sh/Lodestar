@@ -30,32 +30,34 @@ namespace Mercurius.Commands {
 
             client = new APIClient();
 
-            string id;
-            SearchModel search = await client.SearchAsync(query);
-            if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
-                id = SelectFromList(search);
-            } else id = search.hits[0].project_id;
+            await ProfileManager.AddModAsync(client, query, ignoreDependencies);
 
-            ProjectModel project = await client.GetProjectAsync(id);
-            VersionModel[] versions = await client.ListVersionsAsync(project);
+                // string id;
+                // SearchModel search = await client.SearchAsync(query);
+                // if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
+                //     id = SelectFromList(search);
+                // } else id = search.hits[0].project_id;
 
-            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
+                // ProjectModel project = await client.GetProjectAsync(id);
+                // VersionModel[] versions = await client.ListVersionsAsync(project);
 
-            VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
+                // VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
 
-            Mod mod = new Mod(version, project);
-            
-            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
-                Console.WriteLine("Getting Dependencies...");
+                // VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
 
-                foreach (Dependency dependency in version.dependencies) {
-                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                // Mod mod = new Mod(version, project);
+                
+                // if (version.dependencies.Count() > 0 && !ignoreDependencies) {
+                //     Console.WriteLine("Getting Dependencies...");
 
-                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    mod.AddDependency(dependencyMod);
-                }
-            }
+                //     foreach (Dependency dependency in version.dependencies) {
+                //         VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                //         ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+
+                //         Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                //         mod.AddDependency(dependencyMod);
+                //     }
+                // }
 
             // TODO: Checks for client/server side compatibility;
             // TODO: Check for loader, and make sure mod is compatible.
@@ -93,8 +95,8 @@ namespace Mercurius.Commands {
 
                 // if (!(await Install(baseMod))) return;
 
-            Console.WriteLine("Updating Profile...");
-            await ProfileManager.SelectedProfile.UpdateModListAsync(mod);
+            // Console.WriteLine("Updating Profile...");
+            // await ProfileManager.SelectedProfile.UpdateModListAsync(mod);
         }
         // private async Task<bool> Install(Mod modToInstall) {
         //     if (queuedMods.Count < 1) {
@@ -140,19 +142,5 @@ namespace Mercurius.Commands {
         //         queuedMods.Remove(mod);
         //     }
         // }
-        private string SelectFromList(SearchModel response) {
-            Console.WriteLine($"Found {response.total_hits} results, displaying 10:\n");
-            Console.WriteLine("{0, -30} {1, -20} {2, 15}", "Project Title", "Latest Minecraft Version", "Downloads");
-            for (int i = 0; i < response.hits.Length; i++) {
-                Hit result = response.hits[i];
-
-                Console.WriteLine("{0, -2} {1, -30} {2, -20} {3, 15}", i + 1, result.title, result.latest_version, result.downloads);
-            }
-
-            Console.Write("Select which mod to view by number > ");
-            int selection = Convert.ToInt32(Console.ReadLine());
-
-            return response.hits[selection - 1].project_id;
-        }
     }
 }

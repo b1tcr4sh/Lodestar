@@ -3,7 +3,10 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Mercurius.Modrinth.Models;
+using Mercurius.Modrinth;
 using Mercurius.Configuration;
+using Mercurius.Commands;
 
 namespace Mercurius.Profiles {
     public static class ProfileManager {
@@ -66,6 +69,37 @@ namespace Mercurius.Profiles {
 
             Console.WriteLine($"Loaded {LoadedProfiles.Count} profiles");
         }
+        public static async Task AddModAsync(APIClient client, string query, bool ignoreDependencies) {
+            string id;
+            SearchModel search = await client.SearchAsync(query);
+            if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
+                id = CommandExtensions.SelectFromList(search);
+            } else id = search.hits[0].project_id;
+
+            ProjectModel project = await client.GetProjectAsync(id);
+            VersionModel[] versions = await client.ListVersionsAsync(project);
+
+            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
+
+            VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
+
+            Mod mod = new Mod(version, project);
+            
+            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
+                Console.WriteLine("Getting Dependencies...");
+
+                foreach (Dependency dependency in version.dependencies) {
+                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+
+                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                    mod.AddDependency(dependencyMod);
+                }
+            }
+            Console.WriteLine("Updating Profile...");
+            await SelectedProfile.UpdateModListAsync(mod);
+        }
+        
         public static async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
 
