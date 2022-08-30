@@ -75,6 +75,8 @@ public class SyncCommand : BaseCommand {
                 installQueue.Add(mod);
         }
             await Install();
+
+            //TODO Resolve dependencies for mods in profile
     }
     private async Task<bool> Install() {
         if (installQueue.Count < 1) {

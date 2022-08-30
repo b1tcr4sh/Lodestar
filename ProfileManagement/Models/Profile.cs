@@ -62,9 +62,55 @@ namespace Mercurius.Profiles {
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
         public async Task UpdateModListAsync(Mod mod) {
-                Mods.Add(mod);
+            Mods.Add(mod);
 
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
+        }
+        public async Task RemoveModFromListAsync(Mod modToRemove) {
+
+            // List<Mod> parentsWithRemoveableDependency = Mods.Where<Mod>((mod) => mod.Dependencies.Where<Mod>((dependency) => dependency.Title.ToLower().Equals(modToRemove.Title))).ToList<Mod>();
+
+            List<Mod> parentsWithRemoveableDependency = new List<Mod>();
+            foreach (Mod mod in Mods) {
+                bool containsRemoveableDep = false;
+                foreach (Mod dependency in mod.Dependencies) {
+                    if (dependency.Title.ToLower().Equals(modToRemove.Title.ToLower())) {
+                        containsRemoveableDep = true;
+                    }
+                }
+                if (containsRemoveableDep) {
+                    parentsWithRemoveableDependency.Add(mod);
+                }
+            }
+
+            if (parentsWithRemoveableDependency.Count() <= 0) {
+                Console.WriteLine("Removing {0}...", modToRemove.Title);
+                Mods.Remove(modToRemove);
+
+                await ProfileManager.OverwriteProfileAsync(this, this.Name);
+                return;
+            }
+            
+            foreach (Mod parent in parentsWithRemoveableDependency) {
+                Console.WriteLine("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
+                Mods.Remove(parent);
+                parent.Dependencies.Remove(modToRemove);
+                await UpdateModListAsync(parent);
+            }
+
+            // foreach (Mod parent in Mods) {
+            //     if (parent.Dependencies.Contains(modToRemove)) {
+            //         Mods.Remove(parent);
+
+            //         parent.Dependencies.Remove(modToRemove);
+            //         await UpdateModListAsync(parent);
+            //         Console.WriteLine(Mods);
+            //         return;
+            //     }
+            // }
+
+            // Mods.Remove(modToRemove);
+            // await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
         public void Delete() {
             if (File.Exists(Path))
