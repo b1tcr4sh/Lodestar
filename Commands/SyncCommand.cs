@@ -65,7 +65,7 @@ public class SyncCommand : BaseCommand {
         // Queue mods for install
         foreach (Mod mod in preQueue) {
             if (File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}")) {
-                Console.Write("{0}: {1} is already installed, reinstall? (y/N) >", mod.Title, mod.ModVersion);
+                Console.Write("{0}: {1} is already installed, reinstall? (y/N) > ", mod.Title, mod.ModVersion);
 
                 if (Console.ReadLine().ToLower().Equals("y")) {
                     installQueue.Add(mod);
@@ -73,10 +73,8 @@ public class SyncCommand : BaseCommand {
                     
             } else
                 installQueue.Add(mod);
-
-
-            await Install();
         }
+            await Install();
     }
     private async Task<bool> Install() {
         if (installQueue.Count < 1) {
@@ -89,7 +87,7 @@ public class SyncCommand : BaseCommand {
             Console.WriteLine("- {0}", modToInstall.Title);
         }
 
-        Console.Write("\nContinue with Operation? (Y/n) ");
+        Console.Write("\nContinue with Operation? (Y/n) > ");
 
         if (Console.ReadLine().ToLower().Equals("n")) {
             Console.WriteLine("Aborting...");

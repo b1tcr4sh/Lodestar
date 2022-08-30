@@ -11,16 +11,17 @@ namespace Mercurius.Commands {
         public override string Description { get => "Adds a Mod to the Selected Profile."; }
         public override string Format { get => "Add <Mod Name>"; }
         private APIClient client;  
+        private bool ignoreDependencies;
         // private List<Mod> queuedMods;
         // private List<Mod> successfullyInstalled;
         public override async Task Execute(string[] args) {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
 
             string query = string.Join(" ", args);
-            // if (args.Contains<string>("-d") || args.Contains<string>("--dry-run")) {
-            //     dryRun = true;
-            //     query = string.Join(" ", args.Skip(Array.IndexOf<string>(args, "-d") + 1));
-            // }
+            if (args.Contains<string>("-d") || args.Contains<string>("--ignore-dependencies")) {
+                ignoreDependencies = true;
+                query = string.Join(" ", args.Skip(Array.IndexOf<string>(args, "-d") + 1));
+            }
 
             if (ProfileManager.SelectedProfile == null) {
                 Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
@@ -44,12 +45,12 @@ namespace Mercurius.Commands {
 
             Mod mod = new Mod(version, project);
             
-            if (version.dependencies.Count() > 1) {
+            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
                 Console.WriteLine("Getting Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    ProjectModel dependencyProject = await client.GetProjectAsync(dependency.project_id);
+                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
 
                     Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
                     mod.AddDependency(dependencyMod);
