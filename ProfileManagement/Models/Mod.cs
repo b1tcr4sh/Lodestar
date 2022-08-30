@@ -29,6 +29,7 @@ namespace Mercurius.Profiles {
             FileName = primaryFile.filename;
             Dependencies = new List<Mod>();
 
+
             string serverSideDependency = project.server_side;
             string clientSideDependence = project.client_side;
 
@@ -66,17 +67,6 @@ namespace Mercurius.Profiles {
         }
     }
 
-    public class ModDependency {
-        public string Title { get; set; }
-        public string Filename { get; set; }
-        public string VersionId { get; set; }
-
-        public ModDependency(VersionModel version, ProjectModel project) {
-            Title = project.title;
-            
-            Filename = version.files.Where<file>((file) => file.primary).ToArray<file>()[0].filename;
-        }
-    }
     public enum ClientDependency {
         ClientSide, ServerSide, ClientServerDependent, Unknown
     }

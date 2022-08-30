@@ -18,11 +18,10 @@ public class SyncCommand : BaseCommand {
             return;
         }
 
-        SyncModsFiles();
-        await Install();
+        await SyncModsFiles();
     }
 
-    private void SyncModsFiles() {
+    private async Task SyncModsFiles() {
         List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
         List<string> modPaths = new List<string>();
 
@@ -74,11 +73,14 @@ public class SyncCommand : BaseCommand {
                     
             } else
                 installQueue.Add(mod);
+
+
+            await Install();
         }
     }
     private async Task<bool> Install() {
         if (installQueue.Count < 1) {
-            Console.WriteLine("There is nothing to do");
+            Console.WriteLine("There is nothing to do...");
             return false;
         }
 
