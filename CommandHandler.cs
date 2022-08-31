@@ -22,7 +22,8 @@ namespace Mercurius.Commands {
             }
 
             if (Commands.ContainsKey(Command)) {
-                if (Args.All<string>(item => item is null || item.Equals(string.Empty))) {
+                // if (Args.All<string>(item => item is null || item.Equals(string.Empty) || )) {
+                if (Args.Length < Commands.GetValueOrDefault(Command).ArgsQuantity) {
                     Console.WriteLine($"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}");
                     return;
                 }
@@ -33,10 +34,10 @@ namespace Mercurius.Commands {
 
         private void HelpCommand() {
             Console.WriteLine("Mercurius - A package manager-like thing for Minecraft mods.\nThis app uses the Modrinth (https://modrinth.com) api to source mods, so uncountable thank yous to that team.");
-            Console.WriteLine("\nCommands:");
+            Console.WriteLine("\n{0, -10} {1, -30}", "Commands:", "Format:");
             
             foreach (KeyValuePair<string, BaseCommand> command in Commands) {
-                Console.WriteLine(" {0, -10} Format: {1, -20} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
+                Console.WriteLine(" {0, -10} {1, -30} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
             }
 
             System.Environment.Exit(0);

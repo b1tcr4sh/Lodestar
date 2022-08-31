@@ -3,7 +3,7 @@ namespace Mercurius.Modrinth.Models {
         public string name { get; set; }
         public string version_number { get; set; }
         public string changelog { get; set; }
-        public dependencies[] dependencies { get; set; }
+        public Dependency[] dependencies { get; set; }
         public string[] game_versions { get; set; }
         public string version_type { get; set; }
         public string[] loaders { get; set; }
@@ -16,7 +16,7 @@ namespace Mercurius.Modrinth.Models {
         public string changelog_url { get; set; }
         public file[] files { get; set; } 
     }
-    public struct dependencies {
+    public struct Dependency {
         public string version_id { get; set; }
         public string project_id { get; set; }
         public string dependency_type { get; set; }

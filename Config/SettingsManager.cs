@@ -15,8 +15,9 @@ namespace Mercurius.Configuration {
                 try {
                     FileStream settings = File.OpenRead("./settings.json");
                     Settings = await JsonSerializer.DeserializeAsync<Configuration>(settings);
-                } catch {
+                } catch (JsonException e) {
                     Console.WriteLine("Error loading config file... ?");
+                    Console.WriteLine(e.Message);
                     Environment.Exit(0);
                 }
             }
@@ -25,14 +26,16 @@ namespace Mercurius.Configuration {
             string minecraftDirectory;
             PlatformID platform = Environment.OSVersion.Platform;
             if (platform == PlatformID.Win32NT) minecraftDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/AppData/Roaming/.minecraft/";
-                else if (platform == PlatformID.Unix) minecraftDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/.Minecraft/";
+                else if (platform == PlatformID.Unix) minecraftDirectory = $@"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/.minecraft/";
                 else minecraftDirectory = string.Empty;
 
             Configuration config = new Configuration {
-                Minecraft_Directory = minecraftDirectory
+                Minecraft_Directory = minecraftDirectory,
+                Profile_Directory = "./Profiles/",
+                Server_Mod_Directory = string.Empty
             };
 
-            string contents = JsonSerializer.Serialize<Configuration>(config);
+            string contents = JsonSerializer.Serialize<Configuration>(config, new JsonSerializerOptions { WriteIndented = true });
 
             using FileStream file = new FileStream("./settings.json", FileMode.CreateNew, FileAccess.Write);
             await file.WriteAsync(Encoding.ASCII.GetBytes(contents));
@@ -40,7 +43,7 @@ namespace Mercurius.Configuration {
             
             Settings = config;
 
-            Console.WriteLine($"Created a new configuration file at {Environment.ProcessPath}/settings.json");
+            Console.WriteLine($"Created a new configuration file at {Environment.CurrentDirectory}/settings.json");
         }
     }
 }

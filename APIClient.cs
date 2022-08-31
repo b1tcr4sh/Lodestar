@@ -5,6 +5,8 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Mercurius.Modrinth.Models;
+using Mercurius.Configuration;
+using Mercurius.Profiles;
 
 namespace Mercurius.Modrinth {
     public class APIClient {
@@ -54,19 +56,14 @@ namespace Mercurius.Modrinth {
 
             return deserializedRes;
         }
-        public async Task DownloadVersionAsync(VersionModel version) {
-            Console.WriteLine($"Starting Download of {version.name}: version {version.version_number}");
+        public async Task DownloadVersionAsync(Mod mod) {
+            Console.WriteLine($"Starting Download of {mod.Title}: version {mod.ModVersion}");
 
-            using HttpResponseMessage response = await client.GetAsync(version.files[0].url, HttpCompletionOption.ResponseContentRead);
+            using HttpResponseMessage response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
             using Stream readStream = await response.Content.ReadAsStreamAsync();
-            using Stream writeStream = File.Open(@$"./{version.files[0].filename}", FileMode.Create);
+            using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}", FileMode.Create);
 
             await readStream.CopyToAsync(writeStream);
-
-            readStream.Close();
-            readStream.Dispose();
-            writeStream.Close();
-            writeStream.Dispose();
         }
     }
 }
