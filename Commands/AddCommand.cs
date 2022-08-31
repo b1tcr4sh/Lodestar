@@ -10,6 +10,7 @@ namespace Mercurius.Commands {
         public override string Name { get => "Add"; }
         public override string Description { get => "Adds a Mod to the Selected Profile."; }
         public override string Format { get => "Add <Mod Name>"; }
+        public override int ArgsQuantity => 1;
         private APIClient client;  
         private bool ignoreDependencies;
         // private List<Mod> queuedMods;

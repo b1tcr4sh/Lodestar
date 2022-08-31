@@ -9,6 +9,7 @@ public class SyncCommand : BaseCommand {
     public override string Name { get => "Sync"; }
     public override string Description { get => "Syncronises Mods with Profile"; }
     public override string Format { get => "Sync"; }
+    public override int ArgsQuantity => 0;
 
     private APIClient client = new APIClient();
     private List<Mod> installQueue = new List<Mod>();

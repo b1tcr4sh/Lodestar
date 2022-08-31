@@ -7,6 +7,7 @@ namespace Mercurius.Commands {
         public override string Name { get => "Info"; }
         public override string Description { get => "Gets the details of a mod."; }
         public override string Format { get => "info <Mod Name>"; }
+        public override int ArgsQuantity { get => 1; }
         public override async Task Execute(string[] args) {
             APIClient client = new APIClient();
             string query = string.Join<string>(" ", args);

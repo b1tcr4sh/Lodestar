@@ -22,7 +22,8 @@ namespace Mercurius.Commands {
             }
 
             if (Commands.ContainsKey(Command)) {
-                if (Args.All<string>(item => item is null || item.Equals(string.Empty))) {
+                // if (Args.All<string>(item => item is null || item.Equals(string.Empty) || )) {
+                if (Args.Length < Commands.GetValueOrDefault(Command).ArgsQuantity) {
                     Console.WriteLine($"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}");
                     return;
                 }

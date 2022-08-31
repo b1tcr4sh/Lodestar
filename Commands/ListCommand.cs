@@ -8,6 +8,7 @@ namespace Mercurius.Commands {
         public override string Name => "List";
         public override string Description => "Lists either currently loaded profiles or mods of selected profile.";
         public override string Format => "list [mods | profiles]";
+        public override int ArgsQuantity => 1;
         public override Task Execute(string[] args)
         {
             if (args.Length == 0) {

@@ -7,6 +7,7 @@ namespace Mercurius.Commands {
         public override string Name => "Remove";
         public override string Description => "Removes a Mod from a Profile.";
         public override string Format => "remove <Mod Name>";
+        public override int ArgsQuantity => 1;
         public override async Task Execute(string[] args) {
             string query = string.Join<string>(" ", args);
 

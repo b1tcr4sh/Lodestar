@@ -80,6 +80,12 @@ namespace Mercurius.Profiles {
             VersionModel[] versions = await client.ListVersionsAsync(project);
 
             VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
+            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(SelectedProfile.Loader.ToLower())).ToArray<VersionModel>();
+
+            if (viableVersions.Count() < 1) {
+                Console.WriteLine("There were no valid installation candidates.  Aborting...");
+                return;
+            }
 
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
 

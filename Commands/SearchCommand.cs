@@ -7,6 +7,7 @@ namespace Mercurius.Commands {
         public override string Name { get => "Search"; }
         public override string Description { get => "Gets top 10 results for query from Labrynth."; }
         public override string Format { get => "search <Query>"; }
+        public override int ArgsQuantity => 1;
         public override async Task Execute(string[] args) {
             APIClient client = new APIClient();
             SearchModel searchResults;
