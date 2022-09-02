@@ -10,4 +10,8 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="nlog" Version="5.0.2" />
+  </ItemGroup>
+
 </Project>

@@ -15,8 +15,15 @@ namespace Mercurius.Profiles {
         private static string ProfilePath;
         public static void InitializeDirectory() {
             LoadedProfiles = new Dictionary<string, Profile>();
+            if (SettingsManager.Settings is null) {
+                MCSLogger.logger.Fatal("Couldn't find configuration file!");
+                System.Environment.Exit(1);
+            } 
             ProfilePath = SettingsManager.Settings.Profile_Directory;
-            if (!Directory.Exists(ProfilePath)) Directory.CreateDirectory(ProfilePath); 
+            if (!Directory.Exists(ProfilePath)) {
+                Directory.CreateDirectory(ProfilePath);
+                MCSLogger.logger.Debug("Created Profiles Directory at {0}", ProfilePath);
+            } 
         }
         public static void InitializeDirectory(string path) {
             LoadedProfiles = new Dictionary<string, Profile>();
@@ -134,8 +141,8 @@ namespace Mercurius.Profiles {
             stream.Close();
         }
         internal static async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
-            if (!File.Exists($@"./Profiles/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile {existingProfileName} doesn't exist!");
-            using FileStream stream = new FileStream($@"./Profiles/{existingProfileName.ToLower()}.profile.json", FileMode.Create, FileAccess.Write);
+            if (!File.Exists($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile supposed to be at {ProfilePath}/{existingProfileName.ToLower()}.profile.json doesn't exist!");
+            using FileStream stream = new FileStream($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json", FileMode.Create, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();

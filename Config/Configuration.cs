@@ -1,5 +1,5 @@
 namespace Mercurius.Configuration {
-    public class Configuration {
+    public class SettingsFile {
 
         public string Minecraft_Directory { get; set; }
         public string Profile_Directory { get; set; }

@@ -1,4 +1,5 @@
-﻿using Mercurius.Commands;
+﻿using Mercurius;
+using Mercurius.Commands;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
 using System.Threading.Tasks;
@@ -6,8 +7,10 @@ using System.Threading.Tasks;
 namespace Mercurius {
     public static class Program {
         public static async Task Main(string[] args) {
+            MCSLogger.Init();
+
             SettingsManager.Init();
-            ProfileManager.InitializeDirectory("./Profiles");
+            ProfileManager.InitializeDirectory();
             ProfileManager.LoadAllProfiles();
 
             ProfileManager.SelectProfile("owo");
