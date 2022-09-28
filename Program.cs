@@ -1,22 +1,39 @@
-﻿using Mercurius;
-using Mercurius.Commands;
-using Mercurius.Configuration;
-using Mercurius.Profiles;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using NLog;
+using NLog.Config;
+using NLog.Extensions.Logging;
 
 namespace Mercurius {
-    public static class Program {
+    public class Program {
         public static async Task Main(string[] args) {
-            MCSLogger.Init();
+            var builder = new HostBuilder()
+            .ConfigureAppConfiguration((hostingContext, config) => {
+                config.AddEnvironmentVariables();
 
-            SettingsManager.Init();
-            ProfileManager.InitializeDirectory();
-            ProfileManager.LoadAllProfiles();
+                if (args != null)
+                {
+                    config.AddCommandLine(args);
+                }
+            })
+            .ConfigureServices((hostContext, services) => {
+                services.AddOptions();
+                services.Configure<DaemonConfig>(hostContext.Configuration.GetSection("Daemon"));
 
-            ProfileManager.SelectProfile("owo");
+                services.AddSingleton<IHostedService, DaemonService>();
+            })
+            .ConfigureLogging((hostingContext, logging) => {
+                logging.AddNLog(hostingContext.Configuration);
 
-            CommandHandler handler = new CommandHandler(args);
-            await handler.ExecuteCommandAsync();
+                // logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                // logging.AddConsole();
+            });
+
+            await builder.RunConsoleAsync();
         }
     }
 }

@@ -11,7 +11,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="nlog" Version="5.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0-preview.7.22375.6" /> 
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0-preview.7.22375.6" /> 
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="7.0.0-preview.7.22375.6" /> 
+    <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0-preview.7.22375.6" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+    <PackageReference Include="nlog" Version="5.0.4" />
+    <PackageReference Include="nlog.extensions.logging" Version="5.0.4" />
+    <PackageReference Include="Tmds.DBus" Version="0.11.0" />
   </ItemGroup>
 
 </Project>
