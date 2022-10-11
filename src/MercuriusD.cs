@@ -21,8 +21,8 @@ using Microsoft.Extensions.Options;
              _config = config;
          }
 
-         public async Task StartAsync(CancellationToken cancellationToken) {
-             _logger.LogInformation("Starting daemon: " + _config.Value.DaemonName);
+         public Task StartAsync(CancellationToken cancellationToken) {
+             _logger.LogInformation("Starting Mercurius Daemon...");
 
             MCSLogger.Init();
 
@@ -30,10 +30,12 @@ using Microsoft.Extensions.Options;
             ProfileManager.InitializeDirectory();
             ProfileManager.LoadAllProfiles();
 
+
             // ProfileManager.SelectProfile("owo");
 
             // CommandHandler handler = new CommandHandler(args);
             // await handler.ExecuteCommandAsync();
+            return Task.CompletedTask;
          }
 
          public Task StopAsync(CancellationToken cancellationToken) {

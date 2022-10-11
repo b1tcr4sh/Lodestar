@@ -39,11 +39,12 @@ namespace Mercurius.Dbus {
     }
 
     [DBusInterface("org.mercurius.commandmessenger")]
-    interface ICommandMessenger : IDBusObject {
-        public Task<string> ExecuteCommandAsync(string command, string[] args);
+    public interface ICommandMessenger : IDBusObject {
+        // public Task<string> ExecuteCommandAsync(string command, string[] args);
+        public Task<String> AddCommandAsync(string query);
     }
 
-    class CommandMessenger : ICommandMessenger {
+    public class CommandMessenger : ICommandMessenger {
         public static readonly ObjectPath Path = new ObjectPath("/org/mercurius/commandmessenger");
         private CommandHandler handler;
 
@@ -51,8 +52,12 @@ namespace Mercurius.Dbus {
             handler = new CommandHandler();
         }
 
-        public async Task<string> ExecuteCommandAsync(string command, string[] args) {
-            return await handler.ExecuteCommandAsync(args.Prepend<string>(command).ToArray<string>());
+        // public async Task<string> ExecuteCommandAsync(string command, string[] args) {
+        //     return await handler.ExecuteCommandAsync(args.Prepend<string>(command).ToArray<string>());
+        // }
+
+        public async Task<string> AddCommandAsync(string query) {
+            return await handler.ExecuteCommandAsync(new string[] {"add", query});
         }
         public ObjectPath ObjectPath { get { return Path; } }
     }
