@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
+using Mercurius.Dbus;
 
 namespace Mercurius {
     public class Program {
@@ -25,6 +26,12 @@ namespace Mercurius {
                 services.Configure<DaemonConfig>(hostContext.Configuration.GetSection("Daemon"));
 
                 services.AddSingleton<IHostedService, DaemonService>();
+            })
+            .ConfigureServices((hostContext, services) => {
+                services.AddOptions();
+                services.Configure<DbusConfig>(hostContext.Configuration.GetSection("Dbus"));
+
+                services.AddSingleton<IHostedService, DbusHandler>();
             })
             .ConfigureLogging((hostingContext, logging) => {
                 logging.AddNLog(hostingContext.Configuration);
