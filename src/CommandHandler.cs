@@ -28,7 +28,8 @@ namespace Mercurius.Commands {
                     return $"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}";
                 }
 
-                return await Commands.GetValueOrDefault(Command).Execute(Args);
+                await Commands.GetValueOrDefault(Command).Execute(Args);
+                return string.Empty;
             } else return $"Command {Command} not found... ?";
         }
 
