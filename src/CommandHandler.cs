@@ -2,45 +2,51 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 using Mercurius.Modrinth;
+using Mercurius.Dbus;
 
 namespace Mercurius.Commands {
     public class CommandHandler {
         public string[] Args { get; private set; }
         private string Command;
         public Dictionary<string, BaseCommand> Commands { get; private set; }
-        public CommandHandler(string[] args) {
-            Commands = GetCommands();
-            if (args.Length == 0) HelpCommand();
 
-            Command = args[0].ToLower();
-            Args = args.Skip<string>(1).ToArray<string>();
+        public CommandHandler() {
+            Commands = GetCommands();
         }
 
-        public async Task ExecuteCommandAsync() {
+        public async Task<string> ExecuteCommandAsync(string[] args) {
+            ParseCommand(args);
+
             if (Command.Equals("help") || Command.Equals("-h") || Command.Equals("--help")) {
-                HelpCommand();
+                return HelpMessage();
             }
 
             if (Commands.ContainsKey(Command)) {
                 // if (Args.All<string>(item => item is null || item.Equals(string.Empty) || )) {
                 if (Args.Length < Commands.GetValueOrDefault(Command).ArgsQuantity) {
-                    Console.WriteLine($"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}");
-                    return;
+                    // Console.WriteLine($"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}");
+                    return $"Insufficient Arguments Passesd for command {Command}\n{Commands.GetValueOrDefault(Command).Name}: {Commands.GetValueOrDefault(Command).Format}";
                 }
 
-                await Commands.GetValueOrDefault(Command).Execute(Args);
-            } else Console.WriteLine($"Command {Command} not found... ?");
+                return await Commands.GetValueOrDefault(Command).Execute(Args);
+            } else return $"Command {Command} not found... ?";
         }
 
-        private void HelpCommand() {
-            Console.WriteLine("Mercurius - A package manager-like thing for Minecraft mods.\nThis app uses the Modrinth (https://modrinth.com) api to source mods, so uncountable thank yous to that team.");
-            Console.WriteLine("\n{0, -10} {1, -30}", "Commands:", "Format:");
-            
+        public string HelpMessage() {            
+            StringWriter writer = new StringWriter();
+            writer.WriteLine("Mercurius - A package manager-like thing for Minecraft mods.\nThis app uses the Modrinth (https://modrinth.com) api to source mods, so uncountable thank yous to that team");
+            writer.WriteLine("\n{0, -10} {1, -30}", "Commands:", "Format:");
+
             foreach (KeyValuePair<string, BaseCommand> command in Commands) {
-                Console.WriteLine(" {0, -10} {1, -30} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
+                writer.WriteLine(" {0, -10} {1, -30} {2, 20}", command.Value.Name, command.Value.Format, command.Value.Description);
             }
 
-            System.Environment.Exit(0);
+            return writer.ToString();
+        }
+
+        private void ParseCommand(string[] args) {
+            Command = args[0].ToLower();
+            Args = args.Skip<string>(1).ToArray<string>();
         }
 
 
