@@ -7,7 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using NLog.Config;
 using NLog.Extensions.Logging;
-using Mercurius.Dbus;
+using Mercurius.DBus;
+using Mercurius.Configuration;
 
 namespace Mercurius {
     public class Program {

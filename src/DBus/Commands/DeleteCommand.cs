@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class DeleteCommand : BaseCommand {
         public override string Name => "Delete";
         public override string Description => "Deletes a profile";

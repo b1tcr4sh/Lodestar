@@ -3,7 +3,7 @@ using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class InfoCommand : BaseCommand {
         public override string Name { get => "Info"; }
         public override string Description { get => "Gets the details of a mod."; }

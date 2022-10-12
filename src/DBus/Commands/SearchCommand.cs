@@ -3,7 +3,7 @@ using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class SearchCommand : BaseCommand {
         public override string Name { get => "Search"; }
         public override string Description { get => "Gets top 10 results for query from Labrynth."; }

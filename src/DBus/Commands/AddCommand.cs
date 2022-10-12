@@ -4,10 +4,9 @@ using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
-using Mercurius.Dbus;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class AddCommand : BaseCommand {
         public override string Name { get =>  "Add"; } 
         public override string Description { get => "Adds a Mod to the Selected Profile."; } 

@@ -4,7 +4,7 @@ using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class CreateCommand : BaseCommand {
         public override string Name => "Create";
         public override string Description => "Generates a new profile according to entered values.";

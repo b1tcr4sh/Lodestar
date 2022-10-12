@@ -6,7 +6,8 @@ using System.Text.Json.Serialization;
 using Mercurius.Modrinth.Models;
 using Mercurius.Modrinth;
 using Mercurius.Configuration;
-using Mercurius.Commands;
+using Mercurius.DBus.Commands;
+using Mercurius.DBus;
 
 namespace Mercurius.Profiles {
     public static class ProfileManager {

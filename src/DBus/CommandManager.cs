@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace Mercurius {
+namespace Mercurius.DBus {
     public static class CommandManager {
         public static Dictionary<string, BaseCommand> GetCommands() {
             Dictionary<string, BaseCommand> commands = new Dictionary<string, BaseCommand>();

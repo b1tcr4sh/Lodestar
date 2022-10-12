@@ -4,7 +4,7 @@ using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class ListCommand : BaseCommand {
         public override string Name => "List";
         public override string Description => "Lists either currently loaded profiles or mods of selected profile.";

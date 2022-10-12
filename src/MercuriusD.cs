@@ -1,8 +1,7 @@
 using Mercurius;
-using Mercurius.Commands;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
-using Mercurius.Dbus;
+using Mercurius.DBus;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

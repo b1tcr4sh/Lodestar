@@ -3,7 +3,7 @@ using System.Reflection;
 using Mercurius.Modrinth;
 using Tmds.DBus;
 
-namespace Mercurius {
+namespace Mercurius.DBus {
     public abstract class BaseCommand : ICommand {
         public abstract string Name { get; }
         public abstract string Description { get; }

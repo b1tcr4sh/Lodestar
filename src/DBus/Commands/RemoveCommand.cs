@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus.Commands {
     public class RemoveCommand : BaseCommand {
         public override string Name => "Remove";
         public override string Description => "Removes a Mod from a Profile.";

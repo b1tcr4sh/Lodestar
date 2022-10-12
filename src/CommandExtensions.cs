@@ -1,6 +1,6 @@
 using Mercurius.Modrinth.Models;
 
-namespace Mercurius.Commands {
+namespace Mercurius.DBus {
     public static class CommandExtensions {
         public static string SelectFromList(SearchModel response) {
             Console.WriteLine($"Found {response.total_hits} results, displaying 10:\n");
