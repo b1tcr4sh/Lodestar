@@ -40,8 +40,7 @@ namespace Mercurius.Dbus {
 
     [DBusInterface("org.mercurius.commandmessenger")]
     public interface ICommandMessenger : IDBusObject {
-        // public Task<string> ExecuteCommandAsync(string command, string[] args);
-        public Task<String> AddCommandAsync(string query);
+        public Task<ObjectPath[]> ListCommandsAsync();
     }
 
     public class CommandMessenger : ICommandMessenger {
@@ -52,12 +51,8 @@ namespace Mercurius.Dbus {
             handler = new CommandHandler();
         }
 
-        // public async Task<string> ExecuteCommandAsync(string command, string[] args) {
-        //     return await handler.ExecuteCommandAsync(args.Prepend<string>(command).ToArray<string>());
-        // }
+        public Task<ObjectPath[]> ListCommandsAsync() {
 
-        public async Task<string> AddCommandAsync(string query) {
-            return await handler.ExecuteCommandAsync(new string[] {"add", query});
         }
         public ObjectPath ObjectPath { get { return Path; } }
     }
