@@ -29,7 +29,7 @@ namespace Mercurius {
             })
             .ConfigureServices((hostContext, services) => {
                 services.AddOptions();
-                services.Configure<DbusConfig>(hostContext.Configuration.GetSection("Dbus"));
+                services.Configure<DaemonConfig>(hostContext.Configuration.GetSection("Dbus"));
 
                 services.AddSingleton<IHostedService, DbusHandler>();
             })
@@ -37,7 +37,7 @@ namespace Mercurius {
                 logging.AddNLog(hostingContext.Configuration);
 
                 // logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                // logging.AddConsole();
+                logging.AddConsole();
             });
 
             await builder.RunConsoleAsync();

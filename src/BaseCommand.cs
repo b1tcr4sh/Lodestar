@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Mercurius.Modrinth;
 using Tmds.DBus;
 
-namespace Mercurius.Commands {
+namespace Mercurius {
     public abstract class BaseCommand : ICommand {
         public abstract string Name { get; }
         public abstract string Description { get; }

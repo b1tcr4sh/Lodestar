@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Mercurius;
 using Mercurius.Modrinth;
 using Mercurius.Commands;
 using Mercurius.Configuration;

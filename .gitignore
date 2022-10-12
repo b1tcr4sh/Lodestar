@@ -458,5 +458,3 @@ $RECYCLE.BIN/
 config.json
 settings.json
 ./*.Jar
-Profiles
-./Profiles

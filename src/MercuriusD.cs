@@ -30,11 +30,6 @@ using Microsoft.Extensions.Options;
             ProfileManager.InitializeDirectory();
             ProfileManager.LoadAllProfiles();
 
-
-            // ProfileManager.SelectProfile("owo");
-
-            // CommandHandler handler = new CommandHandler(args);
-            // await handler.ExecuteCommandAsync();
             return Task.CompletedTask;
          }
 
