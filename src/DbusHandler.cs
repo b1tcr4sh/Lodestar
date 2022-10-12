@@ -52,7 +52,13 @@ namespace Mercurius.Dbus {
         }
 
         public Task<ObjectPath[]> ListCommandsAsync() {
+            List<ObjectPath> paths = new List<ObjectPath>();
 
+            foreach (KeyValuePair<string, BaseCommand> command in handler.Commands ) {
+                paths.Add(new ObjectPath($"/org/mercurius/command/{command.Key}"));
+            }
+
+            return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
         }
         public ObjectPath ObjectPath { get { return Path; } }
     }
