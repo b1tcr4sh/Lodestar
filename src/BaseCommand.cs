@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using System.Reflection;
 using Mercurius.Modrinth;
 using Tmds.DBus;
 
@@ -11,8 +12,8 @@ namespace Mercurius {
         public abstract ObjectPath ObjectPath { get; }
 
         public Task<object> GetAsync(string prop) {
-            // Make return the property that's passed in
-            return Task.FromResult((new object[0])[0]);
+            // Not exposed like it's supposed to be?
+            return Task.FromResult(typeof(BaseCommand).GetProperty(prop).GetValue(this));
         }
         public abstract Task ExecuteAsync(string[] args);
     }
