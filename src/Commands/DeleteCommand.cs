@@ -1,14 +1,17 @@
 using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
+using Tmds.DBus;
 
 namespace Mercurius.Commands {
     public class DeleteCommand : BaseCommand {
         public override string Name => "Delete";
         public override string Description => "Deletes a profile";
         public override string Format => "delete <Profile Name>";
-        public override int ArgsQuantity => 1;
-        public override Task Execute(string[] args) {
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/delete");
+        public override bool TakesArgs { get => true; }
+        public override Task ExecuteAsync(string[] args) {
             Profile profile = ProfileManager.GetLoadedProfile(args[0]);
             
             Console.WriteLine($"Removing Profile {profile.Name}...");

@@ -1,14 +1,17 @@
 using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
+using Tmds.DBus;
 
 namespace Mercurius.Commands {
     public class RemoveCommand : BaseCommand {
         public override string Name => "Remove";
         public override string Description => "Removes a Mod from a Profile.";
         public override string Format => "remove <Mod Name>";
-        public override int ArgsQuantity => 1;
-        public override async Task Execute(string[] args) {
+        public override bool TakesArgs { get => true; }
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/remove");
+        public override async Task ExecuteAsync(string[] args) {
             string query = string.Join<string>(" ", args);
 
             List<Mod> allMods = new List<Mod>();

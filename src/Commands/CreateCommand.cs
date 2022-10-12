@@ -2,17 +2,20 @@ using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
+using Tmds.DBus;
 
 namespace Mercurius.Commands {
     public class CreateCommand : BaseCommand {
         public override string Name => "Create";
         public override string Description => "Generates a new profile according to entered values.";
         public override string Format => "create <Profile Name>";
-        public override int ArgsQuantity => 1;
+        public override bool TakesArgs { get => true; }
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/create");
         private string minecraftVersion;
         private string loader;
         private bool serverSide;
-        public override async Task Execute(string[] args) {
+        public override async Task ExecuteAsync(string[] args) {
             string name = string.Join(" ", args);
             if (name.Contains(" ")) {
                 name = name.Replace(" ", "_").ToLower();

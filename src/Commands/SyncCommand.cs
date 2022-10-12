@@ -4,16 +4,19 @@ using Mercurius.Modrinth;
 using Mercurius.Commands;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
+using Tmds.DBus;
 
 public class SyncCommand : BaseCommand {
     public override string Name { get => "Sync"; }
     public override string Description { get => "Syncronises Mods with Profile"; }
     public override string Format { get => "Sync"; }
-    public override int ArgsQuantity => 0;
+    public override bool TakesArgs { get => false; }
+    public override ObjectPath ObjectPath { get => _objectPath; }
+    private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/sync");
 
     private APIClient client = new APIClient();
     private List<Mod> installQueue = new List<Mod>();
-    public override async Task Execute(string[] args) {
+    public override async Task ExecuteAsync(string[] args) {
         if (ProfileManager.SelectedProfile is null) {
             Console.WriteLine("No Profile is Selected... ? (Create or Select One)");
             return;

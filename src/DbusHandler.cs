@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using System.Reflection;
 using Tmds.DBus;
 using Mercurius;
 using Mercurius.Commands;
@@ -24,6 +25,8 @@ namespace Mercurius.Dbus {
                 await connection.ConnectAsync();
                 await connection.RegisterObjectAsync(new CommandMessenger());
 
+                await connection.RegisterObjectsAsync(CommandManager.GetCommands().Values);
+
                 // string boundAddress = await server.StartAsync($"tcp:host=localhost,port={_config.Value.DBusPort}");
                 string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");
                 _logger.LogInformation($"Dbus Server Listening at {boundAddress}");
@@ -40,26 +43,22 @@ namespace Mercurius.Dbus {
 
     [DBusInterface("org.mercurius.commandmessenger")]
     public interface ICommandMessenger : IDBusObject {
-        public Task<ObjectPath[]> ListCommandsAsync();
+        Task<ObjectPath[]> ListCommandsAsync();
     }
 
-    public class CommandMessenger : ICommandMessenger {
-        public static readonly ObjectPath Path = new ObjectPath("/org/mercurius/commandmessenger");
-        private CommandHandler handler;
 
-        public CommandMessenger() {
-            handler = new CommandHandler();
-        }
+    public class CommandMessenger : ICommandMessenger {
+        private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/commandmessenger");
 
         public Task<ObjectPath[]> ListCommandsAsync() {
             List<ObjectPath> paths = new List<ObjectPath>();
 
-            foreach (KeyValuePair<string, BaseCommand> command in handler.Commands ) {
-                paths.Add(new ObjectPath($"/org/mercurius/command/{command.Key}"));
+            foreach (KeyValuePair<string, BaseCommand> command in CommandManager.GetCommands() ) {
+                paths.Add(command.Value.ObjectPath);
             }
 
             return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
         }
-        public ObjectPath ObjectPath { get { return Path; } }
+        public ObjectPath ObjectPath { get => _objectPath; }
     }
 }

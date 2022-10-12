@@ -1,14 +1,17 @@
 using System.Threading.Tasks;
 using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
+using Tmds.DBus;
 
 namespace Mercurius.Commands {
     public class InfoCommand : BaseCommand {
         public override string Name { get => "Info"; }
         public override string Description { get => "Gets the details of a mod."; }
         public override string Format { get => "info <Mod Name>"; }
-        public override int ArgsQuantity { get => 1; }
-        public override async Task Execute(string[] args) {
+        public override bool TakesArgs { get => true; }
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/info");
+        public override async Task ExecuteAsync(string[] args) {
             APIClient client = new APIClient();
             string query = string.Join<string>(" ", args);
             SearchModel searchResponse = await client.SearchAsync(query);

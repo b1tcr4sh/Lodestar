@@ -2,14 +2,17 @@ using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
+using Tmds.DBus;
 
 namespace Mercurius.Commands {
     public class ListCommand : BaseCommand {
         public override string Name => "List";
         public override string Description => "Lists either currently loaded profiles or mods of selected profile.";
         public override string Format => "list [mods | profiles]";
-        public override int ArgsQuantity => 1;
-        public override Task Execute(string[] args)
+        public override bool TakesArgs { get => true; }
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/list");
+        public override Task ExecuteAsync(string[] args)
         {
             if (args.Length == 0) {
                 Console.WriteLine("What to list? ... (mods or profiles)");

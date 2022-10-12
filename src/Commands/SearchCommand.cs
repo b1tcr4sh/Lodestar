@@ -1,14 +1,17 @@
 using System.Threading.Tasks;
 using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
+using Tmds.DBus;
 
 namespace Mercurius.Commands {
     public class SearchCommand : BaseCommand {
         public override string Name { get => "Search"; }
         public override string Description { get => "Gets top 10 results for query from Labrynth."; }
         public override string Format { get => "search <Query>"; }
-        public override int ArgsQuantity => 1;
-        public override async Task Execute(string[] args) {
+        public override bool TakesArgs { get => true; }
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/search");
+        public override async Task ExecuteAsync(string[] args) {
             APIClient client = new APIClient();
             SearchModel searchResults;
 
