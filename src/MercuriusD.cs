@@ -23,8 +23,6 @@ using Microsoft.Extensions.Options;
          public Task StartAsync(CancellationToken cancellationToken) {
              _logger.LogInformation("Starting Mercurius Daemon...");
 
-            MCSLogger.Init();
-
             SettingsManager.Init();
             ProfileManager.InitializeDirectory();
             ProfileManager.LoadAllProfiles();

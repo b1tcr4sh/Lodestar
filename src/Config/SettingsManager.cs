@@ -4,16 +4,20 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Mercurius;
+using NLog;
 
 namespace Mercurius.Configuration {
     public static class SettingsManager {
         public static SettingsFile Settings { get; private set; }
         private static string userPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         private static string programDirectory = $"{userPath}/.mercurius";
+        private static Logger logger;
 
         public static async void Init() {
+            logger = LogManager.GetCurrentClassLogger();
+
             if (!Directory.Exists(programDirectory)) {
-                MCSLogger.logger.Debug("Creating program folder at {0}", userPath);
+                logger.Debug("Creating program folder at {0}", userPath);
                 Directory.CreateDirectory(programDirectory);
             }
 
@@ -24,10 +28,10 @@ namespace Mercurius.Configuration {
                     using FileStream settings = File.OpenRead($"{programDirectory}/settings.json");
                     Settings = JsonSerializer.Deserialize<SettingsFile>(settings);
                     Console.WriteLine(Settings.Minecraft_Directory);
-                    MCSLogger.logger.Debug("Loaded configuration at {0}/{1}", programDirectory, "settings.json");
+                    logger.Debug("Loaded configuration at {0}/{1}", programDirectory, "settings.json");
                 } catch (JsonException e) {
-                    MCSLogger.logger.Fatal("Error loading config file... ?");
-                    MCSLogger.logger.Trace(e.Message);
+                    logger.Fatal("Error loading config file... ?");
+                    logger.Trace(e.Message);
                     Environment.Exit(1);
                 }
             }
@@ -54,7 +58,7 @@ namespace Mercurius.Configuration {
             
             Settings = config;
 
-            MCSLogger.logger.Info($"Created a new configuration file at {programDirectory}/settings.json");
+            logger.Info($"Created a new configuration file at {programDirectory}/settings.json");
         }
     }
 }

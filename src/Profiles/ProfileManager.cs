@@ -8,22 +8,24 @@ using Mercurius.Modrinth;
 using Mercurius.Configuration;
 using Mercurius.DBus.Commands;
 using Mercurius.DBus;
+using NLog;
 
 namespace Mercurius.Profiles {
     public static class ProfileManager {
         private static Dictionary<string, Profile> LoadedProfiles;
         public static Profile SelectedProfile { get; private set; }
         private static string ProfilePath;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         public static void InitializeDirectory() {
             LoadedProfiles = new Dictionary<string, Profile>();
             if (SettingsManager.Settings is null) {
-                MCSLogger.logger.Fatal("Couldn't find configuration file!");
+                logger.Fatal("Couldn't find configuration file!");
                 System.Environment.Exit(1);
             } 
             ProfilePath = SettingsManager.Settings.Profile_Directory;
             if (!Directory.Exists(ProfilePath)) {
                 Directory.CreateDirectory(ProfilePath);
-                MCSLogger.logger.Debug("Created Profiles Directory at {0}", ProfilePath);
+                logger.Debug("Created Profiles Directory at {0}", ProfilePath);
             } 
         }
         public static void InitializeDirectory(string path) {
@@ -62,12 +64,12 @@ namespace Mercurius.Profiles {
                     Profile profile = JsonSerializer.Deserialize<Profile>(contents);
 
                     if (profile.Name.Contains(" "))
-                        MCSLogger.logger.Warn($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
+                        logger.Warn($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
                     else if (!LoadedProfiles.ContainsKey(profile.Name))
                         LoadedProfiles.Add(profile.Name, profile); 
                 } catch (Exception e) {
-                    MCSLogger.logger.Warn(@$"Error occurred loading profile at {file}");
-                    MCSLogger.logger.Trace(e.Message);
+                    logger.Warn(@$"Error occurred loading profile at {file}");
+                    logger.Trace(e.Message);
                 }
             }
 
@@ -76,7 +78,7 @@ namespace Mercurius.Profiles {
                     LoadedProfiles.Remove(profile.Key);
             }
 
-            MCSLogger.logger.Info($"Loaded {LoadedProfiles.Count} profiles");
+            logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
         public static async Task AddModAsync(APIClient client, string query, bool ignoreDependencies) {
             string id;
@@ -85,7 +87,7 @@ namespace Mercurius.Profiles {
                 id = CommandExtensions.SelectFromList(search);
             } else id = search.hits[0].project_id;
 
-            MCSLogger.logger.Debug("Attempting to add mod {0} to profile {1}", query, SelectedProfile.Name);
+            logger.Debug("Attempting to add mod {0} to profile {1}", query, SelectedProfile.Name);
 
             ProjectModel project = await client.GetProjectAsync(id);
             VersionModel[] versions = await client.ListVersionsAsync(project);
@@ -95,7 +97,7 @@ namespace Mercurius.Profiles {
 
             if (viableVersions.Count() < 1) {
                 Console.WriteLine("There were no valid installation candidates.  Aborting...");
-                MCSLogger.logger.Info("Found no installation candidates for install");
+                logger.Info("Found no installation candidates for install");
                 return;
             }
 
@@ -116,14 +118,14 @@ namespace Mercurius.Profiles {
             }
             Console.WriteLine("Updating Profile...");
             await SelectedProfile.UpdateModListAsync(mod);
-            MCSLogger.logger.Info("Successfully added mod {0} to profile {1}", mod.Title, SelectedProfile.Name);
+            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, SelectedProfile.Name);
         }
         
         public static async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
 
             foreach (string file in files) {
-                MCSLogger.logger.Debug("Attempting to load profile from {0}", file);
+                logger.Debug("Attempting to load profile from {0}", file);
 
                 try {
                     string fileContents = await File.ReadAllTextAsync(file, Encoding.ASCII);
@@ -131,14 +133,14 @@ namespace Mercurius.Profiles {
 
                     if (profile.Name.ToLower().Equals(name.ToLower())) {
                         Console.WriteLine($"Loaded profile {profile.Name}");
-                        MCSLogger.logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
+                        logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                         LoadedProfiles.Add(profile.Name, profile);
                         return profile;
                     }
                 } catch (Exception e) {
-                    MCSLogger.logger.Warn(@$"Error occurred loading profile at {file}:");
-                    MCSLogger.logger.Trace(e.Message);
+                    logger.Warn(@$"Error occurred loading profile at {file}:");
+                    logger.Trace(e.Message);
                 } 
             }
             throw new ProfileException($"Profile {name} not found!");
@@ -147,7 +149,7 @@ namespace Mercurius.Profiles {
         internal static async Task WriteProfileAsync(Profile profile) {
             if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) return;
 
-            MCSLogger.logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
+            logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
             using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name}.profile.json", FileMode.CreateNew, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
@@ -156,7 +158,7 @@ namespace Mercurius.Profiles {
         internal static async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
             if (!File.Exists($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile Expected at {ProfilePath}/{existingProfileName.ToLower()}.profile.json Doesnt' Exist!");
             
-            MCSLogger.logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
+            logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
             using FileStream stream = new FileStream($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json", FileMode.Create, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
@@ -164,12 +166,12 @@ namespace Mercurius.Profiles {
         }
         internal static bool DeleteProfileFile(string profileName) {
             if (!File.Exists($"{ProfilePath}/{profileName.ToLower()}.profile.json")) {
-                MCSLogger.logger.Debug("Attempted to Delete Profile {0}, but File Didn't Exist... ?", profileName);
+                logger.Debug("Attempted to Delete Profile {0}, but File Didn't Exist... ?", profileName);
                 return false;
             }
 
             File.Delete($"{ProfilePath}/{profileName.ToLower()}.profile.json");
-            MCSLogger.logger.Debug("Deleted Profile at {0}", $"{ProfilePath}/{profileName.ToLower()}.profile.json");
+            logger.Debug("Deleted Profile at {0}", $"{ProfilePath}/{profileName.ToLower()}.profile.json");
             return true;
         }
         internal static void UnloadProfile(Profile profile) {
@@ -185,7 +187,7 @@ namespace Mercurius.Profiles {
 
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);
-                MCSLogger.logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
+                logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
                 LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }

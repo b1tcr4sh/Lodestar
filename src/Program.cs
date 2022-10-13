@@ -13,6 +13,9 @@ using Mercurius.Configuration;
 namespace Mercurius {
     public class Program {
         public static async Task Main(string[] args) {
+            LogManager.ThrowConfigExceptions = true;
+            LogManager.LoadConfiguration("NLog.xml");
+
             var builder = new HostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) => {
                 config.AddEnvironmentVariables();
@@ -38,7 +41,7 @@ namespace Mercurius {
                 logging.AddNLog(hostingContext.Configuration);
 
                 // logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
+                // logging.AddConsole();
             });
 
             await builder.RunConsoleAsync();
