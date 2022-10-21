@@ -31,6 +31,11 @@ namespace Mercurius.DBus.Commands {
             List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
             List<string> modPaths = new List<string>();
 
+            if (existingFiles.Count <= 0) {
+                // No mods to sync
+                return;
+            }
+
             foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
                 modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
 
@@ -39,9 +44,7 @@ namespace Mercurius.DBus.Commands {
                 }
             }
             
-            if (modPaths.Count <= 0 && existingFiles.Count > 0) {            
-                await GenerateModsFromFiles(existingFiles);
-            }
+            
 
             List<string> keepers = existingFiles.Intersect<string>(modPaths).ToList<string>();
 
@@ -107,22 +110,22 @@ namespace Mercurius.DBus.Commands {
             }
             return true;
         }
-        private async Task GenerateModsFromFiles(List<string> filePaths) {
-            Console.WriteLine("\nThere are no mods in the current profile, but files in mods directory.  Generate mods from jars?\n**WARNING** This feature is still a heavy WIP and may require manual profile editing to clean up dependencies.");
-            Console.Write("(y/N) > ");
+        // private async Task GenerateModsFromFiles(List<string> filePaths) {
+        //     Console.WriteLine("\nThere are no mods in the current profile, but files in mods directory.  Generate mods from jars?\n**WARNING** This feature is still a heavy WIP and may require manual profile editing to clean up dependencies.");
+        //     Console.Write("(y/N) > ");
 
-            if (!Console.ReadLine().ToLower().Equals("y")) return;
+        //     if (!Console.ReadLine().ToLower().Equals("y")) return;
 
-            APIClient client = new APIClient();
+        //     APIClient client = new APIClient();
 
-            foreach (string path in filePaths) {
-                string query = path.Substring(path.LastIndexOf("/") + 1);
+        //     foreach (string path in filePaths) {
+        //         string query = path.Substring(path.LastIndexOf("/") + 1);
 
-                Console.WriteLine("Generating mod for {0}", query);
+        //         Console.WriteLine("Generating mod for {0}", query);
 
-                await ProfileManager.AddModAsync(client, query, false);
-            }
+        //         await ProfileManager.AddModAsync(client, query, false);
+        //     }
 
-        }
+        // }
     }
 }

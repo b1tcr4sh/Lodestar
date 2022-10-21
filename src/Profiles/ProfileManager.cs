@@ -43,16 +43,16 @@ namespace Mercurius.Profiles {
 
             return LoadedProfiles as IReadOnlyDictionary<string, Profile>;
         }
-        public static Profile SelectProfile(string name) {
+        public static bool SelectProfile(string name) {
             foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
                 if (profile.Key.Equals(name)) {
                     SelectedProfile = profile.Value;
 
-                    Console.WriteLine($"Selected profile {name}");
-                    return profile.Value;
+                    logger.Debug($"Selected profile {name}");
+                    return true;
                 }
             }
-            throw new ProfileException($"Profile {name} Not Found.");
+            return false;
         }
         public static void LoadAllProfiles() {
             LoadedProfiles = new Dictionary<string, Profile>();
