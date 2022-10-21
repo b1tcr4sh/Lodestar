@@ -3,11 +3,11 @@ using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
 using Tmds.DBus;
 
-namespace Mercurius.DBus.Commands {
+namespace Mercurius.DBus.Commands.Desprecated {
     public class InfoCommand : BaseCommand {
         public override string Name { get => "Info"; }
         public override string Description { get => "Gets the details of a mod."; }
-        public override string Format { get => "info <Mod Name>"; }
+        public override string Format { get => "id<string>"; }
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/info");
@@ -18,9 +18,9 @@ namespace Mercurius.DBus.Commands {
 
             string modTitle = searchResponse.hits[0].title;
             string modId = searchResponse.hits[0].project_id;
-            if (!query.Equals(modTitle.ToLower())) {
-                modId = CommandExtensions.SelectFromList(searchResponse);
-            }
+            // if (!query.Equals(modTitle.ToLower())) {
+            //     modId = CommandExtensions.SelectFromList(searchResponse);
+            // }
 
             ProjectModel project = await client.GetProjectAsync(modId);
             VersionModel[] versions = await client.ListVersionsAsync(project);

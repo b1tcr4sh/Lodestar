@@ -80,11 +80,11 @@ namespace Mercurius.Profiles {
 
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
-        public static async Task AddModAsync(APIClient client, string query, bool ignoreDependencies) {
+        public static async Task<bool> AddModAsync(APIClient client, string query, bool ignoreDependencies) {
             string id;
             SearchModel search = await client.SearchAsync(query);
             if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
-                id = CommandExtensions.SelectFromList(search);
+                return false;
             } else id = search.hits[0].project_id;
 
             logger.Debug("Attempting to add mod {0} to profile {1}", query, SelectedProfile.Name);
@@ -98,7 +98,7 @@ namespace Mercurius.Profiles {
             if (viableVersions.Count() < 1) {
                 Console.WriteLine("There were no valid installation candidates.  Aborting...");
                 logger.Info("Found no installation candidates for install");
-                return;
+                return false;
             }
 
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
@@ -119,6 +119,7 @@ namespace Mercurius.Profiles {
             Console.WriteLine("Updating Profile...");
             await SelectedProfile.UpdateModListAsync(mod);
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, SelectedProfile.Name);
+            return true;
         }
         
         public static async Task<Profile> LoadProfileAsync(string name) {

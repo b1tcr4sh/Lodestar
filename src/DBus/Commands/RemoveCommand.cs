@@ -7,7 +7,7 @@ namespace Mercurius.DBus.Commands {
     public class RemoveCommand : BaseCommand {
         public override string Name => "Remove";
         public override string Description => "Removes a Mod from a Profile.";
-        public override string Format => "remove <Mod Name>";
+        public override string Format => "name<string>";
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/remove");

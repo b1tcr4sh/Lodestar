@@ -7,7 +7,7 @@ namespace Mercurius.DBus.Commands {
     public class DeleteCommand : BaseCommand {
         public override string Name => "Delete";
         public override string Description => "Deletes a profile";
-        public override string Format => "delete <Profile Name>";
+        public override string Format => "name<string>";
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/delete");
         public override bool TakesArgs { get => true; }

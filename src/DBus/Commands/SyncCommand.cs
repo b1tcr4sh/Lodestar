@@ -10,8 +10,8 @@ namespace Mercurius.DBus.Commands {
 
     public class SyncCommand : BaseCommand {
         public override string Name { get => "Sync"; }
-        public override string Description { get => "Syncronises Mods with Profile"; }
-        public override string Format { get => "Sync"; }
+        public override string Description { get => "Syncronises local mods with profile."; }
+        public override string Format { get => "[none]"; }
         public override bool TakesArgs { get => false; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/sync");

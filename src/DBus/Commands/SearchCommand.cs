@@ -3,11 +3,11 @@ using Mercurius.Modrinth;
 using Mercurius.Modrinth.Models;
 using Tmds.DBus;
 
-namespace Mercurius.DBus.Commands {
+namespace Mercurius.DBus.Commands.Desprecated {
     public class SearchCommand : BaseCommand {
         public override string Name { get => "Search"; }
         public override string Description { get => "Gets top 10 results for query from Labrynth."; }
-        public override string Format { get => "search <Query>"; }
+        public override string Format { get => "query<string>"; }
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/search");

@@ -8,7 +8,7 @@ namespace Mercurius.DBus.Commands {
     public class ListCommand : BaseCommand {
         public override string Name => "List";
         public override string Description => "Lists either currently loaded profiles or mods of selected profile.";
-        public override string Format => "list [mods | profiles]";
+        public override string Format => "[mods | profiles]<string>";
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/list");

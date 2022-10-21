@@ -9,8 +9,8 @@ using Tmds.DBus;
 namespace Mercurius.DBus.Commands {
     public class AddCommand : BaseCommand {
         public override string Name { get =>  "Add"; } 
-        public override string Description { get => "Adds a Mod to the Selected Profile."; } 
-        public override string Format { get => "Add <Mod Name>"; }
+        public override string Description { get => "Adds a mod to the selected profile."; } 
+        public override string Format { get => "name<string>"; }
         public override bool TakesArgs { get => false; }
         public override ObjectPath ObjectPath { get => _path; }
         private ObjectPath _path = new ObjectPath("/org/mercurius/command/add");
