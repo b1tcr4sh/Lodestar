@@ -1,6 +1,22 @@
 using Tmds.DBus;
+using System.Runtime.InteropServices;
 
 namespace Mercurius.DBus {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DbusResponse {
+        public String Message { get; set; }
+        public int Code { get; set; }
+        public object Data { get; set; }
+        public DataType Type { get; set; }
+    }
+
+    public enum DataType {
+        None = 0,
+        ModDefinition = 1,
+        Profile = 1,
+        Error = 2
+    }
+
     [DBusInterface("org.mercurius.commandmessenger")]
     public interface ICommandMessenger : IDBusObject {
         Task<ObjectPath[]> ListCommandsAsync();

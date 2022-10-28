@@ -17,7 +17,7 @@ namespace Mercurius.DBus.Commands {
         private APIClient client;  
         private bool ignoreDependencies;
 
-        public override async Task ExecuteAsync(string[] args) {
+        public override async Task<DbusResponse> ExecuteAsync(string[] args) {
             if (args.Length < 1) throw new ArgumentException("Insuffcient Arguments Provided.");
 
             string query = string.Join(" ", args);
@@ -28,12 +28,31 @@ namespace Mercurius.DBus.Commands {
 
             if (ProfileManager.SelectedProfile == null) {
                 Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
-                return;
+                return new DbusResponse {
+                    Code = 1,
+                    Data = "",
+                    Message = "No profile is currently selected... ?",
+                    Type = DataType.Error
+                };
             } 
 
             client = new APIClient();
 
-            await ProfileManager.AddModAsync(client, query, ignoreDependencies);
+            if (!await ProfileManager.AddModAsync(client, query, ignoreDependencies)) {
+                return new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = "Adding mod to profile failed",
+                    Type = DataType.Error
+                };
+            }
+            
+            return new DbusResponse {
+                Code = 0,
+                Data = "",
+                Message = "Successfully added mod to profile",
+                Type = DataType.None
+            };
         }
     
     }

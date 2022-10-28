@@ -5,6 +5,6 @@ namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.command")]
     public interface ICommand : IDBusObject {
         Task<object> GetAsync(string prop);
-        Task ExecuteAsync(string[] args);
+        Task<DbusResponse> ExecuteAsync(string[] args);
     }
 }

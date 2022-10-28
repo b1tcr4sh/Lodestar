@@ -12,38 +12,59 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/list");
-        public override Task ExecuteAsync(string[] args)
+        public override Task<DbusResponse> ExecuteAsync(string[] args)
         {
             if (args.Length == 0) {
                 Console.WriteLine("What to list? ... (mods or profiles)");
-                return Task.CompletedTask;
+                return Task.FromResult<DbusResponse>(new DbusResponse {
+                    Code = 1,
+                    Message = "Insufficient command args passed",
+                    Data = "",
+                    Type = DataType.Error
+                });
             }
 
             switch (args[0].ToLower()) {
                 case "mods":
-                case "mod":
-                    ListMods();
-                    break;
+                    Mod[] mods = ListMods().ToArray();
+                    
+                    return Task.FromResult<DbusResponse>(new DbusResponse {
+                        Code = 0,
+                        Data = mods,
+                        Message = "Listed mods in profile",
+                        Type = DataType.ModDefinition
+                    });
+
                 case "profiles":
-                case "profile":
                     ListProfiles();
                     break;
                 default:
-                    Console.WriteLine("What to list? ... (mods or profiles)");
-                    break;
+                    return Task.FromResult<DbusResponse>(new DbusResponse {
+                    Code = 1,
+                    Message = "Insufficient command args passed",
+                    Data = "",
+                    Type = DataType.Error
+                });
             }
 
-            return Task.CompletedTask;
+
+
+            return Task.FromResult<DbusResponse>(new DbusResponse {
+                Code = -1,
+                Data = "",
+                Message = "An unknown error occurred",
+                Type = DataType.Error
+            });
         }
-        private void ListMods() {
-            if (ProfileManager.SelectedProfile is null) {
-                Console.WriteLine("No profile is currently selected... ?");
-                return;
-            }
-            if (ProfileManager.SelectedProfile.Mods.Count <= 0) {
-                Console.WriteLine($"Profile {ProfileManager.SelectedProfile.Name} contains no mods");
-                return;
-            }
+        private List<Mod> ListMods() {
+            // if (ProfileManager.SelectedProfile is null) {
+            //     Console.WriteLine("No profile is currently selected... ?");
+            //     return;
+            // }
+            // if (ProfileManager.SelectedProfile.Mods.Count <= 0) {
+            //     Console.WriteLine($"Profile {ProfileManager.SelectedProfile.Name} contains no mods");
+            //     return;
+            // }
 
             List<Mod> modsToDisplay = new List<Mod>();
             foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
@@ -52,19 +73,21 @@ namespace Mercurius.DBus.Commands {
                 modsToDisplay.AddRange(mod.Dependencies);
             }
 
-            Console.WriteLine("Listing {0} mods in currently loaded profile {1}\n", modsToDisplay.Count(), ProfileManager.SelectedProfile.Name);
-            Console.WriteLine("{0, -30} {1, -20} {2, 15} {3, 15}", "Mod Name", "Mod Version", "Filename", "Installed");
+            return modsToDisplay;
+
+            // Console.WriteLine("Listing {0} mods in currently loaded profile {1}\n", modsToDisplay.Count(), ProfileManager.SelectedProfile.Name);
+            // Console.WriteLine("{0, -30} {1, -20} {2, 15} {3, 15}", "Mod Name", "Mod Version", "Filename", "Installed");
 
 
-            string[] files = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods");
-            foreach (Mod mod in modsToDisplay) {
-                bool installed = false;
+            // string[] files = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods");
+            // foreach (Mod mod in modsToDisplay) {
+            //     bool installed = false;
 
-                if (files.Contains($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}"))
-                    installed = true;
+            //     if (files.Contains($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}"))
+            //         installed = true;
 
-                Console.WriteLine("{0, -30} {1, -20} {2, 15} {3, 15}", mod.Title, mod.ModVersion, mod.FileName, installed);
-            }
+            //     // Console.WriteLine("{0, -30} {1, -20} {2, 15} {3, 15}", mod.Title, mod.ModVersion, mod.FileName, installed);
+            // }
         }
         private void ListProfiles() {
             IReadOnlyDictionary<string, Profile> profiles = ProfileManager.GetLoadedProfiles();

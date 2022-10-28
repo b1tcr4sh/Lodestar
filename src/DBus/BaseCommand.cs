@@ -15,6 +15,6 @@ namespace Mercurius.DBus {
             // Not exposed like it's supposed to be?
             return Task.FromResult(typeof(BaseCommand).GetProperty(prop).GetValue(this));
         }
-        public abstract Task ExecuteAsync(string[] args);
+        public abstract Task<DbusResponse> ExecuteAsync(string[] args);
     }
 }
