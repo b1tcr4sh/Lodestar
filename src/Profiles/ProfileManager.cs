@@ -80,14 +80,14 @@ namespace Mercurius.Profiles {
 
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
-        public static async Task<bool> AddModAsync(APIClient client, string query, bool ignoreDependencies) {
-            string id;
-            SearchModel search = await client.SearchAsync(query);
-            if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
-                return false;
-            } else id = search.hits[0].project_id;
+        public static async Task<bool> AddModAsync(APIClient client, string id, bool ignoreDependencies) {
+            // string id;
+            // SearchModel search = await client.SearchAsync(query);
+            // if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
+            //     return false;
+            // } else id = search.hits[0].project_id;
 
-            logger.Debug("Attempting to add mod {0} to profile {1}", query, SelectedProfile.Name);
+            // logger.Debug("Attempting to add mod {0} to profile {1}", query, SelectedProfile.Name);
 
             ProjectModel project = await client.GetProjectAsync(id);
             VersionModel[] versions = await client.ListVersionsAsync(project);
