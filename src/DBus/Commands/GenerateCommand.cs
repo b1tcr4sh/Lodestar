@@ -36,11 +36,13 @@ namespace Mercurius.DBus.Commands {
             APIClient client = new APIClient();
 
             // TODO: Rework to open mod file, grab name/id then use search to find mod.
+            // should search both services and allow user choice
 
             foreach (string path in existingFiles) {
-                string query = path.Substring(path.LastIndexOf("/") + 1);
+                logger.Info("Trying to generate a mod from {0}", path);  
 
-                logger.Info("Trying to generate a mod from {0}", path);                
+                await Mod.GenerateFromNameAsync(parseFileName(path), client);
+
 
                 try {
                     await ProfileManager.AddModAsync(client, query, false);
@@ -60,6 +62,16 @@ namespace Mercurius.DBus.Commands {
                 Message = "Success",
                 Type = DataType.None
             };
+        }
+
+        private string parseFileName(String path) {
+            string filename = path.Substring(path.LastIndexOf("/") + 1).ToLower();
+
+            if (filename.Contains("1.")) {
+                filename = filename.Substring(0, filename.IndexOf("1."));
+            }
+
+            return filename;
         }
     }
 }

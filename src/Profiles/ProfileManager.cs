@@ -80,7 +80,7 @@ namespace Mercurius.Profiles {
 
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
-        public static async Task<bool> AddModAsync(APIClient client, string id, bool ignoreDependencies) {
+        public static async Task<bool> AddModAsync(APIClient client, string id, Repo service, bool ignoreDependencies) {
             logger.Debug("Attempting to add mod {0} to profile {1}", id, SelectedProfile.Name);
 
             ProjectModel project = await client.GetProjectAsync(id);
@@ -90,8 +90,8 @@ namespace Mercurius.Profiles {
             viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(SelectedProfile.Loader.ToLower())).ToArray<VersionModel>();
 
             if (viableVersions.Count() < 1) {
-                logger.Info("Found no installation candidates for install");
-                return false;
+                logger.Debug("Found no installation candidates for install");
+                throw new Exception("Found no valid installation candidates");
             }
 
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
@@ -183,5 +183,10 @@ namespace Mercurius.Profiles {
                 LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
+    }
+    public enum Repo {
+        modrinth,
+        curseforge,
+        custom
     }
 }

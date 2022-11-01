@@ -1,5 +1,6 @@
 using Mercurius.Modrinth.Models;
 using Mercurius.Configuration;
+using Mercurius.Modrinth;
 
 namespace Mercurius.Profiles {
     public class Mod {
@@ -64,6 +65,22 @@ namespace Mercurius.Profiles {
 
         public bool FileExists() {
             return File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{FileName}");
+        }
+
+        public static async Task<Mod> GenerateFromNameAsync(string name, APIClient client) {
+            SearchModel searchRes = await client.SearchAsync(name);
+
+            List<Hit> candidates = new List<Hit>();
+
+            foreach (Hit hit in searchRes.hits) {
+                if (name.Contains(hit.title.ToLower())) {
+                    candidates.Add(hit);
+                }
+            }
+
+            foreach (Hit hit in candidates) {
+                if (hit.versions.Contains(ProfileManager.SelectedProfile.MinecraftVersion) && hit.)
+            }
         }
     }
 

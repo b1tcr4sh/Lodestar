@@ -11,12 +11,11 @@ namespace Mercurius.DBus.Commands {
     public class AddCommand : BaseCommand {
         public override string Name { get =>  "Add"; } 
         public override string Description { get => "Adds a mod to the selected profile."; } 
-        public override string Format { get => "id<string>, ignoreDependencies<bool>"; }
+        public override string Format { get => "id<string>, service<enum>, ignoreDependencies<bool>"; }
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _path; }
         private ObjectPath _path = new ObjectPath("/org/mercurius/command/add");
         private APIClient client;  
-        private bool ignoreDependencies;
         private ILogger logger;
 
         public AddCommand(ILogger _logger) : base(_logger) {
@@ -24,6 +23,10 @@ namespace Mercurius.DBus.Commands {
         }
 
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
+            bool ignoreDependencies;
+            Repo service;
+
+
             if (args.Length < 2) {
                 return new DbusResponse {
                     Code = 1,
@@ -43,7 +46,7 @@ namespace Mercurius.DBus.Commands {
                 };
             } 
 
-            if (!Boolean.TryParse(args[1], out ignoreDependencies)) {
+            if (!Boolean.TryParse(args[2], out ignoreDependencies)) {
                 return new DbusResponse {
                     Code = -1,
                     Data = "",
@@ -51,11 +54,19 @@ namespace Mercurius.DBus.Commands {
                     Type = DataType.Error
                 };
             }
+            if (!Enum.TryParse<Repo>(args[1], out service)) {
+                return new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = "<service> could not be resolved to enum",
+                    Type = DataType.Error
+                };
+            }
 
             client = new APIClient();
 
             try {
-                await ProfileManager.AddModAsync(client, args[0], ignoreDependencies);
+                await ProfileManager.AddModAsync(client, args[0], service, ignoreDependencies);
             } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,
