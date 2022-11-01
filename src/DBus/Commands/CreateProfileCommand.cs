@@ -47,7 +47,7 @@ namespace Mercurius.DBus.Commands {
             } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,
-                    Data = "",
+                    Data = e.StackTrace,
                     Message = e.Message,
                     Type = DataType.Error
                 };

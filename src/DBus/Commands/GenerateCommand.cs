@@ -42,7 +42,16 @@ namespace Mercurius.DBus.Commands {
 
                 logger.Info("Trying to generate a mod from {0}", path);                
 
-                await ProfileManager.AddModAsync(client, query, false);
+                try {
+                    await ProfileManager.AddModAsync(client, query, false);
+                } catch (Exception e) {
+                    return new DbusResponse {
+                        Code = -1,
+                        Data = e.StackTrace,
+                        Message = e.Message,
+                        Type = DataType.Error
+                    };
+                }
             }
 
             return new DbusResponse {

@@ -32,13 +32,13 @@ namespace Mercurius.DBus.Commands {
             } catch (Exception e) {
                 return Task.FromResult<DbusResponse>(new DbusResponse {
                     Code = -1,
-                    Data = "",
+                    Data = e.StackTrace,
                     Message = e.Message,
                     Type = DataType.Error
                 });
             }
 
-            Console.WriteLine("Selected profile {0}", args[0]);
+            logger.Info("Selected profile {0}", args[0]);
             return Task.FromResult<DbusResponse>(new DbusResponse {
                 Code = 0,
                 Data = "",

@@ -7,12 +7,16 @@ using System.Text.Json.Serialization;
 using Mercurius.Modrinth.Models;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
+using NLog;
 
 namespace Mercurius.Modrinth {
     public class APIClient {
         private HttpClient client;
         private const string BaseUrl = @"https://api.modrinth.com/v2/";
+        private ILogger logger;
         public APIClient() {
+            logger = LogManager.GetCurrentClassLogger();
+
             client = new HttpClient();
 
             client.DefaultRequestHeaders.Accept.Clear();
@@ -20,53 +24,100 @@ namespace Mercurius.Modrinth {
             client.DefaultRequestHeaders.Add("user-agent", "Mercurius");
         }
         public async Task<SearchModel> SearchAsync(string query) {
-            Console.WriteLine($"Querying Labrynth with {query}...");
+            logger.Debug($"Querying Labrynth with {query}...");
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"search?query={query}");
-            SearchModel deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
+            SearchModel deserializedRes;
+
+            try {
+                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"search?query={query}");
+                deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
+            } catch (Exception e) {
+                logger.Trace(e.Message);
+                throw new ConnectionException("Connection Failed!");
+            }
 
             if (deserializedRes.hits.Length <= 0) {
-                Console.WriteLine("No results found... Sorry");
-                System.Environment.Exit(0);
+                logger.Debug("No results found... Sorry");
+                throw new Exception("No results found");
             }
 
             return deserializedRes;
         }
         public async Task<ProjectModel> GetProjectAsync(string projectId) {
-            Console.WriteLine($"Getting Project with ID {projectId}...");
+            logger.Debug($"Getting Project with ID {projectId}...");
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
-            ProjectModel deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
+            ProjectModel deserializedRes;
+
+            try {
+                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
+                deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
+            } catch (Exception e) {
+                logger.Trace(e.Message);
+                throw new ConnectionException("Connection failed!");
+            }
 
             return deserializedRes;
         }
         public async Task<VersionModel> GetVersionInfoAsync(string versionId) {
-            Console.WriteLine($"Getting Project Version with ID {versionId}...");
+            logger.Debug($"Getting Project Version with ID {versionId}...");
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
-            VersionModel deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
+            VersionModel deserializedRes;
+
+            try {
+                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
+                deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
+            } catch (Exception e) {
+                logger.Trace(e.Message);
+                throw new ConnectionException("Connection Failed!");
+            }
 
             return deserializedRes;
         }
         public async Task<VersionModel[]> ListVersionsAsync(ProjectModel project) {
             Console.WriteLine($"Getting List of Versions for {project.title}...");
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
-            VersionModel[] deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
+            VersionModel[] deserializedRes;
+
+            try {
+                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
+                deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
+            } catch (Exception e) {
+                logger.Trace(e.Message);
+                throw new ConnectionException("Connection Failed!");
+            }
 
             return deserializedRes;
         }
         public async Task DownloadVersionAsync(Mod mod) {
-            Console.WriteLine($"Starting Download of {mod.Title}: version {mod.ModVersion}");
+            logger.Debug($"Starting Download of {mod.Title}: version {mod.ModVersion}");
 
-            using HttpResponseMessage response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
+            HttpResponseMessage response;
+
+            try {
+                response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
+            } catch (Exception e) {
+                logger.Trace(e.Message);
+                throw new ConnectionException("Connection Failed!");
+            }
+
             using Stream readStream = await response.Content.ReadAsStreamAsync();
             using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}", FileMode.Create);
 
             await readStream.CopyToAsync(writeStream);
+            readStream.Close();
+            writeStream.Close();
 
             //TODO Report download progress
             //TODO Check download SHA256
         }
+    }
+    
+    public class ConnectionException : Exception {
+        public ConnectionException() { }
+        public ConnectionException(string message) : base(message) { }
+        public ConnectionException(string message, System.Exception inner) : base(message, inner) { }
+        protected ConnectionException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }

@@ -34,7 +34,7 @@ namespace Mercurius.DBus.Commands {
             }
 
             if (ProfileManager.SelectedProfile == null) {
-                Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
+                logger.Debug("No profile is currently selected for install... ? (Select or create one)");
                 return new DbusResponse {
                     Code = 2,
                     Data = "",
@@ -47,20 +47,20 @@ namespace Mercurius.DBus.Commands {
                 return new DbusResponse {
                     Code = -1,
                     Data = "",
-                    Message = "ignoreDependencies could not be resolved to boolean",
+                    Message = "<ignoreDependencies> could not be resolved to boolean",
                     Type = DataType.Error
                 };
             }
 
-
-
             client = new APIClient();
 
-            if (!await ProfileManager.AddModAsync(client, args[0], ignoreDependencies)) {
+            try {
+                await ProfileManager.AddModAsync(client, args[0], ignoreDependencies);
+            } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,
-                    Data = "",
-                    Message = "Adding mod to profile failed",
+                    Data = e.StackTrace,
+                    Message = e.Message,
                     Type = DataType.Error
                 };
             }

@@ -129,22 +129,5 @@ namespace Mercurius.DBus.Commands {
             }
             return true;
         }
-        // private async Task GenerateModsFromFiles(List<string> filePaths) {
-        //     Console.WriteLine("\nThere are no mods in the current profile, but files in mods directory.  Generate mods from jars?\n**WARNING** This feature is still a heavy WIP and may require manual profile editing to clean up dependencies.");
-        //     Console.Write("(y/N) > ");
-
-        //     if (!Console.ReadLine().ToLower().Equals("y")) return;
-
-        //     APIClient client = new APIClient();
-
-        //     foreach (string path in filePaths) {
-        //         string query = path.Substring(path.LastIndexOf("/") + 1);
-
-        //         Console.WriteLine("Generating mod for {0}", query);
-
-        //         await ProfileManager.AddModAsync(client, query, false);
-        //     }
-
-        // }
     }
 }

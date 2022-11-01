@@ -35,7 +35,7 @@ namespace Mercurius.DBus.Commands {
             }
                     
             if (matchingMods.Count() <= 0) {
-                Console.WriteLine("There are No Mods Matching \"{0}\" in Profile {1}", query, ProfileManager.SelectedProfile.Name);
+                logger.Debug("There are No Mods Matching \"{0}\" in Profile {1}", query, ProfileManager.SelectedProfile.Name);
                 return new DbusResponse {
                     Code = -1,
                     Data = "",
