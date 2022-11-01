@@ -5,13 +5,13 @@ using Mercurius.Configuration;
 using Tmds.DBus;
 
 namespace Mercurius.DBus.Commands {
-    public class ListCommand : BaseCommand {
-        public override string Name => "List";
-        public override string Description => "Lists either currently loaded profiles or mods of selected profile.";
-        public override string Format => "[mods | profiles]<string>";
-        public override bool TakesArgs { get => true; }
+    public class ListModsCommand : BaseCommand {
+        public override string Name => "ModList";
+        public override string Description => "Lists mods in current profile.";
+        public override string Format => "";
+        public override bool TakesArgs { get => false; }
         public override ObjectPath ObjectPath { get => _objectPath; }
-        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/list");
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/listmods");
         public override Task<DbusResponse> ExecuteAsync(string[] args)
         {
             if (args.Length == 0) {

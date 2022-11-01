@@ -1,41 +1,52 @@
-// using System;
-// using System.Threading.Tasks;
-// using Mercurius.Profiles;
-// using Tmds.DBus;
+using System;
+using System.Threading.Tasks;
+using Mercurius.Profiles;
+using Tmds.DBus;
 
-// namespace Mercurius.DBus.Commands {
-//     public class RemoveCommand : BaseCommand {
-//         public override string Name => "Remove";
-//         public override string Description => "Removes a Mod from a Profile.";
-//         public override string Format => "name<string>";
-//         public override bool TakesArgs { get => true; }
-//         public override ObjectPath ObjectPath { get => _objectPath; }
-//         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/remove");
-//         public override async Task ExecuteAsync(string[] args) {
-//             string query = string.Join<string>(" ", args);
+namespace Mercurius.DBus.Commands {
+    public class RemoveCommand : BaseCommand {
+        public override string Name => "RemoveMod";
+        public override string Description => "Removes a Mod from a Profile.";
+        public override string Format => "name<string>";
+        public override bool TakesArgs { get => true; }
+        public override ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/removemod");
+        public override async Task<DbusResponse> ExecuteAsync(string[] args) {
+            string query = string.Join<string>(" ", args);
 
-//             List<Mod> allMods = new List<Mod>();
+            List<Mod> allMods = new List<Mod>();
 
-//             List<Mod> matchingMods = new List<Mod>();
-//             foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
-//                 allMods.Add(mod);
-//                 allMods.AddRange(mod.Dependencies);
-//             }
+            List<Mod> matchingMods = new List<Mod>();
+            foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
+                allMods.Add(mod);
+                allMods.AddRange(mod.Dependencies);
+            }
 
-//             foreach (Mod mod in allMods) {
-//                 if (mod.Title.ToLower().Equals(query)) {
-//                     matchingMods.Add(mod);
-//                 }
-//             }
+            foreach (Mod mod in allMods) {
+                if (mod.Title.ToLower().Equals(query)) {
+                    matchingMods.Add(mod);
+                }
+            }
                     
-//             if (matchingMods.Count() <= 0) {
-//                 Console.WriteLine("There are No Mods Matching \"{0}\" in Profile {1}", query, ProfileManager.SelectedProfile.Name);
-//                 return;
-//             }
+            if (matchingMods.Count() <= 0) {
+                Console.WriteLine("There are No Mods Matching \"{0}\" in Profile {1}", query, ProfileManager.SelectedProfile.Name);
+                return new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = "No mods matching supplied query",
+                    Type = DataType.Error
+                };
+            }
 
-//             foreach (Mod mod in matchingMods) {
-//                 await ProfileManager.SelectedProfile.RemoveModFromListAsync(mod);
-//             }
-//         }
-//     } 
-// }
+            foreach (Mod mod in matchingMods) {
+                await ProfileManager.SelectedProfile.RemoveModFromListAsync(mod);
+            }
+            return new DbusResponse {
+                Code = 0,
+                Data = "",
+                Message = "Success",
+                Type = DataType.None
+            };
+        }
+    } 
+}

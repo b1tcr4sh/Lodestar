@@ -36,7 +36,7 @@ namespace Mercurius.DBus.Commands {
             if (ProfileManager.SelectedProfile == null) {
                 Console.WriteLine("No profile is currently selected for install... ? (Select or create one)");
                 return new DbusResponse {
-                    Code = 1,
+                    Code = 2,
                     Data = "",
                     Message = "No profile is currently selected... ?",
                     Type = DataType.Error
