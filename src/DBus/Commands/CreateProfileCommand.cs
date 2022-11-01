@@ -15,13 +15,11 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/createprofile");
         private ILogger logger;
 
-        internal CreateProfileCommand(ILogger _logger) : base(_logger) {
+        public CreateProfileCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
 
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
-            logger = LogManager.GetCurrentClassLogger();
-
             if (args.Length < 4) {
                 // insufficient args passed error
                 return new DbusResponse {

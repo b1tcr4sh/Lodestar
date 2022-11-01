@@ -17,7 +17,7 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/generate");
         private ILogger logger;
 
-        internal GenerateCommand(ILogger _logger) : base(_logger) {
+        public GenerateCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {

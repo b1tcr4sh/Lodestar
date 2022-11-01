@@ -19,7 +19,7 @@ namespace Mercurius.DBus.Commands {
         private bool ignoreDependencies;
         private ILogger logger;
 
-        internal AddCommand(ILogger _logger) : base(_logger) {
+        public AddCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
 

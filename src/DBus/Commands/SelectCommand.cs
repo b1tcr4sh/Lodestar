@@ -12,7 +12,7 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/select");
         private ILogger logger;
 
-        internal SelectCommand(ILogger _logger) : base(_logger) {
+        public SelectCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
 

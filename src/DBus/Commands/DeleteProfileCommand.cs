@@ -14,7 +14,7 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => true; }
         private ILogger logger;
 
-        internal DeleteProfileCommand(ILogger _logger) : base(_logger) {
+        public DeleteProfileCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
         public override Task<DbusResponse> ExecuteAsync(string[] args) {

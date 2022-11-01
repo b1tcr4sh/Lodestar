@@ -15,7 +15,7 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/listmods");
         private ILogger logger;
 
-        internal ListModsCommand(ILogger _logger) : base(_logger) {
+        public ListModsCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
         public override Task<DbusResponse> ExecuteAsync(string[] args)

@@ -15,7 +15,7 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/listprofiles");
         private ILogger logger;
 
-        internal ListProfilesCommand(ILogger _logger) : base(_logger) {
+        public ListProfilesCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
         public override Task<DbusResponse> ExecuteAsync(string[] args)

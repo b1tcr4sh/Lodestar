@@ -81,13 +81,7 @@ namespace Mercurius.Profiles {
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
         public static async Task<bool> AddModAsync(APIClient client, string id, bool ignoreDependencies) {
-            // string id;
-            // SearchModel search = await client.SearchAsync(query);
-            // if (!query.ToLower().Equals(search.hits[0].title.ToLower())) {
-            //     return false;
-            // } else id = search.hits[0].project_id;
-
-            // logger.Debug("Attempting to add mod {0} to profile {1}", query, SelectedProfile.Name);
+            logger.Debug("Attempting to add mod {0} to profile {1}", id, SelectedProfile.Name);
 
             ProjectModel project = await client.GetProjectAsync(id);
             VersionModel[] versions = await client.ListVersionsAsync(project);
@@ -96,7 +90,6 @@ namespace Mercurius.Profiles {
             viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(SelectedProfile.Loader.ToLower())).ToArray<VersionModel>();
 
             if (viableVersions.Count() < 1) {
-                Console.WriteLine("There were no valid installation candidates.  Aborting...");
                 logger.Info("Found no installation candidates for install");
                 return false;
             }
@@ -106,7 +99,7 @@ namespace Mercurius.Profiles {
             Mod mod = new Mod(version, project);
             
             if (version.dependencies.Count() > 0 && !ignoreDependencies) {
-                Console.WriteLine("Revolving Dependencies...");
+                logger.Debug("Revolving Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
@@ -116,7 +109,6 @@ namespace Mercurius.Profiles {
                     mod.AddDependency(dependencyMod);
                 }
             }
-            Console.WriteLine("Updating Profile...");
             await SelectedProfile.UpdateModListAsync(mod);
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, SelectedProfile.Name);
             return true;
@@ -143,7 +135,7 @@ namespace Mercurius.Profiles {
                     logger.Trace(e.Message);
                 } 
             }
-            throw new ProfileException($"Profile {name} not found!");
+            throw new ProfileException($"Couldn't load profile {name}!");
         }
         
         internal static async Task WriteProfileAsync(Profile profile) {

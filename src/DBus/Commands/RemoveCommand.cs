@@ -14,7 +14,7 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/removemod");
         private ILogger logger;
 
-        internal RemoveCommand(ILogger _logger) : base(_logger) {
+        public RemoveCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {

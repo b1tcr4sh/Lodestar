@@ -18,7 +18,7 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/sync");
         private ILogger logger;
 
-        internal SyncCommand(ILogger _logger) : base(_logger) {
+        public SyncCommand(ILogger _logger) : base(_logger) {
             logger = _logger;
         }
 
