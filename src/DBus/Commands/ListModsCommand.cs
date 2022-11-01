@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
+using NLog;
 
 namespace Mercurius.DBus.Commands {
     public class ListModsCommand : BaseCommand {
@@ -12,6 +13,11 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => false; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/listmods");
+        private ILogger logger;
+
+        internal ListModsCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
         public override Task<DbusResponse> ExecuteAsync(string[] args)
         {
             return Task.FromResult<DbusResponse>(new DbusResponse {

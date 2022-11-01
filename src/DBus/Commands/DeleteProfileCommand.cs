@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Tmds.DBus;
+using NLog;
 
 namespace Mercurius.DBus.Commands {
     public class DeleteProfileCommand : BaseCommand {
@@ -11,12 +12,25 @@ namespace Mercurius.DBus.Commands {
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/deleteprofile");
         public override bool TakesArgs { get => true; }
-        public override Task<DbusResponse> ExecuteAsync(string[] args) {
-            Profile profile = ProfileManager.GetLoadedProfile(args[0]);
-            // Handle profile not being loaded
-            
-            Console.WriteLine($"Removing Profile {profile.Name}...");
+        private ILogger logger;
 
+        internal DeleteProfileCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
+        public override Task<DbusResponse> ExecuteAsync(string[] args) {
+            Profile profile;
+
+            try {
+                profile = ProfileManager.GetLoadedProfile(args[0]);
+            } catch (Exception e) {
+                return Task.FromResult<DbusResponse>(new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = e.Message,
+                    Type = DataType.Error
+                });
+            }
+            
             profile.Delete();
             profile.Dispose();
             return Task.FromResult<DbusResponse>(new DbusResponse {

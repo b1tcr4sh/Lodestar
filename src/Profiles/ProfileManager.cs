@@ -43,16 +43,16 @@ namespace Mercurius.Profiles {
 
             return LoadedProfiles as IReadOnlyDictionary<string, Profile>;
         }
-        public static bool SelectProfile(string name) {
+        public static Profile SelectProfile(string name) {
             foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
                 if (profile.Key.Equals(name)) {
                     SelectedProfile = profile.Value;
 
                     logger.Debug($"Selected profile {name}");
-                    return true;
+                    return profile.Value;
                 }
             }
-            return false;
+            throw new Exception("Profile does not exist... ?");
         }
         public static void LoadAllProfiles() {
             LoadedProfiles = new Dictionary<string, Profile>();
@@ -133,7 +133,6 @@ namespace Mercurius.Profiles {
                     Profile profile = JsonSerializer.Deserialize<Profile>(fileContents);
 
                     if (profile.Name.ToLower().Equals(name.ToLower())) {
-                        Console.WriteLine($"Loaded profile {profile.Name}");
                         logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                         LoadedProfiles.Add(profile.Name, profile);

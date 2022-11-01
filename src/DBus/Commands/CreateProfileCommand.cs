@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
+using NLog;
 
 namespace Mercurius.DBus.Commands {
     public class CreateProfileCommand : BaseCommand {
@@ -12,7 +13,15 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/createprofile");
+        private ILogger logger;
+
+        internal CreateProfileCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
+
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
+            logger = LogManager.GetCurrentClassLogger();
+
             if (args.Length < 4) {
                 // insufficient args passed error
                 return new DbusResponse {
@@ -35,8 +44,19 @@ namespace Mercurius.DBus.Commands {
                 };
             }
 
-            await Profile.CreateNewAsync(args[0], args[1], args[2], serverSide, true);
-            Console.WriteLine($"Created and selected new profile {args[0]}");
+            try {
+                await Profile.CreateNewAsync(args[0], args[1], args[2], serverSide, false);
+            } catch (Exception e) {
+                return new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = e.Message,
+                    Type = DataType.Error
+                };
+            }
+
+
+            logger.Info($"Created new profile {args[0]}");
 
             return new DbusResponse {
                 Code = 0,

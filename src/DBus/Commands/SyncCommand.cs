@@ -5,6 +5,7 @@ using Mercurius.Modrinth;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
 using Tmds.DBus;
+using NLog;
 
 namespace Mercurius.DBus.Commands {
 
@@ -15,6 +16,11 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => false; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/sync");
+        private ILogger logger;
+
+        internal SyncCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
 
         private APIClient client = new APIClient();
         private List<Mod> installQueue = new List<Mod>();

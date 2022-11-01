@@ -10,7 +10,7 @@ namespace Mercurius.DBus {
             Type[] commandTypes = GetCommandTypes();
 
             foreach (Type commandObject in commandTypes) {
-                BaseCommand command = commandObject.GetConstructor(new Type[0]).Invoke(new object[0]) as BaseCommand;
+                BaseCommand command = commandObject.GetConstructor(new Type[0]).Invoke(new object[] {CommandLogger as object}) as BaseCommand;
                 commands.Add(command.Name.ToLower(), command);
             }
 

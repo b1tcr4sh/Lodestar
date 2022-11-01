@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Mercurius.Profiles;
 using Tmds.DBus;
+using NLog;
 
 namespace Mercurius.DBus.Commands {
     public class RemoveCommand : BaseCommand {
@@ -11,6 +12,11 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => true; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/removemod");
+        private ILogger logger;
+
+        internal RemoveCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
             string query = string.Join<string>(" ", args);
 

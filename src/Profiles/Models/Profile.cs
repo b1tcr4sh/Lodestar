@@ -1,5 +1,6 @@
 using Mercurius.Configuration;
 using System.Threading.Tasks;
+using NLog;
 
 namespace Mercurius.Profiles {
     public class Profile : IDisposable {
@@ -14,6 +15,7 @@ namespace Mercurius.Profiles {
 
         public string Path => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private bool _disposed = false;
+        private ILogger logger;
 
         public static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide, bool select = false) {
             Profile profile = new Profile {
@@ -22,7 +24,8 @@ namespace Mercurius.Profiles {
                 ServerSide = serverSide,
                 Loader = loader,
                 Mods = new List<Mod>(),
-                UnknownMods = new List<UnknownMod>()
+                UnknownMods = new List<UnknownMod>(),
+                logger = LogManager.GetCurrentClassLogger()
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
@@ -30,26 +33,13 @@ namespace Mercurius.Profiles {
 
             return profile;
         }
-        public static async Task<Profile> CreateDefaultAsync(string name, string minecraftVersion) {
-            Profile profile = new Profile {
-                Name = name,
-                MinecraftVersion = minecraftVersion,
-                ServerSide = false,
-                Loader = "fabric",
-                Mods = new List<Mod>(),
-                UnknownMods = new List<UnknownMod>()
-            };
-            await ProfileManager.WriteProfileAsync(profile);
-            await ProfileManager.LoadProfileAsync(profile.Name);
-            ProfileManager.SelectProfile(profile.Name);
-            return profile;
-        }
 
         public async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
             if (oldProfile.Equals(newProfile)) return oldProfile;
 
             await ProfileManager.OverwriteProfileAsync(newProfile, newProfile.Name);
-            return await ProfileManager.LoadProfileAsync(newProfile.Name);
+            await ProfileManager.LoadProfileAsync(newProfile.Name);
+            return ProfileManager.GetLoadedProfile(newProfile.Name);
         }
         public async Task UpdateModListAsync(List<Mod> mods) {
             if (Mods is null) {
@@ -116,7 +106,7 @@ namespace Mercurius.Profiles {
             if (File.Exists(Path))
                 ProfileManager.DeleteProfileFile(Name);
             else {
-                Console.WriteLine($"No file exists for profile {Name}... Unloading...");
+                logger.Debug($"No file exists for profile {Name}... Unloading...");
                 ProfileManager.UnloadProfile(this);
                 return;
             }

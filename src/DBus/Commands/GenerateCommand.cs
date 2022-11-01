@@ -15,6 +15,11 @@ namespace Mercurius.DBus.Commands {
         public override bool TakesArgs { get => false; }
         public override ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath = new ObjectPath("/org/mercurius/command/generate");
+        private ILogger logger;
+
+        internal GenerateCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
             if (ProfileManager.SelectedProfile is null) {
                 // No profile selected
@@ -26,11 +31,11 @@ namespace Mercurius.DBus.Commands {
                 };
             }
 
-            ILogger logger = LogManager.GetCurrentClassLogger();
-
             List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
 
             APIClient client = new APIClient();
+
+            // TODO: Rework to open mod file, grab name/id then use search to find mod.
 
             foreach (string path in existingFiles) {
                 string query = path.Substring(path.LastIndexOf("/") + 1);

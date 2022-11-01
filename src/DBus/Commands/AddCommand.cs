@@ -5,6 +5,7 @@ using Mercurius.Modrinth.Models;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
+using NLog;
 
 namespace Mercurius.DBus.Commands {
     public class AddCommand : BaseCommand {
@@ -16,6 +17,11 @@ namespace Mercurius.DBus.Commands {
         private ObjectPath _path = new ObjectPath("/org/mercurius/command/add");
         private APIClient client;  
         private bool ignoreDependencies;
+        private ILogger logger;
+
+        internal AddCommand(ILogger _logger) : base(_logger) {
+            logger = _logger;
+        }
 
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
             if (args.Length < 2) {
