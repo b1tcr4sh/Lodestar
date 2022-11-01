@@ -27,7 +27,6 @@ namespace Mercurius.Configuration {
                 try {
                     using FileStream settings = File.OpenRead($"{programDirectory}/settings.json");
                     Settings = JsonSerializer.Deserialize<SettingsFile>(settings);
-                    Console.WriteLine(Settings.Minecraft_Directory);
                     logger.Debug("Loaded configuration at {0}/{1}", programDirectory, "settings.json");
                 } catch (JsonException e) {
                     logger.Fatal("Error loading config file... ?");

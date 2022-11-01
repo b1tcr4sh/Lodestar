@@ -74,7 +74,7 @@ namespace Mercurius.Profiles {
             }
 
             if (parentsWithRemoveableDependency.Count() <= 0) {
-                Console.WriteLine("Removing {0}...", modToRemove.Title);
+                logger.Debug("Removing {0}...", modToRemove.Title);
                 Mods.Remove(modToRemove);
 
                 await ProfileManager.OverwriteProfileAsync(this, this.Name);
@@ -82,7 +82,7 @@ namespace Mercurius.Profiles {
             }
             
             foreach (Mod parent in parentsWithRemoveableDependency) {
-                Console.WriteLine("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
+                logger.Debug("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
                 Mods.Remove(parent);
                 parent.Dependencies.Remove(modToRemove);
                 await UpdateModListAsync(parent);

@@ -74,7 +74,7 @@ namespace Mercurius.Modrinth {
             return deserializedRes;
         }
         public async Task<VersionModel[]> ListVersionsAsync(ProjectModel project) {
-            Console.WriteLine($"Getting List of Versions for {project.title}...");
+            logger.Debug($"Getting List of Versions for {project.title}...");
 
             VersionModel[] deserializedRes;
 

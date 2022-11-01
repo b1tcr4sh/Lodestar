@@ -174,7 +174,7 @@ namespace Mercurius.Profiles {
             // else 
             if (SelectedProfile is not null && SelectedProfile.Equals(profile)) {
                 SelectedProfile = null;
-                Console.WriteLine($"Profile {profile.Name} deselected");
+                logger.Info($"Profile {profile.Name} deselected");
             }
 
             if (LoadedProfiles.ContainsKey(profile.Name)) {
