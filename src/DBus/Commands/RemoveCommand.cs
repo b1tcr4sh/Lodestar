@@ -18,24 +18,24 @@ namespace Mercurius.DBus.Commands {
             logger = _logger;
         }
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
-            string query = string.Join<string>(" ", args);
+            Profile selectedProfile = await ProfileManager.GetSelectedProfileAsync();
 
             List<Mod> allMods = new List<Mod>();
 
             List<Mod> matchingMods = new List<Mod>();
-            foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
+            foreach (Mod mod in selectedProfile.Mods) {
                 allMods.Add(mod);
                 allMods.AddRange(mod.Dependencies);
             }
 
             foreach (Mod mod in allMods) {
-                if (mod.Title.ToLower().Equals(query)) {
+                if (mod.Title.ToLower().Equals(args[0])) {
                     matchingMods.Add(mod);
                 }
             }
                     
             if (matchingMods.Count() <= 0) {
-                logger.Debug("There are No Mods Matching \"{0}\" in Profile {1}", query, ProfileManager.SelectedProfile.Name);
+                logger.Debug("There are No Mods Matching \"{0}\" in Profile {1}", args[0], selectedProfile.Name);
                 return new DbusResponse {
                     Code = -1,
                     Data = "",
@@ -45,7 +45,7 @@ namespace Mercurius.DBus.Commands {
             }
 
             foreach (Mod mod in matchingMods) {
-                await ProfileManager.SelectedProfile.RemoveModFromListAsync(mod);
+                await selectedProfile.RemoveModFromListAsync(mod);
             }
             return new DbusResponse {
                 Code = 0,

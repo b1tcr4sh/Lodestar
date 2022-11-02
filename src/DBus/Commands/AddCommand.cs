@@ -36,7 +36,7 @@ namespace Mercurius.DBus.Commands {
                 };
             }
 
-            if (ProfileManager.SelectedProfile == null) {
+            if (ProfileManager.GetSelectedProfileAsync() == null) {
                 logger.Debug("No profile is currently selected for install... ? (Select or create one)");
                 return new DbusResponse {
                     Code = 2,
@@ -66,7 +66,7 @@ namespace Mercurius.DBus.Commands {
             client = new APIClient();
 
             try {
-                await ProfileManager.AddModAsync(client, args[0], service, ignoreDependencies);
+                await ProfileManager.FetchModAsync(client, args[0], service, ignoreDependencies);
             } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,

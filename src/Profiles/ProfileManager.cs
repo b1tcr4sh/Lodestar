@@ -13,7 +13,7 @@ using NLog;
 namespace Mercurius.Profiles {
     public static class ProfileManager {
         private static Dictionary<string, Profile> LoadedProfiles;
-        public static Profile SelectedProfile { get; private set; }
+        private static Profile SelectedProfile; 
         private static string ProfilePath;
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public static void InitializeDirectory() {
@@ -27,6 +27,23 @@ namespace Mercurius.Profiles {
                 Directory.CreateDirectory(ProfilePath);
                 logger.Debug("Created Profiles Directory at {0}", ProfilePath);
             } 
+        }
+
+        public static async Task<Profile> GetSelectedProfileAsync(bool regenIfMissing = false) {
+            try {
+                await LoadProfileAsync(SelectedProfile.Name);
+            } catch (ProfileException e) {
+                if (!regenIfMissing) {
+                    return null;
+                } else {
+                    logger.Warn(e.Message);
+                }
+
+                await Profile.CreateNewAsync(SelectedProfile.Name, SelectedProfile.MinecraftVersion, SelectedProfile.Loader, SelectedProfile.ServerSide, true);
+                logger.Info("Selected profile failed to reload.  Presumably this means that filename changed?");
+            }
+
+            return SelectedProfile;
         }
         public static void InitializeDirectory(string path) {
             LoadedProfiles = new Dictionary<string, Profile>();
@@ -80,10 +97,10 @@ namespace Mercurius.Profiles {
 
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
-        public static async Task<Mod> AddModAsync(APIClient client, string id, Repo service, bool ignoreDependencies) {
-            logger.Debug("Attempting to add mod {0} to profile {1}", id, SelectedProfile.Name);
+        public static async Task<Mod> FetchModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies) {
+            logger.Debug("Attempting to add mod {0} to profile {1}", projectId, SelectedProfile.Name);
 
-            ProjectModel project = await client.GetProjectAsync(id);
+            ProjectModel project = await client.GetProjectAsync(projectId);
             VersionModel[] versions = await client.ListVersionsAsync(project);
 
             VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
@@ -135,7 +152,7 @@ namespace Mercurius.Profiles {
                     logger.Trace(e.Message);
                 } 
             }
-            throw new ProfileException($"Couldn't load profile {name}!");
+            throw new ProfileException($"Profile {name} wasn't found!");
         }
         
         internal static async Task WriteProfileAsync(Profile profile) {

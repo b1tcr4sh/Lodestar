@@ -68,13 +68,15 @@ namespace Mercurius.Profiles {
         }
 
         public static async Task<Mod> GenerateFromNameAsync(string name, APIClient client) {
+            Profile selectedProfile = await ProfileManager.GetSelectedProfileAsync();
+
             SearchModel searchRes = await client.SearchAsync(name);
 
             List<Hit> candidates = new List<Hit>();
 
             foreach (Hit hit in searchRes.hits) {
-                if (name.Contains(hit.title.ToLower()) && hit.versions.Contains(ProfileManager.SelectedProfile.MinecraftVersion)) {
-                    return await ProfileManager.AddModAsync(client, hit.project_id, Repo.modrinth, false);
+                if (name.Contains(hit.title.ToLower()) && hit.versions.Contains(selectedProfile.MinecraftVersion)) {
+                    return await ProfileManager.FetchModAsync(client, hit.project_id, Repo.modrinth, false);
                 }
             }
             throw new Exception("No valid install candidates found!");

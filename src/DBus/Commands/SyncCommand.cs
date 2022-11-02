@@ -24,8 +24,11 @@ namespace Mercurius.DBus.Commands {
 
         private APIClient client = new APIClient();
         private List<Mod> installQueue = new List<Mod>();
+        private Profile selectedProfile;
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
-            if (ProfileManager.SelectedProfile is null) {
+            selectedProfile = await ProfileManager.GetSelectedProfileAsync();
+
+            if (selectedProfile is null) {
                 Console.WriteLine("No Profile is Selected... ? (Create or Select One)");
                 return new DbusResponse {
                     Code = 2,
@@ -50,12 +53,12 @@ namespace Mercurius.DBus.Commands {
             List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
             List<string> modPaths = new List<string>();
 
-            if (existingFiles.Count <= 0) {
-                // No mods to sync
-                return;
-            }
+            // if (existingFiles.Count <= 0) {
+            //     // No mods to sync
+            //     return;
+            // }
 
-            foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
+            foreach (Mod mod in selectedProfile.Mods) {
                 modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
 
                 foreach (Mod dependency in mod.Dependencies) {
@@ -79,13 +82,13 @@ namespace Mercurius.DBus.Commands {
                     File.Delete(file);
             }
 
-            if (ProfileManager.SelectedProfile.Mods.Count <= 0) {
+            if (selectedProfile.Mods.Count <= 0) {
                 Console.WriteLine("There is nothing to do...");
                 return;
             }
             List<Mod> preQueue = new List<Mod>();
-            preQueue.AddRange(ProfileManager.SelectedProfile.Mods);
-            foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
+            preQueue.AddRange(selectedProfile.Mods);
+            foreach (Mod mod in selectedProfile.Mods) {
                 preQueue.AddRange(mod.Dependencies);
             }
             
