@@ -80,7 +80,7 @@ namespace Mercurius.Profiles {
 
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
-        public static async Task<bool> AddModAsync(APIClient client, string id, Repo service, bool ignoreDependencies) {
+        public static async Task<Mod> AddModAsync(APIClient client, string id, Repo service, bool ignoreDependencies) {
             logger.Debug("Attempting to add mod {0} to profile {1}", id, SelectedProfile.Name);
 
             ProjectModel project = await client.GetProjectAsync(id);
@@ -111,7 +111,7 @@ namespace Mercurius.Profiles {
             }
             await SelectedProfile.UpdateModListAsync(mod);
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, SelectedProfile.Name);
-            return true;
+            return mod;
         }
         
         public static async Task<Profile> LoadProfileAsync(string name) {

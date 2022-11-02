@@ -73,14 +73,11 @@ namespace Mercurius.Profiles {
             List<Hit> candidates = new List<Hit>();
 
             foreach (Hit hit in searchRes.hits) {
-                if (name.Contains(hit.title.ToLower())) {
-                    candidates.Add(hit);
+                if (name.Contains(hit.title.ToLower()) && hit.versions.Contains(ProfileManager.SelectedProfile.MinecraftVersion)) {
+                    return await ProfileManager.AddModAsync(client, hit.project_id, Repo.modrinth, false);
                 }
             }
-
-            foreach (Hit hit in candidates) {
-                if (hit.versions.Contains(ProfileManager.SelectedProfile.MinecraftVersion) && hit.)
-            }
+            throw new Exception("No valid install candidates found!");
         }
     }
 

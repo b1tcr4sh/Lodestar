@@ -32,6 +32,23 @@ namespace Mercurius.DBus.Commands {
             }
 
             List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
+            if (existingFiles.Count < 1) {
+                return new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = "No mod files to generate from... ?"
+                };
+            }
+
+            if (ProfileManager.SelectedProfile.Mods.Count >= 1) {
+                foreach (Mod mod in ProfileManager.SelectedProfile.Mods) {
+                    if (!mod.FileExists()) {
+                        await ProfileManager.SelectedProfile.RemoveModFromListAsync(mod);
+                    } else {
+                        existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
+                    }
+                }
+            }
 
             APIClient client = new APIClient();
 
@@ -41,11 +58,9 @@ namespace Mercurius.DBus.Commands {
             foreach (string path in existingFiles) {
                 logger.Info("Trying to generate a mod from {0}", path);  
 
-                await Mod.GenerateFromNameAsync(parseFileName(path), client);
-
-
                 try {
-                    await ProfileManager.AddModAsync(client, query, false);
+                    await Mod.GenerateFromNameAsync(parseFileName(path), client);
+                    
                 } catch (Exception e) {
                     return new DbusResponse {
                         Code = -1,
