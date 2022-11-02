@@ -31,7 +31,12 @@ namespace Mercurius.Profiles {
 
         public static async Task<Profile> GetSelectedProfileAsync(bool regenIfMissing = false) {
             try {
-                await LoadProfileAsync(SelectedProfile.Name);
+                // Reload selected profile before returning it to make sure it's in sync with local json
+                string path = SelectedProfile.Path;
+
+                UnloadProfile(SelectedProfile);
+                Profile profile = await LoadProfilFromFileAsync(path);
+                SelectProfile(profile.Name);
             } catch (ProfileException e) {
                 if (!regenIfMissing) {
                     return null;
@@ -41,7 +46,8 @@ namespace Mercurius.Profiles {
 
                 await Profile.CreateNewAsync(SelectedProfile.Name, SelectedProfile.MinecraftVersion, SelectedProfile.Loader, SelectedProfile.ServerSide, true);
                 logger.Info("Selected profile failed to reload.  Presumably this means that filename changed?");
-            }
+            } 
+            
 
             return SelectedProfile;
         }
@@ -98,13 +104,19 @@ namespace Mercurius.Profiles {
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
         public static async Task<Mod> FetchModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies) {
-            logger.Debug("Attempting to add mod {0} to profile {1}", projectId, SelectedProfile.Name);
+            if (SelectedProfile is null) {
+                throw new ProfileException("No profile currently selected!");
+            }
+
+            Profile selectedProfile = await GetSelectedProfileAsync();
+
+            logger.Debug("Attempting to add mod {0} to profile {1}", projectId, selectedProfile.Name);
 
             ProjectModel project = await client.GetProjectAsync(projectId);
             VersionModel[] versions = await client.ListVersionsAsync(project);
 
-            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(ProfileManager.SelectedProfile.MinecraftVersion)).ToArray<VersionModel>();
-            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(SelectedProfile.Loader.ToLower())).ToArray<VersionModel>();
+            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(selectedProfile.MinecraftVersion)).ToArray<VersionModel>();
+            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(selectedProfile.Loader)).ToArray<VersionModel>();
 
             if (viableVersions.Count() < 1) {
                 logger.Debug("Found no installation candidates for install");
@@ -127,7 +139,7 @@ namespace Mercurius.Profiles {
                 }
             }
             await SelectedProfile.UpdateModListAsync(mod);
-            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, SelectedProfile.Name);
+            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, selectedProfile.Name);
             return mod;
         }
         
@@ -149,12 +161,31 @@ namespace Mercurius.Profiles {
                     }
                 } catch (Exception e) {
                     logger.Warn(@$"Error occurred loading profile at {file}:");
-                    logger.Trace(e.Message);
+                    logger.Warn(e.Message);
                 } 
             }
             throw new ProfileException($"Profile {name} wasn't found!");
         }
         
+        public static async Task<Profile> LoadProfilFromFileAsync(string path) {
+            logger.Debug("Attempting to load profile from {0}", path);
+
+            Profile profile;
+
+                try {
+                    string fileContents = await File.ReadAllTextAsync(path, Encoding.ASCII);
+                    profile = JsonSerializer.Deserialize<Profile>(fileContents);
+                        logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
+
+                        LoadedProfiles.Add(profile.Name, profile);
+                } catch (Exception e) {
+                    logger.Warn(@$"Error occurred loading profile at {path}:");
+                    logger.Warn(e.Message);
+
+                    throw new ProfileException("Profile failed to load");
+                } 
+            return profile;
+        }
         internal static async Task WriteProfileAsync(Profile profile) {
             if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) return;
 
@@ -197,7 +228,7 @@ namespace Mercurius.Profiles {
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);
                 logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
-                LoadAllProfiles();
+                // LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
     }

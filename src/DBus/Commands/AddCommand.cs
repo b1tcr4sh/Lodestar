@@ -36,16 +36,6 @@ namespace Mercurius.DBus.Commands {
                 };
             }
 
-            if (ProfileManager.GetSelectedProfileAsync() == null) {
-                logger.Debug("No profile is currently selected for install... ? (Select or create one)");
-                return new DbusResponse {
-                    Code = 2,
-                    Data = "",
-                    Message = "No profile is currently selected... ?",
-                    Type = DataType.Error
-                };
-            } 
-
             if (!Boolean.TryParse(args[2], out ignoreDependencies)) {
                 return new DbusResponse {
                     Code = -1,

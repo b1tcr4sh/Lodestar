@@ -75,15 +75,15 @@ namespace Mercurius.DBus.Commands {
             }
 
             if (existingFiles.Count <= 0) {
-                Console.WriteLine("There are no Residiual Mod jars to Remove");
+                logger.Info("There are no Residiual Mod jars to Remove");
             } else {
-                Console.WriteLine("Removing Residual Mod jars...");
+                logger.Info("Removing Residual Mod jars...");
                 foreach (string file in existingFiles)
                     File.Delete(file);
             }
 
             if (selectedProfile.Mods.Count <= 0) {
-                Console.WriteLine("There is nothing to do...");
+                logger.Info("There is nothing to do...");
                 return;
             }
             List<Mod> preQueue = new List<Mod>();
@@ -96,16 +96,20 @@ namespace Mercurius.DBus.Commands {
             // Queue mods for install
             foreach (Mod mod in preQueue) {
                 if (File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}")) {
-                    Console.Write("{0}: {1} is already installed, reinstall? (y/N) > ", mod.Title, mod.ModVersion);
+                    logger.Debug("{0}: {1} is already installed, skipping...", mod.Title, mod.ModVersion);
 
-                    if (Console.ReadLine().ToLower().Equals("y")) {
-                        installQueue.Add(mod);
-                    }
+                    // if (Console.ReadLine().ToLower().Equals("y")) {
+                    //     installQueue.Add(mod);
+                    // }
                         
                 } else
                     installQueue.Add(mod);
             }
-                await Install();
+                // await Install();
+                logger.Debug("Attempting to install mods...");
+                foreach (Mod mod in installQueue) {
+                    await client.DownloadVersionAsync(mod);
+                }
 
                 //TODO Resolve dependencies for mods in profile
         }
