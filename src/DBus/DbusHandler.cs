@@ -27,7 +27,7 @@ namespace Mercurius.DBus {
                 await connection.RegisterObjectAsync(new CommandMessenger());
 
                 await connection.RegisterObjectsAsync(CommandManager.GetCommands().Values);
-                // await connection.RegisterObjectsAsync(ProfileManager.GetLoadedProfiles().Values);  Throws exception??
+                await connection.RegisterObjectsAsync(ProfileManager.GetLoadedProfiles().Values);  // Need to make Mods compatible with Dbus
 
                 // string boundAddress = await server.StartAsync($"tcp:host=localhost,port={_config.Value.DBusPort}");
                 string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");

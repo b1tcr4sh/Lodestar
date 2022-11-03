@@ -11,9 +11,7 @@ namespace Mercurius.Profiles {
         public string MinecraftVersion { get; set; }
         public bool ServerSide { get; set; }
         public string Loader { get; set; }
-        public bool ContainsUnknownMods = false;
         public List<Mod> Mods { get; set; }
-        public List<UnknownMod> UnknownMods = null;
         public ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath;
 
@@ -28,7 +26,6 @@ namespace Mercurius.Profiles {
                 ServerSide = serverSide,
                 Loader = loader,
                 Mods = new List<Mod>(),
-                UnknownMods = new List<UnknownMod>(),
                 logger = LogManager.GetCurrentClassLogger(),
                 _objectPath = new ObjectPath($"/org/mercurius/profile/{name}")
             };
