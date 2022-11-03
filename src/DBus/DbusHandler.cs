@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Tmds.DBus;
 using Mercurius.Configuration;
+using Mercurius.Profiles;
 using Microsoft.Extensions.Hosting;
 using NLog;
 
@@ -26,6 +27,7 @@ namespace Mercurius.DBus {
                 await connection.RegisterObjectAsync(new CommandMessenger());
 
                 await connection.RegisterObjectsAsync(CommandManager.GetCommands().Values);
+                // await connection.RegisterObjectsAsync(ProfileManager.GetLoadedProfiles().Values);  Throws exception??
 
                 // string boundAddress = await server.StartAsync($"tcp:host=localhost,port={_config.Value.DBusPort}");
                 string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");

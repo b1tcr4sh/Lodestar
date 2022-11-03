@@ -30,6 +30,10 @@ namespace Mercurius.Profiles {
         }
 
         public static async Task<Profile> GetSelectedProfileAsync(bool regenIfMissing = false) {
+            if (SelectedProfile is null) {
+                throw new ProfileException("No Profile Selected!");
+            } 
+
             try {
                 // Reload selected profile before returning it to make sure it's in sync with local json
                 string path = SelectedProfile.Path;
@@ -175,7 +179,7 @@ namespace Mercurius.Profiles {
                 try {
                     string fileContents = await File.ReadAllTextAsync(path, Encoding.ASCII);
                     profile = JsonSerializer.Deserialize<Profile>(fileContents);
-                        logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
+                    logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                         LoadedProfiles.Add(profile.Name, profile);
                 } catch (Exception e) {

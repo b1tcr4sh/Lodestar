@@ -1,9 +1,11 @@
 using Mercurius.Configuration;
+using Mercurius.DBus;
+using Tmds.DBus;
 using System.Threading.Tasks;
 using NLog;
 
 namespace Mercurius.Profiles {
-    public class Profile : IDisposable {
+    public class Profile : IProfile {
         // Make a reference to it's respective json file, with methods to update, delete, etc.
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
@@ -12,12 +14,14 @@ namespace Mercurius.Profiles {
         public bool ContainsUnknownMods = false;
         public List<Mod> Mods { get; set; }
         public List<UnknownMod> UnknownMods = null;
+        public ObjectPath ObjectPath { get => _objectPath; }
+        private ObjectPath _objectPath;
 
-        public string Path => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
-        private bool _disposed = false;
+        public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
+        // private bool _disposed = false;
         private ILogger logger;
 
-        public static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide, bool select = false) {
+        internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide, bool select = false) {
             Profile profile = new Profile {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
@@ -25,7 +29,8 @@ namespace Mercurius.Profiles {
                 Loader = loader,
                 Mods = new List<Mod>(),
                 UnknownMods = new List<UnknownMod>(),
-                logger = LogManager.GetCurrentClassLogger()
+                logger = LogManager.GetCurrentClassLogger(),
+                _objectPath = new ObjectPath($"/org/mercurius/profile/{name}")
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
@@ -34,14 +39,14 @@ namespace Mercurius.Profiles {
             return profile;
         }
 
-        public async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
+        internal async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
             if (oldProfile.Equals(newProfile)) return oldProfile;
 
             await ProfileManager.OverwriteProfileAsync(newProfile, newProfile.Name);
             await ProfileManager.LoadProfileAsync(newProfile.Name);
             return ProfileManager.GetLoadedProfile(newProfile.Name);
         }
-        public async Task UpdateModListAsync(List<Mod> mods) {
+        internal async Task UpdateModListAsync(List<Mod> mods) {
             if (Mods is null) {
                 Mods = mods;
             } else {
@@ -51,12 +56,12 @@ namespace Mercurius.Profiles {
 
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
-        public async Task UpdateModListAsync(Mod mod) {
+        internal async Task UpdateModListAsync(Mod mod) {
             Mods.Add(mod);
 
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
-        public async Task RemoveModFromListAsync(Mod modToRemove) {
+        internal async Task RemoveModFromListAsync(Mod modToRemove) {
 
             // List<Mod> parentsWithRemoveableDependency = Mods.Where<Mod>((mod) => mod.Dependencies.Where<Mod>((dependency) => dependency.Title.ToLower().Equals(modToRemove.Title))).ToList<Mod>();
 
@@ -102,7 +107,7 @@ namespace Mercurius.Profiles {
             // Mods.Remove(modToRemove);
             // await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
-        public void Delete() {
+        internal void Delete() {
             if (File.Exists(Path))
                 ProfileManager.DeleteProfileFile(Name);
             else {
@@ -115,18 +120,18 @@ namespace Mercurius.Profiles {
             ProfileManager.UnloadProfile(this);            
         }
 
-        public void Dispose() {
-            Dispose(false);
-            GC.SuppressFinalize(this);
-        }
-        private void Dispose(bool disposing) {
-            if (_disposed) return;
-            if (disposing) {
-                ProfileManager.UnloadProfile(this);
-            }
+        // public void Dispose() {
+        //     Dispose(false);
+        //     GC.SuppressFinalize(this);
+        // }
+        // private void Dispose(bool disposing) {
+        //     if (_disposed) return;
+        //     if (disposing) {
+        //         ProfileManager.UnloadProfile(this);
+        //     }
 
-            _disposed = true;
-        }
+        //     _disposed = true;
+        // }
     }
     public enum ClientType {
         ClientSide, ServerSide

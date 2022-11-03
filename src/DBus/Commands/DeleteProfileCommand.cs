@@ -32,7 +32,7 @@ namespace Mercurius.DBus.Commands {
             }
             
             profile.Delete();
-            profile.Dispose();
+            // profile.Dispose();
             return Task.FromResult<DbusResponse>(new DbusResponse {
                 Code = 0,
                 Data = "",
