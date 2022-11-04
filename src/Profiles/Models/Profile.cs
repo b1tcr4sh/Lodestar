@@ -5,15 +5,13 @@ using System.Threading.Tasks;
 using NLog;
 
 namespace Mercurius.Profiles {
-    public class Profile : IProfile {
+    public class Profile {
         // Make a reference to it's respective json file, with methods to update, delete, etc.
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
         public bool ServerSide { get; set; }
         public string Loader { get; set; }
         public List<Mod> Mods { get; set; }
-        public ObjectPath ObjectPath { get => _objectPath; }
-        private ObjectPath _objectPath;
 
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         // private bool _disposed = false;
@@ -27,7 +25,7 @@ namespace Mercurius.Profiles {
                 Loader = loader,
                 Mods = new List<Mod>(),
                 logger = LogManager.GetCurrentClassLogger(),
-                _objectPath = new ObjectPath($"/org/mercurius/profile/{name}")
+                // _objectPath = new ObjectPath($"/org/mercurius/profile/{name}")
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
@@ -87,6 +85,7 @@ namespace Mercurius.Profiles {
                 logger.Debug("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
                 Mods.Remove(parent);
                 parent.Dependencies.Remove(modToRemove);
+
                 await UpdateModListAsync(parent);
             }
 

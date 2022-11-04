@@ -3,9 +3,11 @@ using Mercurius.Configuration;
 using Mercurius.Modrinth;
 using Mercurius.DBus;
 using Tmds.DBus;
+using System.Runtime.InteropServices;
 
 namespace Mercurius.Profiles {
-    public struct Mod {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Mod : IMod {
         public string Title { get; private set; }
         public string FileName { get; private set; }
         public string DownloadURL { get; private set; }
@@ -16,8 +18,8 @@ namespace Mercurius.Profiles {
         public List<Mod> Dependencies { get; private set; }
         public ClientDependency ClientDependency { get; private set; }
 
-        public ObjectPath ObjectPath { get => _objectPath; }
-        private ObjectPath _objectPath;
+        // public ObjectPath ObjectPath { get => _objectPath; }
+        // private ObjectPath _objectPath;
 
         internal Mod(VersionModel version, ProjectModel project) : this() {
             Title = project.title;
@@ -26,7 +28,7 @@ namespace Mercurius.Profiles {
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
             DownloadURL = version.files.Where<file>((file) => file.primary).ToArray<file>()[0].url;
-            _objectPath = new ObjectPath($"/org/mercurius/mod/{Title}");
+            // _objectPath = new ObjectPath($"/org/mercurius/mod/{Title}");
             Dependencies = new List<Mod>();
 
             file primaryFile = version.files[0];
@@ -90,5 +92,18 @@ namespace Mercurius.Profiles {
 
     public enum ClientDependency {
         ClientSide, ServerSide, ClientServerDependent, Unknown
+    }
+
+    [DBusInterface("org.mercurius.mod")]
+    public interface IMod {
+        public string Title { get; }
+        public string FileName { get; }
+        public string DownloadURL { get; }
+        public string ProjectId { get; }
+        public string VersionId { get; }
+        public string MinecraftVersion { get; }
+        public string ModVersion { get; }
+        public List<Mod> Dependencies { get; }
+        public ClientDependency ClientDependency { get; }
     }
 }

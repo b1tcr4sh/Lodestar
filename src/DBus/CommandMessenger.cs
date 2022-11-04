@@ -1,5 +1,6 @@
 using Tmds.DBus;
 using System.Runtime.InteropServices;
+using Mercurius.Profiles;
 
 namespace Mercurius.DBus {
     [StructLayout(LayoutKind.Sequential)]
@@ -20,6 +21,7 @@ namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.commandmessenger")]
     public interface ICommandMessenger : IDBusObject {
         Task<ObjectPath[]> ListCommandsAsync();
+        Task<ObjectPath[]> ListProfilesAsync();
     }
 
 
@@ -33,6 +35,15 @@ namespace Mercurius.DBus {
                 paths.Add(command.Value.ObjectPath);
             }
 
+            return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
+        }
+
+        public Task<ObjectPath[]> ListProfilesAsync() {
+            List<ObjectPath> paths = new List<ObjectPath>();
+
+            foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
+                paths.Add(new ObjectPath($"/org/mercurius/profile/{profile.Name}"));
+            }
             return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
         }
         public ObjectPath ObjectPath { get => _objectPath; }
