@@ -29,7 +29,7 @@ namespace Mercurius.Profiles {
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
-            if (select) ProfileManager.SelectProfile(profile.Name);
+            // if (select) ProfileManager.SelectProfile(profile.Name);
 
             return profile;
         }

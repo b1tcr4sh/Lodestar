@@ -13,7 +13,7 @@ using NLog;
 namespace Mercurius.Profiles {
     public static class ProfileManager {
         private static Dictionary<string, Profile> LoadedProfiles;
-        private static Profile SelectedProfile; 
+        // private static Profile SelectedProfile; 
         private static string ProfilePath;
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public static void InitializeDirectory() {
@@ -29,32 +29,32 @@ namespace Mercurius.Profiles {
             } 
         }
 
-        public static async Task<Profile> GetSelectedProfileAsync(bool regenIfMissing = false) {
-            if (SelectedProfile is null) {
-                throw new ProfileException("No Profile Selected!");
-            } 
+        // public static async Task<Profile> GetSelectedProfileAsync(bool regenIfMissing = false) {
+        //     if (SelectedProfile is null) {
+        //         throw new ProfileException("No Profile Selected!");
+        //     } 
 
-            try {
-                // Reload selected profile before returning it to make sure it's in sync with local json
-                string path = SelectedProfile.Path;
+        //     try {
+        //         // Reload selected profile before returning it to make sure it's in sync with local json
+        //         string path = SelectedProfile.Path;
 
-                UnloadProfile(SelectedProfile);
-                Profile profile = await LoadProfilFromFileAsync(path);
-                SelectProfile(profile.Name);
-            } catch (ProfileException e) {
-                if (!regenIfMissing) {
-                    return null;
-                } else {
-                    logger.Warn(e.Message);
-                }
+        //         UnloadProfile(SelectedProfile);
+        //         Profile profile = await LoadProfilFromFileAsync(path);
+        //         SelectProfile(profile.Name);
+        //     } catch (ProfileException e) {
+        //         if (!regenIfMissing) {
+        //             return null;
+        //         } else {
+        //             logger.Warn(e.Message);
+        //         }
 
-                await Profile.CreateNewAsync(SelectedProfile.Name, SelectedProfile.MinecraftVersion, SelectedProfile.Loader, SelectedProfile.ServerSide, true);
-                logger.Info("Selected profile failed to reload.  Presumably this means that filename changed?");
-            } 
+        //         await Profile.CreateNewAsync(SelectedProfile.Name, SelectedProfile.MinecraftVersion, SelectedProfile.Loader, SelectedProfile.ServerSide, true);
+        //         logger.Info("Selected profile failed to reload.  Presumably this means that filename changed?");
+        //     } 
             
 
-            return SelectedProfile;
-        }
+        //     return SelectedProfile;
+        // }
         public static void InitializeDirectory(string path) {
             LoadedProfiles = new Dictionary<string, Profile>();
             ProfilePath = @path;
@@ -70,17 +70,17 @@ namespace Mercurius.Profiles {
 
             return LoadedProfiles as IReadOnlyDictionary<string, Profile>;
         }
-        public static Profile SelectProfile(string name) {
-            foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
-                if (profile.Key.Equals(name)) {
-                    SelectedProfile = profile.Value;
+        // public static Profile SelectProfile(string name) {
+        //     foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
+        //         if (profile.Key.Equals(name)) {
+        //             SelectedProfile = profile.Value;
 
-                    logger.Debug($"Selected profile {name}");
-                    return profile.Value;
-                }
-            }
-            throw new Exception("Profile does not exist... ?");
-        }
+        //             logger.Debug($"Selected profile {name}");
+        //             return profile.Value;
+        //         }
+        //     }
+        //     throw new Exception("Profile does not exist... ?");
+        // }
         public static void LoadAllProfiles() {
             LoadedProfiles = new Dictionary<string, Profile>();
             string[] files = Directory.GetFiles(ProfilePath);
@@ -224,10 +224,10 @@ namespace Mercurius.Profiles {
             //     return;
             // }
             // else 
-            if (SelectedProfile is not null && SelectedProfile.Equals(profile)) {
-                SelectedProfile = null;
-                logger.Info($"Profile {profile.Name} deselected");
-            }
+            // if (SelectedProfile is not null && SelectedProfile.Equals(profile)) {
+            //     SelectedProfile = null;
+            //     logger.Info($"Profile {profile.Name} deselected");
+            // }
 
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);

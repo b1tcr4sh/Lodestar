@@ -28,7 +28,7 @@ namespace Mercurius.DBus.Commands {
             }
 
             try {
-                ProfileManager.SelectProfile(args[0]); 
+                // ProfileManager.SelectProfile(args[0]); 
             } catch (Exception e) {
                 return Task.FromResult<DbusResponse>(new DbusResponse {
                     Code = -1,

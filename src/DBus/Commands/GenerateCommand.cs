@@ -22,17 +22,17 @@ namespace Mercurius.DBus.Commands {
             logger = _logger;
         }
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
-            Profile selectedProfile = await ProfileManager.GetSelectedProfileAsync();
+            // Profile selectedProfile = await ProfileManager.GetSelectedProfileAsync();
 
-            if (selectedProfile is null) {
-                // No profile selected
-                return new DbusResponse {
-                    Code = 2,
-                    Data = "",
-                    Message = "No profile currently selected",
-                    Type = DataType.Error
-                };
-            }
+            // if (selectedProfile is null) {
+            //     // No profile selected
+            //     return new DbusResponse {
+            //         Code = 2,
+            //         Data = "",
+            //         Message = "No profile currently selected",
+            //         Type = DataType.Error
+            //     };
+            // }
 
             List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
             if (existingFiles.Count < 1) {
@@ -43,27 +43,27 @@ namespace Mercurius.DBus.Commands {
                 };
             }
 
-            if (selectedProfile.Mods.Count >= 1) {
-                foreach (Mod mod in selectedProfile.Mods) {
-                    if (!mod.FileExists()) {
-                        await selectedProfile.RemoveModFromListAsync(mod);
+            // if (selectedProfile.Mods.Count >= 1) {
+            //     foreach (Mod mod in selectedProfile.Mods) {
+            //         if (!mod.FileExists()) {
+            //             await selectedProfile.RemoveModFromListAsync(mod);
 
-                        foreach (Mod dependency in mod.Dependencies) {
-                            if (dependency.FileExists()) {
-                                File.Delete($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
-                            }
-                        }
-                    } else {
-                        existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
+            //             foreach (Mod dependency in mod.Dependencies) {
+            //                 if (dependency.FileExists()) {
+            //                     File.Delete($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
+            //                 }
+            //             }
+            //         } else {
+            //             existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
                         
-                        foreach (Mod dependency in mod.Dependencies) {
-                            if (mod.FileExists()) {
-                                existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
-                            }
-                        }   
-                    }
-                }
-            }
+            //             foreach (Mod dependency in mod.Dependencies) {
+            //                 if (mod.FileExists()) {
+            //                     existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
+            //                 }
+            //             }   
+            //         }
+            //     }
+            // }
 
             APIClient client = new APIClient();
 

@@ -26,17 +26,17 @@ namespace Mercurius.DBus.Commands {
         private List<Mod> installQueue = new List<Mod>();
         private Profile selectedProfile;
         public override async Task<DbusResponse> ExecuteAsync(string[] args) {
-            selectedProfile = await ProfileManager.GetSelectedProfileAsync();
+            // selectedProfile = await ProfileManager.GetSelectedProfileAsync();
 
-            if (selectedProfile is null) {
-                Console.WriteLine("No Profile is Selected... ? (Create or Select One)");
-                return new DbusResponse {
-                    Code = 2,
-                    Data = "",
-                    Message = "No profile currently selected",
-                    Type = DataType.Error
-                };
-            }
+            // if (selectedProfile is null) {
+            //     Console.WriteLine("No Profile is Selected... ? (Create or Select One)");
+            //     return new DbusResponse {
+            //         Code = 2,
+            //         Data = "",
+            //         Message = "No profile currently selected",
+            //         Type = DataType.Error
+            //     };
+            // }
 
             await SyncModsFiles();
 
