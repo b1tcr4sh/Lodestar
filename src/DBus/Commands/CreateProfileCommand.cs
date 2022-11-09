@@ -43,7 +43,7 @@ namespace Mercurius.DBus.Commands {
             }
 
             try {
-                await Profile.CreateNewAsync(args[0], args[1], args[2], serverSide, false);
+                await Profile.CreateNewAsync(args[0], args[1], args[2], serverSide);
             } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,

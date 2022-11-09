@@ -107,45 +107,6 @@ namespace Mercurius.Profiles {
 
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
-        public static async Task<Mod> FetchModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies) {
-            if (SelectedProfile is null) {
-                throw new ProfileException("No profile currently selected!");
-            }
-
-            Profile selectedProfile = await GetSelectedProfileAsync();
-
-            logger.Debug("Attempting to add mod {0} to profile {1}", projectId, selectedProfile.Name);
-
-            ProjectModel project = await client.GetProjectAsync(projectId);
-            VersionModel[] versions = await client.ListVersionsAsync(project);
-
-            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(selectedProfile.MinecraftVersion)).ToArray<VersionModel>();
-            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(selectedProfile.Loader)).ToArray<VersionModel>();
-
-            if (viableVersions.Count() < 1) {
-                logger.Debug("Found no installation candidates for install");
-                throw new Exception("Found no valid installation candidates");
-            }
-
-            VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
-
-            Mod mod = new Mod(version, project);
-            
-            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
-                logger.Debug("Revolving Dependencies...");
-
-                foreach (Dependency dependency in version.dependencies) {
-                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
-
-                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    mod.AddDependency(dependencyMod);
-                }
-            }
-            await SelectedProfile.UpdateModListAsync(mod);
-            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, selectedProfile.Name);
-            return mod;
-        }
         
         public static async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);

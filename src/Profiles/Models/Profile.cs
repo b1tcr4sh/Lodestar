@@ -1,5 +1,7 @@
 using Mercurius.Configuration;
 using Mercurius.DBus;
+using Mercurius.Modrinth.Models;
+using Mercurius.Modrinth;
 using Tmds.DBus;
 using System.Threading.Tasks;
 using NLog;
@@ -17,7 +19,7 @@ namespace Mercurius.Profiles {
         // private bool _disposed = false;
         private ILogger logger;
 
-        internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide, bool select = false) {
+        internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide) {
             Profile profile = new Profile {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
@@ -29,7 +31,6 @@ namespace Mercurius.Profiles {
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);
-            // if (select) ProfileManager.SelectProfile(profile.Name);
 
             return profile;
         }
@@ -103,6 +104,75 @@ namespace Mercurius.Profiles {
             // Mods.Remove(modToRemove);
             // await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
+        public async Task<Mod> AddModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies) {
+            logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
+
+            ProjectModel project = await client.GetProjectAsync(projectId);
+            VersionModel[] versions = await client.ListVersionsAsync(project);
+
+            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
+            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(Loader)).ToArray<VersionModel>();
+
+            if (viableVersions.Count() < 1) {
+                logger.Debug("Found no installation candidates for install");
+                throw new Exception("Found no valid installation candidates");
+            }
+
+            VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
+
+            Mod mod = new Mod(version, project);
+            
+            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
+                logger.Debug("Revolving Dependencies...");
+
+                foreach (Dependency dependency in version.dependencies) {
+                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+
+                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                    mod.AddDependency(dependencyMod);
+                }
+            }
+            await UpdateModListAsync(mod);
+            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
+            return mod;
+        }
+        // internal async Task<Mod> GenerateFromModFiles(APIClient client) {
+        //     List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
+
+        //     if (Mods.Count >= 1) {
+        //         foreach (Mod mod in Mods) {
+        //             if (!mod.FileExists()) {
+        //                 await RemoveModFromListAsync(mod);
+
+        //                 foreach (Mod dependency in mod.Dependencies) {
+        //                     if (dependency.FileExists()) {
+        //                         File.Delete($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
+        //                     }
+        //                 }
+        //             } else {
+        //                 existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
+                        
+        //                 foreach (Mod dependency in mod.Dependencies) {
+        //                     if (mod.FileExists()) {
+        //                         existingFiles.Remove($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
+        //                     }
+        //                 }   
+        //             }
+        //         }
+        //     }
+
+        //     SearchModel searchRes = await client.SearchAsync(name);
+
+        //     List<Hit> candidates = new List<Hit>();
+
+        //     foreach (Hit hit in searchRes.hits) {
+        //         if (name.Contains(hit.title.ToLower()) && hit.versions.Contains(selectedProfile.MinecraftVersion)) {
+        //             return await ProfileManager.FetchModAsync(client, hit.project_id, Repo.modrinth, false);
+        //         }
+        //     }
+        //     throw new Exception("No valid install candidates found!");
+        // }
         internal void Delete() {
             if (File.Exists(Path))
                 ProfileManager.DeleteProfileFile(Name);

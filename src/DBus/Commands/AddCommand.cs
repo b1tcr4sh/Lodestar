@@ -56,7 +56,7 @@ namespace Mercurius.DBus.Commands {
             client = new APIClient();
 
             try {
-                await ProfileManager.FetchModAsync(client, args[0], service, ignoreDependencies);
+                // await ProfileManager.FetchModAsync(client, args[0], service, ignoreDependencies); // Deprecated
             } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,

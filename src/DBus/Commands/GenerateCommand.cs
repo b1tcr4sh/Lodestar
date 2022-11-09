@@ -79,7 +79,7 @@ namespace Mercurius.DBus.Commands {
 
                 string name = parseFileName(path);
                 try {
-                    await Mod.GenerateFromNameAsync(parseFileName(path), client);
+                    // await Mod.GenerateFromNameAsync(parseFileName(path), client); // Deprecated
 
                     // I don't know what teh fuck happened here: something something trying to prevent duplicate mods by
                     // checking if any of the grabberd versions were contained in the dependencies of any version.
