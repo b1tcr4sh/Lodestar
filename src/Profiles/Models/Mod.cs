@@ -14,7 +14,7 @@ namespace Mercurius.Profiles {
         public string VersionId { get; private set; }
         public string MinecraftVersion { get; private set; }
         public string ModVersion { get; private set; }
-        public List<Mod> Dependencies { get; private set; }
+        public List<string> DependencyVersions { get; private set; }
         public ClientDependency ClientDependency { get; private set; }
 
         public ObjectPath ObjectPath { get => _objectPath; }
@@ -28,7 +28,7 @@ namespace Mercurius.Profiles {
             ModVersion = version.version_number;
             DownloadURL = version.files.Where<file>((file) => file.primary).ToArray<file>()[0].url;
             _objectPath = new ObjectPath($"/org/mercurius/mod/{Title}");
-            Dependencies = new List<Mod>();
+            DependencyVersions = new List<string>();
 
             file primaryFile = version.files[0];
             foreach (file file in version.files) {
@@ -63,8 +63,8 @@ namespace Mercurius.Profiles {
             }
         }
 
-        internal void AddDependency(Mod dependency) {
-            Dependencies.Add(dependency);
+        internal void AddDependency(string id) {
+            DependencyVersions.Add(id);
         }
 
         internal bool FileExists() {

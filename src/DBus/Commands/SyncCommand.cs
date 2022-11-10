@@ -61,9 +61,9 @@ namespace Mercurius.DBus.Commands {
             foreach (Mod mod in selectedProfile.Mods) {
                 modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
 
-                foreach (Mod dependency in mod.Dependencies) {
-                    modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
-                }
+                // foreach (Mod dependency in mod.DependencyVersions) {
+                //     modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
+                // }
             }
             
             
@@ -88,9 +88,9 @@ namespace Mercurius.DBus.Commands {
             }
             List<Mod> preQueue = new List<Mod>();
             preQueue.AddRange(selectedProfile.Mods);
-            foreach (Mod mod in selectedProfile.Mods) {
-                preQueue.AddRange(mod.Dependencies);
-            }
+            // foreach (Mod mod in selectedProfile.Mods) { // Dependencies are already root level now, so no need to collect them before install
+            //     preQueue.AddRange(mod.DependencyVersions);                
+            // }
             
 
             // Queue mods for install

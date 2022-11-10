@@ -64,8 +64,8 @@ namespace Mercurius.Profiles {
             List<Mod> parentsWithRemoveableDependency = new List<Mod>();
             foreach (Mod mod in Mods) {
                 bool containsRemoveableDep = false;
-                foreach (Mod dependency in mod.Dependencies) {
-                    if (dependency.Title.ToLower().Equals(modToRemove.Title.ToLower())) {
+                foreach (string dependency in mod.DependencyVersions) {
+                    if (dependency.Equals(modToRemove.VersionId)) {
                         containsRemoveableDep = true;
                     }
                 }
@@ -85,7 +85,7 @@ namespace Mercurius.Profiles {
             foreach (Mod parent in parentsWithRemoveableDependency) {
                 logger.Debug("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
                 Mods.Remove(parent);
-                parent.Dependencies.Remove(modToRemove);
+                parent.DependencyVersions.Remove(modToRemove.VersionId);
 
                 await UpdateModListAsync(parent);
             }
@@ -122,15 +122,18 @@ namespace Mercurius.Profiles {
 
             Mod mod = new Mod(version, project);
             
+            // revolve dependencies
             if (version.dependencies.Count() > 0 && !ignoreDependencies) {
                 logger.Debug("Revolving Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
-                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                    // VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                    // ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
 
-                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    mod.AddDependency(dependencyMod);
+                    // Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                    // mod.AddDependency(dependencyMod);
+                    mod.AddDependency(dependency.version_id);
+                    await AddModAsync(client,dependency.project_id, service, false);
                 }
             }
             await UpdateModListAsync(mod);
