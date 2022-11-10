@@ -31,6 +31,7 @@ namespace Mercurius.DBus.Commands {
             }
 
             bool serverSide;
+            ModLoader loader;
 
             if (!Boolean.TryParse(args[3], out serverSide)) {
                 // incorrect type passed for server side
@@ -42,8 +43,18 @@ namespace Mercurius.DBus.Commands {
                 };
             }
 
+            if (!ModLoader.TryParse(args[2], out loader)) {
+                // incorrect type passed for server side
+                return new DbusResponse {
+                    Code = -1,
+                    Data = "",
+                    Message = "Malformed loader arg",
+                    Type = DataType.Error
+                };
+            }
+
             try {
-                await Profile.CreateNewAsync(args[0], args[1], args[2], serverSide);
+                await Profile.CreateNewAsync(args[0], args[1], loader, serverSide); // Deprecated
             } catch (Exception e) {
                 return new DbusResponse {
                     Code = -1,

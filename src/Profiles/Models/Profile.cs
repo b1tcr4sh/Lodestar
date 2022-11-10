@@ -12,14 +12,14 @@ namespace Mercurius.Profiles {
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
         public bool ServerSide { get; set; }
-        public string Loader { get; set; }
+        public ModLoader Loader { get; set; }
         public List<Mod> Mods { get; set; }
 
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         // private bool _disposed = false;
         private ILogger logger;
 
-        internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, string loader, bool serverSide) {
+        internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
             Profile profile = new Profile {
                 Name = name,
                 MinecraftVersion = minecraftVersion,
@@ -111,7 +111,7 @@ namespace Mercurius.Profiles {
             VersionModel[] versions = await client.ListVersionsAsync(project);
 
             VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
-            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(Loader)).ToArray<VersionModel>();
+            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(Loader.ToString().ToLower())).ToArray<VersionModel>();
 
             if (viableVersions.Count() < 1) {
                 logger.Debug("Found no installation candidates for install");
@@ -201,5 +201,8 @@ namespace Mercurius.Profiles {
     }
     public enum ClientType {
         ClientSide, ServerSide
+    }
+    public enum ModLoader {
+        Forge, Fabric, Quilt
     }
 }
