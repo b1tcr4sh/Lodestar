@@ -6,7 +6,8 @@ using Tmds.DBus;
 using System.Runtime.InteropServices;
 
 namespace Mercurius.Profiles {
-    public class Mod {
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Mod {
         public string Title { get; private set; }
         public string FileName { get; private set; }
         public string DownloadURL { get; private set; }
@@ -14,20 +15,20 @@ namespace Mercurius.Profiles {
         public string VersionId { get; private set; }
         public string MinecraftVersion { get; private set; }
         public string ModVersion { get; private set; }
-        public List<string> DependencyVersions { get; private set; }
+        public IEnumerable<string> DependencyVersions { get; private set; }
         public ClientDependency ClientDependency { get; private set; }
 
-        public ObjectPath ObjectPath { get => _objectPath; }
-        private ObjectPath _objectPath;
+        // public ObjectPath ObjectPath { get => _objectPath; }
+        // private ObjectPath _objectPath;
 
-        internal Mod(VersionModel version, ProjectModel project) {
+        internal Mod(VersionModel version, ProjectModel project) : this() {
             Title = project.title;
             ProjectId = version.project_id;
             VersionId = version.id;
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
             DownloadURL = version.files.Where<file>((file) => file.primary).ToArray<file>()[0].url;
-            _objectPath = new ObjectPath($"/org/mercurius/mod/{Title}");
+            // _objectPath = new ObjectPath($"/org/mercurius/mod/{Title}");
             DependencyVersions = new List<string>();
 
             file primaryFile = version.files[0];
@@ -64,7 +65,7 @@ namespace Mercurius.Profiles {
         }
 
         internal void AddDependency(string id) {
-            DependencyVersions.Add(id);
+            DependencyVersions.Append(id);
         }
 
         internal bool FileExists() {
@@ -74,18 +75,5 @@ namespace Mercurius.Profiles {
 
     public enum ClientDependency {
         ClientSide, ServerSide, ClientServerDependent, Unknown
-    }
-
-    [DBusInterface("org.mercurius.mod")]
-    public interface IMod {
-        public string Title { get; }
-        public string FileName { get; }
-        public string DownloadURL { get; }
-        public string ProjectId { get; }
-        public string VersionId { get; }
-        public string MinecraftVersion { get; }
-        public string ModVersion { get; }
-        public List<Mod> Dependencies { get; }
-        public ClientDependency ClientDependency { get; }
     }
 }

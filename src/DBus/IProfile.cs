@@ -3,6 +3,7 @@ using Mercurius;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
+using Mercurius.Modrinth;
 
 namespace Mercurius.DBus {
     public class DbusProfile : IProfile {
@@ -14,6 +15,20 @@ namespace Mercurius.DBus {
                 IsServerSide = modelProfile.ServerSide,
                 Loader = modelProfile.Loader
             });
+        }
+        public async Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies) {
+            APIClient client = new APIClient();
+            try {
+                return await modelProfile.AddModAsync(client, id, service, ignoreDependencies);
+            } catch (ProfileException e) {
+                throw new Exception(e.Message); // Not handled temporarily
+            }
+        }
+        // public Task<string> SyncAsync() {
+            
+        // }
+        public Task<Mod[]> GetModListAsync() {
+            return Task.FromResult<Mod[]>(modelProfile.Mods.ToArray<Mod>());
         }
         public ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath;
@@ -29,6 +44,9 @@ namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.profile")]
     public interface IProfile : IDBusObject {
         public Task<ProfileInfo> GetProfileInfoAsync();
+        public Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies);
+        // public Task<string> SyncAsync();
+        public Task<Mod[]> GetModListAsync();
     }
 
     [StructLayout(LayoutKind.Sequential)]

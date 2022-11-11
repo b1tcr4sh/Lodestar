@@ -85,7 +85,7 @@ namespace Mercurius.Profiles {
             foreach (Mod parent in parentsWithRemoveableDependency) {
                 logger.Debug("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
                 Mods.Remove(parent);
-                parent.DependencyVersions.Remove(modToRemove.VersionId);
+                // parent.DependencyVersions.Remove(modToRemove.VersionId);
 
                 await UpdateModListAsync(parent);
             }
@@ -206,6 +206,6 @@ namespace Mercurius.Profiles {
         ClientSide, ServerSide
     }
     public enum ModLoader {
-        Forge, Fabric, Quilt
+        forge, fabric, quilt
     }
 }
