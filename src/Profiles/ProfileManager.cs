@@ -196,6 +196,76 @@ namespace Mercurius.Profiles {
                 // LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
+        internal static async Task SyncProfileAsync(Profile profile, APIClient client) {
+            logger.Info("Syncing {0}", profile.Name);
+
+
+            List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
+            List<string> modPaths = new List<string>();
+
+            // if (existingFiles.Count <= 0) {
+            //     // No mods to sync
+            //     return;
+            // }
+
+            foreach (Mod mod in profile.Mods) {
+                modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}");
+
+                // foreach (Mod dependency in mod.DependencyVersions) {
+                //     modPaths.Add($"{SettingsManager.Settings.Minecraft_Directory}/mods/{dependency.FileName}");
+                // }
+            }
+            
+            List<string> keepers = existingFiles.Intersect<string>(modPaths).ToList<string>();
+
+            foreach (string mod in keepers) {
+                existingFiles.Remove(mod);
+            }
+
+            if (existingFiles.Count <= 0) {
+                logger.Info("There are no Residiual Mod jars to Remove");
+            } else {
+                logger.Info("Removing Residual Mod jars...");
+                foreach (string filePath in existingFiles) {
+                    File.Delete(filePath);
+                    logger.Debug("Deleted mod jar at {0}", filePath);
+                }
+                    
+            }
+
+            if (profile.Mods.Count <= 0) {
+                logger.Info("Profile has no mods to sync!");
+                throw new ProfileException("Profile has no mods to sync!");
+            }
+
+            logger.Debug("Queuing {0} mods for install", profile.Mods.Count);
+            List<Mod> preQueue = new List<Mod>();
+            preQueue.AddRange(profile.Mods);
+            // foreach (Mod mod in selectedProfile.Mods) { // Dependencies are already root level now, so no need to collect them before install
+            //     preQueue.AddRange(mod.DependencyVersions);                
+            // }
+            
+
+            // Queue mods for install
+            List<Mod> installQueue = new List<Mod>();
+
+            foreach (Mod mod in preQueue) {
+                if (File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}")) {
+                    logger.Debug("{0}: {1} is already installed, skipping...", mod.Title, mod.ModVersion);
+
+                    // if (Console.ReadLine().ToLower().Equals("y")) {
+                    //     installQueue.Add(mod);
+                    // }
+                        
+                } else
+                    installQueue.Add(mod);
+            }
+                // await Install();
+                logger.Debug("Attempting to install mods...");
+                foreach (Mod mod in installQueue) {
+                    await client.DownloadVersionAsync(mod);
+                }
+        }
     }
     public enum Repo {
         modrinth,

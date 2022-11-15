@@ -89,6 +89,10 @@ namespace Mercurius.Modrinth {
             return deserializedRes;
         }
         public async Task DownloadVersionAsync(Mod mod) {
+            if (mod.Title is null) {
+                throw new ArgumentNullException("Mod values are null!");
+            }
+
             logger.Debug($"Starting Download of {mod.Title}: version {mod.ModVersion}");
 
             HttpResponseMessage response;
@@ -106,6 +110,8 @@ namespace Mercurius.Modrinth {
             await readStream.CopyToAsync(writeStream);
             readStream.Close();
             writeStream.Close();
+
+            logger.Debug($"Completed Download of {mod.Title}: version {mod.ModVersion}");
 
             //TODO Report download progress
             //TODO Check download SHA256

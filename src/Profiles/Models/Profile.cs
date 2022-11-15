@@ -17,7 +17,7 @@ namespace Mercurius.Profiles {
 
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         // private bool _disposed = false;
-        private ILogger logger;
+        private ILogger logger = LogManager.GetCurrentClassLogger();
 
         internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
             Profile profile = new Profile {
@@ -25,8 +25,7 @@ namespace Mercurius.Profiles {
                 MinecraftVersion = minecraftVersion,
                 ServerSide = serverSide,
                 Loader = loader,
-                Mods = new List<Mod>(),
-                logger = LogManager.GetCurrentClassLogger(),
+                Mods = new List<Mod>()
                 // _objectPath = new ObjectPath($"/org/mercurius/profile/{name}")
             };
             await ProfileManager.WriteProfileAsync(profile);

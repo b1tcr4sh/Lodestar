@@ -24,9 +24,26 @@ namespace Mercurius.DBus {
                 throw new Exception(e.Message); // Not handled temporarily
             }
         }
-        // public Task<string> SyncAsync() {
-            
-        // }
+        public async Task<DbusResponse> SyncAsync() {
+            APIClient client = new APIClient();
+            try {
+                await ProfileManager.SyncProfileAsync(modelProfile, client);
+            } catch (ProfileException e) {
+                return new DbusResponse {
+                    Message = e.Message,
+                    Code = -1,
+                    Data = "",
+                    Type = DataType.Error
+                };
+            }
+
+            return new DbusResponse {
+                Code = 0,
+                Message = "Success",
+                Data = ObjectPath,
+                Type = DataType.Profile
+            };
+        }
         public Task<Mod[]> GetModListAsync() {
             return Task.FromResult<Mod[]>(modelProfile.Mods.ToArray<Mod>());
         }
@@ -45,7 +62,7 @@ namespace Mercurius.DBus {
     public interface IProfile : IDBusObject {
         public Task<ProfileInfo> GetProfileInfoAsync();
         public Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies);
-        // public Task<string> SyncAsync();
+        public Task<DbusResponse> SyncAsync();
         public Task<Mod[]> GetModListAsync();
     }
 
