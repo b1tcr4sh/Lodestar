@@ -18,25 +18,15 @@ namespace Mercurius.DBus {
         Error = 2
     }
 
-    [DBusInterface("org.mercurius.commandmessenger")]
-    public interface ICommandMessenger : IDBusObject {
-        Task<ObjectPath[]> ListCommandsAsync();
+    [DBusInterface("org.mercurius.ProfileMessenger")]
+    public interface IProfileMessenger : IDBusObject {
         Task<ObjectPath[]> ListProfilesAsync();
+        Task<ObjectPath> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide);
     }
 
 
-    public class CommandMessenger : ICommandMessenger {
-        private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/commandmessenger");
-
-        public Task<ObjectPath[]> ListCommandsAsync() {
-            List<ObjectPath> paths = new List<ObjectPath>();
-
-            foreach (KeyValuePair<string, BaseCommand> command in CommandManager.GetCommands() ) {
-                paths.Add(command.Value.ObjectPath);
-            }
-
-            return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
-        }
+    public class ProfileMessenger : IProfileMessenger {
+        private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/ProfileMessenger");
 
         public Task<ObjectPath[]> ListProfilesAsync() {
             List<ObjectPath> paths = new List<ObjectPath>();
@@ -45,6 +35,21 @@ namespace Mercurius.DBus {
                 paths.Add(new ObjectPath($"/org/mercurius/profile/{profile.Name}"));
             }
             return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
+        }
+
+        public async Task<ObjectPath> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
+            Profile profile;
+            
+            try {
+                profile = await Profile.CreateNewAsync(name, minecraftVersion, loader, serverSide);
+            } catch (Exception e) {
+                throw new DBusException("ProfileCreationFailure", e.Message);
+            }
+
+            DbusProfile dbusProfile = new DbusProfile(profile);
+            await DbusHandler.RegisterProfileAsync(dbusProfile);
+            
+            return dbusProfile.ObjectPath;
         }
         public ObjectPath ObjectPath { get => _objectPath; }
     }

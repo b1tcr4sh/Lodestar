@@ -120,22 +120,26 @@ namespace Mercurius.Profiles {
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
 
             Mod mod = new Mod(version, project);
+
+            List<Mod> modsToAdd = new List<Mod>();
+            modsToAdd.Add(mod);
             
             // revolve dependencies
             if (version.dependencies.Count() > 0 && !ignoreDependencies) {
                 logger.Debug("Revolving Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
-                    // VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    // ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
 
-                    // Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
                     // mod.AddDependency(dependencyMod);
                     mod.AddDependency(dependency.version_id);
-                    await AddModAsync(client,dependency.project_id, service, false);
+                    // await AddModAsync(client, dependency.project_id, service, false);
+                    modsToAdd.Add(dependencyMod);
                 }
             }
-            await UpdateModListAsync(mod);
+            await UpdateModListAsync(modsToAdd);
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
             return mod;
         }

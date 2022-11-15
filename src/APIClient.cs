@@ -32,7 +32,8 @@ namespace Mercurius.Modrinth {
                 Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"search?query={query}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
             } catch (Exception e) {
-                logger.Trace(e.Message);
+                logger.Warn(e.Message);
+                logger.Trace(e.StackTrace);
                 throw new ConnectionException("Connection Failed!");
             }
 
@@ -52,7 +53,8 @@ namespace Mercurius.Modrinth {
                 Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
             } catch (Exception e) {
-                logger.Trace(e.Message);
+                logger.Warn(e.Message);
+                logger.Trace(e.StackTrace);
                 throw new ConnectionException("Connection failed!");
             }
 
@@ -67,7 +69,8 @@ namespace Mercurius.Modrinth {
                 Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
             } catch (Exception e) {
-                logger.Trace(e.Message);
+                logger.Warn(e.Message);
+                logger.Trace(e.StackTrace);
                 throw new ConnectionException("Connection Failed!");
             }
 
@@ -82,7 +85,8 @@ namespace Mercurius.Modrinth {
                 Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
                 deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
             } catch (Exception e) {
-                logger.Trace(e.Message);
+                logger.Warn(e.Message);
+                logger.Trace(e.StackTrace);
                 throw new ConnectionException("Connection Failed!");
             }
 
@@ -100,7 +104,8 @@ namespace Mercurius.Modrinth {
             try {
                 response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
             } catch (Exception e) {
-                logger.Trace(e.Message);
+                logger.Warn(e.Message);
+                logger.Trace(e.StackTrace);
                 throw new ConnectionException("Connection Failed!");
             }
 
