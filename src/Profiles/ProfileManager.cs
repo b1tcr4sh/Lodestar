@@ -28,33 +28,6 @@ namespace Mercurius.Profiles {
                 logger.Debug("Created Profiles Directory at {0}", ProfilePath);
             } 
         }
-
-        // public static async Task<Profile> GetSelectedProfileAsync(bool regenIfMissing = false) {
-        //     if (SelectedProfile is null) {
-        //         throw new ProfileException("No Profile Selected!");
-        //     } 
-
-        //     try {
-        //         // Reload selected profile before returning it to make sure it's in sync with local json
-        //         string path = SelectedProfile.Path;
-
-        //         UnloadProfile(SelectedProfile);
-        //         Profile profile = await LoadProfilFromFileAsync(path);
-        //         SelectProfile(profile.Name);
-        //     } catch (ProfileException e) {
-        //         if (!regenIfMissing) {
-        //             return null;
-        //         } else {
-        //             logger.Warn(e.Message);
-        //         }
-
-        //         await Profile.CreateNewAsync(SelectedProfile.Name, SelectedProfile.MinecraftVersion, SelectedProfile.Loader, SelectedProfile.ServerSide, true);
-        //         logger.Info("Selected profile failed to reload.  Presumably this means that filename changed?");
-        //     } 
-            
-
-        //     return SelectedProfile;
-        // }
         public static void InitializeDirectory(string path) {
             LoadedProfiles = new Dictionary<string, Profile>();
             ProfilePath = @path;

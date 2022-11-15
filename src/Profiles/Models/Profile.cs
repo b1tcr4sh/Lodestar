@@ -45,8 +45,7 @@ namespace Mercurius.Profiles {
             if (Mods is null) {
                 Mods = mods;
             } else {
-                foreach (Mod mod in mods)
-                    Mods.Add(mod);
+                Mods.AddRange(mods);
             }
 
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
@@ -122,11 +121,10 @@ namespace Mercurius.Profiles {
             Mod mod = new Mod(version, project);
 
             List<Mod> modsToAdd = new List<Mod>();
-            modsToAdd.Add(mod);
             
-            // revolve dependencies
+            // resolve dependencies
             if (version.dependencies.Count() > 0 && !ignoreDependencies) {
-                logger.Debug("Revolving Dependencies...");
+                logger.Debug("Resolving Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
@@ -139,6 +137,8 @@ namespace Mercurius.Profiles {
                     modsToAdd.Add(dependencyMod);
                 }
             }
+            modsToAdd.Add(mod);
+
             await UpdateModListAsync(modsToAdd);
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
             return mod;
