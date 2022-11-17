@@ -66,8 +66,10 @@ namespace Mercurius.DBus {
     public interface IProfile : IDBusObject {
         public Task<ProfileInfo> GetProfileInfoAsync();
         public Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies);
+        public Task<bool> RemoveModAsync(string id); // Should remove dependencies as well
         public Task<DbusResponse> SyncAsync();
         public Task<Mod[]> ListModsAsync();
+        public Task<bool> DeleteAsync();
     }
 
     [StructLayout(LayoutKind.Sequential)]
