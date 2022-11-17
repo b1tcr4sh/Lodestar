@@ -18,9 +18,6 @@ namespace Mercurius.Profiles {
         public string ModVersion { get; set; } = String.Empty;
         public IEnumerable<string> DependencyVersions { get; set; } = new String[0];
         public ClientDependency ClientDependency { get; set; } = ClientDependency.Unknown;
-        [JsonIgnore]
-        public bool IsInstalled { get; set; } = false;
-
         // public ObjectPath ObjectPath { get => _objectPath; }
         // private ObjectPath _objectPath;
 
@@ -73,11 +70,7 @@ namespace Mercurius.Profiles {
         }
 
         internal bool CheckFileExists() {
-            bool exists = File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{FileName}");
-
-            if (exists) IsInstalled = true;
-
-            return exists; 
+            return File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{FileName}"); 
         }
     }
 
