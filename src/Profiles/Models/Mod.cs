@@ -8,30 +8,18 @@ using System.Runtime.InteropServices;
 namespace Mercurius.Profiles {
     [StructLayout(LayoutKind.Sequential)]
     public struct Mod {
-        public string Title { get; private set; }
-        public string FileName { get; private set; }
-        public string DownloadURL { get; private set; }
-        public string ProjectId { get; private set; }
-        public string VersionId { get; private set; }
-        public string MinecraftVersion { get; private set; }
-        public string ModVersion { get; private set; }
-        public IEnumerable<string> DependencyVersions { get; private set; }
-        public ClientDependency ClientDependency { get; private set; }
+        public string Title { get; set; } = String.Empty;
+        public string FileName { get; set; } = String.Empty;
+        public string DownloadURL { get; set; } = String.Empty;
+        public string ProjectId { get; set; } = String.Empty;
+        public string VersionId { get; set; } = String.Empty;
+        public string MinecraftVersion { get; set; } = String.Empty;
+        public string ModVersion { get; set; } = String.Empty;
+        public IEnumerable<string> DependencyVersions { get; set; } = new String[0];
+        public ClientDependency ClientDependency { get; set; } = ClientDependency.Unknown;
 
         // public ObjectPath ObjectPath { get => _objectPath; }
         // private ObjectPath _objectPath;
-
-        public Mod() {
-            Title = String.Empty;
-            FileName = String.Empty;
-            DownloadURL = String.Empty;
-            ProjectId = String.Empty;
-            VersionId = String.Empty;
-            MinecraftVersion = String.Empty;
-            ModVersion = String.Empty;
-            DependencyVersions = new String[0];
-            ClientDependency = ClientDependency.Unknown;
-        }
 
         internal Mod(VersionModel version, ProjectModel project) {
             Title = project.title;
