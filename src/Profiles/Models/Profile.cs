@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using NLog;
 
 namespace Mercurius.Profiles {
-    public class Profile {
+    public class Profile : IDisposable {
         // Make a reference to it's respective json file, with methods to update, delete, etc.
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
@@ -18,6 +18,7 @@ namespace Mercurius.Profiles {
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         // private bool _disposed = false;
         private ILogger logger = LogManager.GetCurrentClassLogger();
+        private bool _disposed = false;
 
         internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
             Profile profile = new Profile {
@@ -189,21 +190,21 @@ namespace Mercurius.Profiles {
             }
 
             // Dipose/unload
-            ProfileManager.UnloadProfile(this);            
+            ProfileManager.UnloadProfile(this);   
+            Dispose();         
         }
+        public void Dispose() {
+            Dispose(false);
+            GC.SuppressFinalize(this);
+        }
+        private void Dispose(bool disposing) {
+            if (_disposed) return;
+            if (disposing) {
+                ProfileManager.UnloadProfile(this);
+            }
 
-        // public void Dispose() {
-        //     Dispose(false);
-        //     GC.SuppressFinalize(this);
-        // }
-        // private void Dispose(bool disposing) {
-        //     if (_disposed) return;
-        //     if (disposing) {
-        //         ProfileManager.UnloadProfile(this);
-        //     }
-
-        //     _disposed = true;
-        // }
+            _disposed = true;
+        }
     }
     public enum ClientType {
         ClientSide, ServerSide

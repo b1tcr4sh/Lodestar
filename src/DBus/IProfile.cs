@@ -44,7 +44,11 @@ namespace Mercurius.DBus {
                 Type = DataType.Profile
             };
         }
-        public Task<Mod[]> GetModListAsync() {
+        public Task<Mod[]> ListModsAsync() {
+            foreach (Mod mod in modelProfile.Mods) {
+                mod.CheckFileExists();
+            }
+
             return Task.FromResult<Mod[]>(modelProfile.Mods.ToArray<Mod>());
         }
         public ObjectPath ObjectPath { get => _objectPath; }
@@ -63,7 +67,7 @@ namespace Mercurius.DBus {
         public Task<ProfileInfo> GetProfileInfoAsync();
         public Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies);
         public Task<DbusResponse> SyncAsync();
-        public Task<Mod[]> GetModListAsync();
+        public Task<Mod[]> ListModsAsync();
     }
 
     [StructLayout(LayoutKind.Sequential)]
