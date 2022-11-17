@@ -12,8 +12,8 @@ namespace Mercurius.DBus {
         public static async Task RegisterProfileAsync(DbusProfile profile) {
             await DbusConnection.RegisterObjectAsync(profile);
         }
-        public static void DeregisterProfile(DbusProfile profile) {
-            DbusConnection.UnregisterObject(profile);
+        public static void DeregisterProfile(string name) {
+            DbusConnection.UnregisterObject(new ObjectPath($"/org/mercurius/profile/{name}"));
         }
 
         private static Connection DbusConnection;

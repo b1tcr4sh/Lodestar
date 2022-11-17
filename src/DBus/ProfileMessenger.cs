@@ -22,6 +22,7 @@ namespace Mercurius.DBus {
     public interface IProfileMessenger : IDBusObject {
         Task<ObjectPath[]> ListProfilesAsync();
         Task<ObjectPath> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide);
+        Task DeleteProfileAsync(string name);
     }
 
 
@@ -50,6 +51,14 @@ namespace Mercurius.DBus {
             await DbusHandler.RegisterProfileAsync(dbusProfile);
             
             return dbusProfile.ObjectPath;
+        }
+        public Task DeleteProfileAsync(string name) {
+            DbusHandler.DeregisterProfile(name);
+            Profile profile = ProfileManager.GetLoadedProfile(name);
+
+            profile.Delete();
+
+            return Task.CompletedTask;
         }
         public ObjectPath ObjectPath { get => _objectPath; }
     }

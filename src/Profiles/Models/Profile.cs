@@ -56,52 +56,18 @@ namespace Mercurius.Profiles {
 
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
         }
-        internal async Task RemoveModFromListAsync(Mod modToRemove) {
+        internal async Task<bool> RemoveModFromListAsync(Mod modToRemove, bool force) {
 
-            // List<Mod> parentsWithRemoveableDependency = Mods.Where<Mod>((mod) => mod.Dependencies.Where<Mod>((dependency) => dependency.Title.ToLower().Equals(modToRemove.Title))).ToList<Mod>();
-
-            List<Mod> parentsWithRemoveableDependency = new List<Mod>();
-            foreach (Mod mod in Mods) {
-                bool containsRemoveableDep = false;
-                foreach (string dependency in mod.DependencyVersions) {
-                    if (dependency.Equals(modToRemove.VersionId)) {
-                        containsRemoveableDep = true;
-                    }
-                }
-                if (containsRemoveableDep) {
-                    parentsWithRemoveableDependency.Add(mod);
-                }
+            IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.Contains<string>(modToRemove.VersionId));
+       
+            if (dependants.Count() > 0 && !force) {
+                throw new DependencyException($"{modToRemove.Title} is a dependency!");
             }
 
-            if (parentsWithRemoveableDependency.Count() <= 0) {
-                logger.Debug("Removing {0}...", modToRemove.Title);
-                Mods.Remove(modToRemove);
+            bool success = Mods.Remove(modToRemove);
+            await ProfileManager.OverwriteProfileAsync(this, this.Name);
 
-                await ProfileManager.OverwriteProfileAsync(this, this.Name);
-                return;
-            }
-            
-            foreach (Mod parent in parentsWithRemoveableDependency) {
-                logger.Debug("Removing {0} as dependency of mod {1}", modToRemove.Title, parent.Title);
-                Mods.Remove(parent);
-                // parent.DependencyVersions.Remove(modToRemove.VersionId);
-
-                await UpdateModListAsync(parent);
-            }
-
-            // foreach (Mod parent in Mods) {
-            //     if (parent.Dependencies.Contains(modToRemove)) {
-            //         Mods.Remove(parent);
-
-            //         parent.Dependencies.Remove(modToRemove);
-            //         await UpdateModListAsync(parent);
-            //         Console.WriteLine(Mods);
-            //         return;
-            //     }
-            // }
-
-            // Mods.Remove(modToRemove);
-            // await ProfileManager.OverwriteProfileAsync(this, this.Name);
+            return success;
         }
         public async Task<Mod> AddModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies) {
             logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
