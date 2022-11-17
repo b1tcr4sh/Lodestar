@@ -38,13 +38,8 @@ namespace Mercurius.DBus {
             await connection.ConnectAsync();
             await connection.RegisterObjectAsync(new ProfileMessenger());
 
-            await connection.RegisterObjectsAsync(CommandManager.GetCommands().Values);
-            // await connection.RegisterObjectsAsync(ProfileManager.GetLoadedProfiles().Values);  // Need to make Mods compatible with Dbus
             foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
                 await connection.RegisterObjectAsync(new DbusProfile(profile));
-            
-
-                // string boundAddress = await server.StartAsync($"tcp:host=localhost,port={_config.Value.DBusPort}");
             }
             string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");
             logger.Info($"Dbus Server Listening at {boundAddress}");

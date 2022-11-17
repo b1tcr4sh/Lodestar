@@ -6,9 +6,11 @@ using Tmds.DBus;
 using System.Threading.Tasks;
 using NLog;
 
+// TODO: Make profile respond to local metadata changes
+// either reload before any operation or make reload command?  (don't really want to do the latter)
+
 namespace Mercurius.Profiles {
     public class Profile : IDisposable {
-        // Make a reference to it's respective json file, with methods to update, delete, etc.
         public string Name { get; set; }
         public string MinecraftVersion { get; set; }
         public bool ServerSide { get; set; }
@@ -16,7 +18,6 @@ namespace Mercurius.Profiles {
         public List<Mod> Mods { get; set; }
 
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
-        // private bool _disposed = false;
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private bool _disposed = false;
 
@@ -27,7 +28,6 @@ namespace Mercurius.Profiles {
                 ServerSide = serverSide,
                 Loader = loader,
                 Mods = new List<Mod>()
-                // _objectPath = new ObjectPath($"/org/mercurius/profile/{name}")
             };
             await ProfileManager.WriteProfileAsync(profile);
             await ProfileManager.LoadProfileAsync(profile.Name);

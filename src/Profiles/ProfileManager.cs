@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using Mercurius.Modrinth.Models;
 using Mercurius.Modrinth;
 using Mercurius.Configuration;
-using Mercurius.DBus.Commands;
 using Mercurius.DBus;
 using NLog;
 

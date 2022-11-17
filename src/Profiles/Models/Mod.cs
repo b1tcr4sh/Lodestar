@@ -18,8 +18,6 @@ namespace Mercurius.Profiles {
         public string ModVersion { get; set; } = String.Empty;
         public IEnumerable<string> DependencyVersions { get; set; } = new String[0];
         public ClientDependency ClientDependency { get; set; } = ClientDependency.Unknown;
-        // public ObjectPath ObjectPath { get => _objectPath; }
-        // private ObjectPath _objectPath;
 
         internal Mod(VersionModel version, ProjectModel project) {
             Title = project.title;
@@ -28,7 +26,6 @@ namespace Mercurius.Profiles {
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
             DownloadURL = version.files.Where<file>((file) => file.primary).ToArray<file>()[0].url;
-            // _objectPath = new ObjectPath($"/org/mercurius/mod/{Title}");
             DependencyVersions = new List<string>();
             ClientDependency = ClientDependency.Unknown;
 
