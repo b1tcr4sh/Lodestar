@@ -110,6 +110,63 @@ namespace Mercurius.Profiles {
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
             return mod;
         }
+        public async Task<Mod> AddVersionAsync(APIClient client, string versionId, bool ignoreDependencies) {
+            VersionModel version = await client.GetVersionInfoAsync(versionId);
+            ProjectModel project = await client.GetProjectAsync(version.project_id);
+
+            Mod mod = new Mod(version, project);
+
+            List<Mod> modsToAdd = new List<Mod>();
+            
+            // resolve dependencies
+            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
+                logger.Debug("Resolving Dependencies...");
+
+                foreach (Dependency dependency in version.dependencies) {
+                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+
+                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                    // mod.AddDependency(dependencyMod);
+                    mod.AddDependency(dependency.version_id);
+                    // await AddModAsync(client, dependency.project_id, service, false);
+                    modsToAdd.Add(dependencyMod);
+                }
+            }
+            modsToAdd.Add(mod);
+
+            await UpdateModListAsync(modsToAdd);
+            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
+            return mod;
+        }
+        public async Task ResolveDependenciesAsync() {
+            APIClient client = new APIClient();
+
+            foreach (Mod mod in Mods) {
+                if (mod.DependencyVersions.Count() > 0) {
+                    logger.Debug("{0} has {1} listed dependencies", mod.Title, mod.DependencyVersions.Count());
+
+                    List<string> unmetDeps = new List<string>();
+
+                    foreach (string dependency in mod.DependencyVersions) {
+                        bool depencencyMet = Mods.Any<Mod>(checking => checking.VersionId.Equals(dependency));
+                    
+                        unmetDeps.Add(dependency);
+                        logger.Info("dependency {0} is unmet!");
+                    }
+
+                    if (unmetDeps.Count() < 1) {
+                        logger.Info("All dependencies were met!");
+                        return;
+                    }
+
+                    logger.Info("Adding missing dependencies...");
+                    foreach (string unmet in unmetDeps) {
+                        await AddVersionAsync(client, unmet, false);
+                    }
+                }
+            }
+        }
         // internal async Task<Mod> GenerateFromModFiles(APIClient client) {
         //     List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
 

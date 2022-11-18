@@ -78,6 +78,20 @@ namespace Mercurius.DBus {
 
             return Task.FromResult<Mod[]>(modelProfile.Mods.ToArray<Mod>());
         }
+        public async Task<bool> VerifyAsync() {
+            APIClient client = new APIClient();
+            IEnumerable<Mod> incompatible = modelProfile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(modelProfile.MinecraftVersion));
+        
+            if (incompatible.Count() > 0) {
+                foreach (Mod mod in incompatible) {
+                    await modelProfile.RemoveModFromListAsync(mod, true);
+
+                    await modelProfile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
+                }
+            }
+
+            await modelProfile.ResolveDependenciesAsync();
+        }
     }
 
     [DBusInterface("org.mercurius.profile")]
@@ -100,5 +114,11 @@ namespace Mercurius.DBus {
         public bool IsServerSide;
         public ModLoader Loader;
         public string FilePath;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ValidityReport {
+        public Mod[] incompatible;
+        public string[] missingDependencies;
     }
 }
