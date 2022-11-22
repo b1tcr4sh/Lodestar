@@ -14,14 +14,14 @@ namespace Mercurius.Modrinth.Models {
         public string date_published { get; set; }
         public int downloads { get; set; }
         public string changelog_url { get; set; }
-        public file[] files { get; set; } 
+        public modFile[] files { get; set; } 
     }
     public struct Dependency {
         public string version_id { get; set; }
         public string project_id { get; set; }
         public string dependency_type { get; set; }
     }
-    public struct file {
+    public struct modFile {
         public hash hashes { get; set; }
         public string url { get; set; }
         public string filename { get; set; }

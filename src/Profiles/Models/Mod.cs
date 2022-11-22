@@ -25,12 +25,12 @@ namespace Mercurius.Profiles {
             VersionId = version.id;
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
-            DownloadURL = version.files.Where<file>((file) => file.primary).ToArray<file>()[0].url;
+            DownloadURL = version.files.Where<modFile>((file) => file.primary).ToArray<modFile>()[0].url;
             DependencyVersions = new List<string>();
             ClientDependency = ClientDependency.Unknown;
 
-            file primaryFile = version.files[0];
-            foreach (file file in version.files) {
+            modFile primaryFile = version.files[0];
+            foreach (modFile file in version.files) {
                 if (file.primary) primaryFile = file;
             }
             FileName = primaryFile.filename;
