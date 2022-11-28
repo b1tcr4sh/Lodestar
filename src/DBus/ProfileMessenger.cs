@@ -38,7 +38,10 @@ namespace Mercurius.DBus {
             return dbusProfile.ObjectPath;
         }
         public Task DeleteProfileAsync(string name) {
-            DbusHandler.DeregisterProfile(name);
+            if (!Profile.Exists(name)) {
+                throw new ProfileException($"Profile {name} doesn't exist!");
+            }
+
             Profile profile = ProfileManager.GetLoadedProfile(name);
 
             profile.Delete();

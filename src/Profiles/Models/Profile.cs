@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Mercurius.Configuration;
 using Mercurius.DBus;
 using Mercurius.Modrinth.Models;
@@ -22,6 +23,7 @@ namespace Mercurius.Profiles {
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private bool _disposed = false;
+        private byte[] checksum;
 
         internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
             Profile profile = new Profile {
@@ -38,6 +40,42 @@ namespace Mercurius.Profiles {
         }
         public static bool Exists(string name) {
             return ProfileManager.GetLoadedProfiles().Keys.Contains(name);
+        }
+
+        private void CalculateChecksum() {
+            using (MD5 md5Instance = MD5.Create()) {
+                using (var stream = File.OpenRead(Path)) {
+                   checksum = md5Instance.ComputeHash(stream);
+                }
+            }
+        }
+        private async Task<bool> VerifyLocalFileAsync() {
+            if (!File.Exists(Path)) {
+                DbusHandler.DeregisterProfile(Name);
+                Delete();
+                
+                throw new ProfileException($"Profile file at {Path} expected");
+            }
+
+            byte[] hashResult;
+
+            using (MD5 md5Instance = MD5.Create()) {
+                using (var stream = File.OpenRead(Path)) {
+                   hashResult  = md5Instance.ComputeHash(stream);
+                }
+            }
+
+            if (hashResult == checksum) {
+                return true;
+            } else {
+                ProfileManager.UnloadProfile(this);
+                Profile reloaded = await ProfileManager.LoadProfileAsync(Name);
+
+                DbusHandler.DeregisterProfile(Name);
+                await DbusHandler.RegisterProfileAsync(new DbusProfile(reloaded));
+                Dispose();
+                return false;
+            }
         }
 
         internal async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
@@ -225,12 +263,7 @@ namespace Mercurius.Profiles {
         internal void Delete() {
             if (File.Exists(Path))
                 ProfileManager.DeleteProfileFile(Name);
-            else {
-                logger.Debug($"No file exists for profile {Name}... Unloading...");
-                ProfileManager.UnloadProfile(this);
-                return;
-            }
-
+                
             // Dipose/unload
             ProfileManager.UnloadProfile(this);   
             Dispose();         
