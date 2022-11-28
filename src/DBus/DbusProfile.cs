@@ -58,25 +58,14 @@ namespace Mercurius.DBus {
 
             return await modelProfile.RemoveModFromListAsync(mods.ElementAt(0), force);
         }
-        public async Task<DbusResponse> SyncAsync() {
+        public async Task<bool> SyncAsync() {
             APIClient client = new APIClient();
             try {
                 await ProfileManager.SyncProfileAsync(modelProfile, client);
-            } catch (ProfileException e) {
-                return new DbusResponse {
-                    Message = e.Message,
-                    Code = -1,
-                    Data = "",
-                    Type = DataType.Error
-                };
+            } catch (ProfileException) {
+                return false;
             }
-
-            return new DbusResponse {
-                Code = 0,
-                Message = "Success",
-                Data = ObjectPath,
-                Type = DataType.Profile
-            };
+            return true;
         }
         public Task<Mod[]> ListModsAsync() {
             foreach (Mod mod in modelProfile.Mods) {
@@ -142,7 +131,7 @@ namespace Mercurius.DBus {
         public Task<ProfileInfo> GetProfileInfoAsync();
         public Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies);
         public Task<bool> RemoveModAsync(string id, bool force);
-        public Task<DbusResponse> SyncAsync();
+        public Task<bool> SyncAsync();
         public Task<Mod[]> ListModsAsync();
         public Task<ValidityReport> VerifyAsync(); // Should check to make sure all dependencies are met and everything is compatible; auto fix incompatibilities or return false if can't
         public Task CheckForUpdatesAsync(); // Should return struct describing mods and if they're outdated

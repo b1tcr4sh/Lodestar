@@ -3,21 +3,6 @@ using System.Runtime.InteropServices;
 using Mercurius.Profiles;
 
 namespace Mercurius.DBus {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct DbusResponse {
-        public String Message { get; set; }
-        public int Code { get; set; }
-        public object Data { get; set; }
-        public DataType Type { get; set; }
-    }
-
-    public enum DataType {
-        None = 0,
-        ModDefinition = 1,
-        Profile = 1,
-        Error = 2
-    }
-
     [DBusInterface("org.mercurius.ProfileMessenger")]
     public interface IProfileMessenger : IDBusObject {
         Task<ObjectPath[]> ListProfilesAsync();
