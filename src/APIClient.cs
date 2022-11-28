@@ -49,14 +49,9 @@ namespace Mercurius.Modrinth {
 
             ProjectModel deserializedRes;
 
-            try {
-                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
-                deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
-            } catch (Exception e) {
-                logger.Warn(e.Message);
-                logger.Trace(e.StackTrace);
-                throw new ConnectionException("Connection failed!");
-            }
+            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
+            deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
+            
 
             return deserializedRes;
         }
@@ -65,14 +60,9 @@ namespace Mercurius.Modrinth {
 
             VersionModel deserializedRes;
 
-            try {
-                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
-                deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
-            } catch (Exception e) {
-                logger.Warn(e.Message);
-                logger.Trace(e.StackTrace);
-                throw new ConnectionException("Connection Failed!");
-            }
+            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
+            deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
+
 
             return deserializedRes;
         }
@@ -81,15 +71,9 @@ namespace Mercurius.Modrinth {
 
             VersionModel[] deserializedRes;
 
-            try {
-                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
-                deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
-            } catch (Exception e) {
-                logger.Warn(e.Message);
-                logger.Trace(e.StackTrace);
-                throw new ConnectionException("Connection Failed!");
-            }
-
+            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
+            deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
+           
             return deserializedRes;
         }
         public async Task DownloadVersionAsync(Mod mod) {
@@ -101,13 +85,7 @@ namespace Mercurius.Modrinth {
 
             HttpResponseMessage response;
 
-            try {
-                response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
-            } catch (Exception e) {
-                logger.Warn(e.Message);
-                logger.Trace(e.StackTrace);
-                throw new ConnectionException("Connection Failed!");
-            }
+            response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
 
             using Stream readStream = await response.Content.ReadAsStreamAsync();
             using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}", FileMode.Create);

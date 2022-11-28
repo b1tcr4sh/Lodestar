@@ -172,6 +172,15 @@ namespace Mercurius.Profiles {
             }
             return installedDependencies.ToArray<string>();
         }
+        public bool isSynced() {
+            foreach (Mod mod in Mods) {
+                if (!mod.CheckFileExists()) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         // internal async Task<Mod> GenerateFromModFiles(APIClient client) {
         //     List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
 

@@ -32,8 +32,12 @@ namespace Mercurius.DBus {
             APIClient client = new APIClient();
             try {
                 return await modelProfile.AddModAsync(client, id, service, ignoreDependencies);
-            } catch (ProfileException e) {
-                throw new Exception(e.Message); // Not handled temporarily
+            } catch (HttpRequestException e) {
+                if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                    throw new Exception("Invalid mod id");
+                } else {
+                    throw new Exception($"failed to connect: {e.StatusCode}");
+                }
             }
         }
         public async Task<bool> RemoveModAsync(string id, bool force) {
@@ -118,7 +122,8 @@ namespace Mercurius.DBus {
 
             return new ValidityReport {
                 incompatible = incompatible.ToArray<Mod>(),
-                missingDependencies = installedDeps
+                missingDependencies = installedDeps,
+                synced = modelProfile.isSynced()
             };
         }
         public Task CheckForUpdatesAsync() {
@@ -158,5 +163,6 @@ namespace Mercurius.DBus {
     public struct ValidityReport {
         public Mod[] incompatible;
         public string[] missingDependencies;
+        public bool synced;
     }
 }
