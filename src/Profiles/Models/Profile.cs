@@ -34,6 +34,9 @@ namespace Mercurius.Profiles {
 
             return profile;
         }
+        public static bool Exists(string name) {
+            return ProfileManager.GetLoadedProfiles().Keys.Contains(name);
+        }
 
         internal async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
             if (oldProfile.Equals(newProfile)) return oldProfile;

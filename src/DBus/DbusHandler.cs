@@ -13,6 +13,10 @@ namespace Mercurius.DBus {
             await DbusConnection.RegisterObjectAsync(profile);
         }
         public static void DeregisterProfile(string name) {
+            if (!Profile.Exists(name)) {
+                throw new ProfileException($"Profile {name} doesn't exist!");
+            }
+
             DbusConnection.UnregisterObject(new ObjectPath($"/org/mercurius/profile/{name}"));
         }
 
