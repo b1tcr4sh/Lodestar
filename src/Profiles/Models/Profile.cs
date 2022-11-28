@@ -7,7 +7,9 @@ using System.Threading.Tasks;
 using NLog;
 
 // TODO: Make profile respond to local metadata changes
-// either reload before any operation or make reload command?  (don't really want to do the latter)
+// Check profile MD5 hash and reload if necessary
+// !! Shouldn't get in the way of overwriting e.g. hash should react to changes made by manager
+// to only detect local changes
 
 namespace Mercurius.Profiles {
     public class Profile : IDisposable {

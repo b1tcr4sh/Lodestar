@@ -118,7 +118,7 @@ namespace Mercurius.DBus {
         public Task CheckForUpdatesAsync() {
             throw new NotImplementedException();
         }
-        public Task UpdateModAsync(string id) {
+        public Task UpdateModAsync(string id) { // Needs to be manager-side so it can fetch specific version
             throw new NotImplementedException();
         }
         public Task GenerateAsync(bool startFromCleanSlate) {
