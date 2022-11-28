@@ -4,16 +4,19 @@ using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
 using Mercurius.Modrinth;
+using NLog;
 
 namespace Mercurius.DBus {
     public class DbusProfile : IDbusProfile {
         public ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath;
         private Profile modelProfile;
+        private ILogger logger;
 
         internal DbusProfile(Profile profile) {
             _objectPath = new ObjectPath(String.Format($"/org/mercurius/profile/{profile.Name}"));
             modelProfile = profile;
+            logger = NLog.LogManager.GetCurrentClassLogger();
         }
 
         public Task<ProfileInfo> GetProfileInfoAsync() {
@@ -78,19 +81,54 @@ namespace Mercurius.DBus {
 
             return Task.FromResult<Mod[]>(modelProfile.Mods.ToArray<Mod>());
         }
-        public async Task<bool> VerifyAsync() {
+        public async Task<ValidityReport> VerifyAsync() {
             APIClient client = new APIClient();
+            List<Mod> toRemove = new List<Mod>();
+            List<Mod> toAdd = new List<Mod>();
+
+
             IEnumerable<Mod> incompatible = modelProfile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(modelProfile.MinecraftVersion));
         
             if (incompatible.Count() > 0) {
+                logger.Debug("Found {0} incompatible mods", incompatible.Count());
                 foreach (Mod mod in incompatible) {
-                    await modelProfile.RemoveModFromListAsync(mod, true);
+                    toRemove.Add(mod);
 
                     await modelProfile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
                 }
             }
 
-            await modelProfile.ResolveDependenciesAsync();
+            string[] installedDeps = await modelProfile.ResolveDependenciesAsync();
+
+
+            foreach (Mod mod in modelProfile.Mods) {
+                IEnumerable<Mod> matchingIds = modelProfile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
+
+                if (matchingIds.Count() > 1) {
+                    logger.Debug("Found {0} duplicates of {1}", matchingIds.Count(), mod.VersionId);
+                    foreach(Mod duplicate in matchingIds.Skip(1)) {
+                        toRemove.Add(duplicate);
+                    }
+                }
+            }
+
+            foreach (Mod removeable in toRemove) {
+                await modelProfile.RemoveModFromListAsync(removeable, true);
+            }
+
+            return new ValidityReport {
+                incompatible = incompatible.ToArray<Mod>(),
+                missingDependencies = installedDeps
+            };
+        }
+        public Task CheckForUpdatesAsync() {
+            throw new NotImplementedException();
+        }
+        public Task UpdateModAsync(string id) {
+            throw new NotImplementedException();
+        }
+        public Task GenerateAsync(bool startFromCleanSlate) {
+            throw new NotImplementedException();
         }
     }
 
@@ -101,7 +139,7 @@ namespace Mercurius.DBus {
         public Task<bool> RemoveModAsync(string id, bool force);
         public Task<DbusResponse> SyncAsync();
         public Task<Mod[]> ListModsAsync();
-        public Task<bool> VerifyAsync(); // Should check to make sure all dependencies are met and everything is compatible; auto fix incompatibilities or return false if can't
+        public Task<ValidityReport> VerifyAsync(); // Should check to make sure all dependencies are met and everything is compatible; auto fix incompatibilities or return false if can't
         public Task CheckForUpdatesAsync(); // Should return struct describing mods and if they're outdated
         public Task UpdateModAsync(string id); // Should fetch newest compatible version of mod
         public Task GenerateAsync(bool startFromCleanSlate); // Should generate mod metadata from mod files (properly this time)

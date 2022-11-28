@@ -139,8 +139,9 @@ namespace Mercurius.Profiles {
             logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
             return mod;
         }
-        public async Task ResolveDependenciesAsync() {
+        public async Task<string[]> ResolveDependenciesAsync() {
             APIClient client = new APIClient();
+            List<string> installedDependencies = new List<string>();
 
             foreach (Mod mod in Mods) {
                 if (mod.DependencyVersions.Count() > 0) {
@@ -150,22 +151,26 @@ namespace Mercurius.Profiles {
 
                     foreach (string dependency in mod.DependencyVersions) {
                         bool depencencyMet = Mods.Any<Mod>(checking => checking.VersionId.Equals(dependency));
-                    
-                        unmetDeps.Add(dependency);
-                        logger.Info("dependency {0} is unmet!");
+
+                        if (!depencencyMet) {
+                            unmetDeps.Add(dependency);
+                            logger.Info("dependency {0} is unmet!", dependency);
+                        }
                     }
 
                     if (unmetDeps.Count() < 1) {
                         logger.Info("All dependencies were met!");
-                        return;
+                        return installedDependencies.ToArray<string>();
                     }
 
                     logger.Info("Adding missing dependencies...");
                     foreach (string unmet in unmetDeps) {
+                        installedDependencies.Add(unmet);
                         await AddVersionAsync(client, unmet, false);
                     }
                 }
             }
+            return installedDependencies.ToArray<string>();
         }
         // internal async Task<Mod> GenerateFromModFiles(APIClient client) {
         //     List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
