@@ -1,10 +1,7 @@
 <div align="center">
   <h1>Lodestar</h1>
  
-  <p>Modular and hackable package manager daemon for Minecraft</p>
-  
-  ![AppVeyor](https://img.shields.io/appveyor/build/vividuwu/Lodestar?style=for-the-badge)
-  
+  <p>Modular and hackable package manager daemon for Minecraft</p>  
   <br>
   <br>
   <br>
