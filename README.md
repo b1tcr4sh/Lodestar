@@ -1,12 +1,12 @@
 <div align="center">
   <h1>Lodestar</h1>
  
-  <p>Modular and hackable package manager daemon for Minecraft.</p>
+  <p>Modular and hackable package manager daemon for Minecraft</p>
   <br>
   <br>
   <br>
 
-  ## [~> Stargazer <~](https://github.com/vividuwu/gazer)
+  ## [-> Stargazer <-](https://github.com/vividuwu/gazer)
 
 </div>
 <br>
@@ -21,10 +21,11 @@ If you like CLIs, the companion app [Gazer](https://github.com/vividuwu/gazer) i
 
 ## Compatibility
 
-✅: Done
-🚧 : Working in progress\
+✅: Supported\
+🚧 : Being Implemented\
+🔮 : Planned for Future
 
 | Repository | Mod Management Support | Resource Pack Support | Plugin Support |
 | --- | --- | --- | --- |
 | [Modrinth](https://modrinth.org) | ✅ | 🚧 | 🚧 |
-| [Curseforge](https://www.curseforge.com/minecraft/mc-mods) | 🚧 | 🚧 | 🚧 |
+| [Curseforge](https://www.curseforge.com/minecraft/mc-mods) | 🔮 | 🔮 | 🔮 |
