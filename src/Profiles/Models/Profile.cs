@@ -292,6 +292,6 @@ namespace Mercurius.Profiles {
         ClientSide, ServerSide
     }
     public enum ModLoader {
-        forge, fabric, quilt
+        unknown, forge, fabric, quilt, liteloader, rift, modloader
     }
 }

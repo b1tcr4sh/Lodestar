@@ -16,6 +16,7 @@ namespace Mercurius.Profiles {
         public string VersionId { get; set; } = String.Empty;
         public string MinecraftVersion { get; set; } = String.Empty;
         public string ModVersion { get; set; } = String.Empty;
+        public ModLoader[] Loaders { get; set; } = new ModLoader[] { ModLoader.unknown };
         public IEnumerable<string> DependencyVersions { get; set; } = new String[0];
         public ClientDependency ClientDependency { get; set; } = ClientDependency.Unknown;
 
@@ -60,6 +61,19 @@ namespace Mercurius.Profiles {
                     ClientDependency = ClientDependency.Unknown;
                     break;
             }
+
+            List<ModLoader> loaders = new List<ModLoader>();
+
+            foreach (string loader in version.loaders) {
+                ModLoader parsed;
+
+                if (!Enum.TryParse<ModLoader>(loader, out parsed)) {
+                    throw new ProfileException("Invalid mod loader given... ?");
+                }
+
+                loaders.Add(parsed);
+            }  
+            Loaders = loaders.ToArray<ModLoader>();
         }
 
         internal void AddDependency(string id) {

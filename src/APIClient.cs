@@ -34,12 +34,12 @@ namespace Mercurius.Modrinth {
             } catch (Exception e) {
                 logger.Warn(e.Message);
                 logger.Trace(e.StackTrace);
-                throw new ConnectionException("Connection Failed!");
+                throw new ApiException("Connection Failed!");
             }
 
             if (deserializedRes.hits.Length <= 0) {
                 logger.Debug("No results found... Sorry");
-                throw new Exception("No results found");
+                throw new ApiException("No results found");
             }
 
             return deserializedRes;
@@ -101,11 +101,11 @@ namespace Mercurius.Modrinth {
         }
     }
     
-    public class ConnectionException : Exception {
-        public ConnectionException() { }
-        public ConnectionException(string message) : base(message) { }
-        public ConnectionException(string message, System.Exception inner) : base(message, inner) { }
-        protected ConnectionException(
+    public class ApiException : Exception {
+        public ApiException() { }
+        public ApiException(string message) : base(message) { }
+        public ApiException(string message, System.Exception inner) : base(message, inner) { }
+        protected ApiException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }

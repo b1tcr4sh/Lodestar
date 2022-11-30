@@ -94,14 +94,19 @@ namespace Mercurius.DBus {
             logger.Debug("Verifying profile {0} upon request", profile.Name);
 
 
-            IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion)); // Should also check loader compatibility
+            IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion) || !mod.Loaders.Contains(profile.Loader));
             logger.Debug("Found {0} incompatible mods", incompatible.Count());
 
             if (incompatible.Count() > 0) {
                 foreach (Mod mod in incompatible) {
                     toRemove.Add(mod);
 
-                    await profile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
+                    try {
+                        await profile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
+                    } catch (Exception e) {
+                        logger.Warn(e);
+                        logger.Trace(e.StackTrace);
+                    }
                 }
             }
 
