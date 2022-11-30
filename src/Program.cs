@@ -26,22 +26,13 @@ namespace Mercurius {
                 }
             })
             .ConfigureServices((hostContext, services) => {
-                // services.AddOptions();
-                // services.Configure<DaemonConfig>(hostContext.Configuration.GetSection("Daemon"));
-
                 services.AddSingleton<IHostedService, DaemonService>();                
             })
             .ConfigureServices((hostContext, services) => {
-                // services.AddOptions();
-                // services.Configure<DaemonConfig>(hostContext.Configuration.GetSection("Dbus"));
-
                 services.AddSingleton<IHostedService, DbusHandler>();
             })
             .ConfigureLogging((hostingContext, logging) => {
                 logging.AddNLog(hostingContext.Configuration);
-
-                // logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                // logging.AddConsole();
             });
 
             await builder.RunConsoleAsync();

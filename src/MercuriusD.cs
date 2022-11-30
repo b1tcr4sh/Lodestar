@@ -12,16 +12,12 @@ using NLog;
 
      public class DaemonService : IHostedService, IDisposable {
          private readonly ILogger logger;
-        //  private readonly IOptions<DaemonConfig> _config;
          public DaemonService() {
             logger = LogManager.GetCurrentClassLogger();
-
-            //  _logger = logger;
-            //  _config = config;
          }
 
          public Task StartAsync(CancellationToken cancellationToken) {
-             logger.Info("Starting Mercurius Daemon...");
+            logger.Info("Starting Mercurius Daemon...");
 
             SettingsManager.Init();
             ProfileManager.InitializeDirectory();

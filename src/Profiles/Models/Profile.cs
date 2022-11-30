@@ -7,11 +7,6 @@ using Tmds.DBus;
 using System.Threading.Tasks;
 using NLog;
 
-// TODO: Make profile respond to local metadata changes
-// Check profile MD5 hash and reload if necessary
-// !! Shouldn't get in the way of overwriting e.g. hash should react to changes made by manager
-// to only detect local changes
-
 namespace Mercurius.Profiles {
     public class Profile : IDisposable {
         public string Name { get; set; }
@@ -148,9 +143,7 @@ namespace Mercurius.Profiles {
                     ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
 
                     Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    // mod.AddDependency(dependencyMod);
                     mod.AddDependency(dependency.version_id);
-                    // await AddModAsync(client, dependency.project_id, service, false);
                     modsToAdd.Add(dependencyMod);
                 }
             }

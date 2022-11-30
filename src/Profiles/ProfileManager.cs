@@ -12,7 +12,6 @@ using NLog;
 namespace Mercurius.Profiles {
     public static class ProfileManager {
         private static Dictionary<string, Profile> LoadedProfiles;
-        // private static Profile SelectedProfile; 
         private static string ProfilePath;
         private static Logger logger = LogManager.GetCurrentClassLogger();
         public static void InitializeDirectory() {
@@ -49,17 +48,6 @@ namespace Mercurius.Profiles {
 
             return LoadedProfiles as IReadOnlyDictionary<string, Profile>;
         }
-        // public static Profile SelectProfile(string name) {
-        //     foreach (KeyValuePair<string, Profile> profile in LoadedProfiles) {                
-        //         if (profile.Key.Equals(name)) {
-        //             SelectedProfile = profile.Value;
-
-        //             logger.Debug($"Selected profile {name}");
-        //             return profile.Value;
-        //         }
-        //     }
-        //     throw new Exception("Profile does not exist... ?");
-        // }
         public static void LoadAllProfiles() {
             LoadedProfiles = new Dictionary<string, Profile>();
             string[] files = Directory.GetFiles(ProfilePath);
@@ -168,16 +156,6 @@ namespace Mercurius.Profiles {
             return true;
         }
         internal static void UnloadProfile(Profile profile) {
-            // if (SelectedProfile is null) {
-            //     Console.WriteLine("No profile selected... ?");
-            //     return;
-            // }
-            // else 
-            // if (SelectedProfile is not null && SelectedProfile.Equals(profile)) {
-            //     SelectedProfile = null;
-            //     logger.Info($"Profile {profile.Name} deselected");
-            // }
-
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);
                 logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
@@ -240,15 +218,10 @@ namespace Mercurius.Profiles {
             foreach (Mod mod in preQueue) {
                 if (File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}")) {
                     logger.Debug("{0}: {1} is already installed, skipping...", mod.Title, mod.ModVersion);
-
-                    // if (Console.ReadLine().ToLower().Equals("y")) {
-                    //     installQueue.Add(mod);
-                    // }
                         
                 } else
                     installQueue.Add(mod);
             }
-                // await Install();
                 logger.Debug("Attempting to install mods...");
                 foreach (Mod mod in installQueue) {
                     await client.DownloadVersionAsync(mod);

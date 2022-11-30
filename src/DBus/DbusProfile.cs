@@ -90,6 +90,7 @@ namespace Mercurius.DBus {
             APIClient client = new APIClient();
             List<Mod> toRemove = new List<Mod>();
             List<Mod> toAdd = new List<Mod>();
+            bool repaired = true;
 
             logger.Debug("Verifying profile {0} upon request", profile.Name);
 
@@ -106,6 +107,7 @@ namespace Mercurius.DBus {
                     } catch (Exception e) {
                         logger.Warn(e);
                         logger.Trace(e.StackTrace);
+                        repaired = false;
                     }
                 }
             }
@@ -131,7 +133,8 @@ namespace Mercurius.DBus {
             return new ValidityReport {
                 incompatible = incompatible.ToArray<Mod>(),
                 missingDependencies = installedDeps,
-                synced = profile.isSynced()
+                synced = profile.isSynced(),
+                repaired = repaired
             };
         }
         public Task CheckForUpdatesAsync() {
@@ -172,5 +175,6 @@ namespace Mercurius.DBus {
         public Mod[] incompatible;
         public string[] missingDependencies;
         public bool synced;
+        public bool repaired;
     }
 }
