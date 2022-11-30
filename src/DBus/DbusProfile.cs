@@ -10,8 +10,10 @@ namespace Mercurius.DBus {
     public class DbusProfile : IDbusProfile {
         public ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath;
-        private Profile modelProfile;
+        private Profile modelProfile; 
         private ILogger logger;
+
+        private async Task<Profile> GetModelProfileAsync() => await ProfileManager.GetLoadedProfileAsync(modelProfile.Name);
 
         internal DbusProfile(Profile profile) {
             _objectPath = new ObjectPath(String.Format($"/org/mercurius/profile/{profile.Name}"));
@@ -19,19 +21,23 @@ namespace Mercurius.DBus {
             logger = NLog.LogManager.GetCurrentClassLogger();
         }
 
-        public Task<ProfileInfo> GetProfileInfoAsync() {
-            return Task.FromResult<ProfileInfo>(new ProfileInfo {
-                Name = modelProfile.Name,
-                MinecraftVersion = modelProfile.MinecraftVersion,
-                FilePath = modelProfile.Path,
-                IsServerSide = modelProfile.ServerSide,
-                Loader = modelProfile.Loader
-            });
+        public async Task<ProfileInfo> GetProfileInfoAsync() {
+            Profile profile = await GetModelProfileAsync();
+
+            return new ProfileInfo {
+                Name = profile.Name,
+                MinecraftVersion = profile.MinecraftVersion,
+                FilePath = profile.Path,
+                IsServerSide = profile.ServerSide,
+                Loader = profile.Loader
+            };
         }
         public async Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies) {
             APIClient client = new APIClient();
+            Profile profile = await GetModelProfileAsync();
+
             try {
-                return await modelProfile.AddModAsync(client, id, service, ignoreDependencies);
+                return await profile.AddModAsync(client, id, service, ignoreDependencies);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
                     throw new Exception("Invalid mod id");
@@ -41,7 +47,8 @@ namespace Mercurius.DBus {
             }
         }
         public async Task<bool> RemoveModAsync(string id, bool force) {
-            IEnumerable<Mod> mods = modelProfile.Mods.Where<Mod>(mod => mod.VersionId == id);
+            Profile profile = await GetModelProfileAsync();
+            IEnumerable<Mod> mods = profile.Mods.Where<Mod>(mod => mod.VersionId == id);
         
             if (mods.Count() < 1) return false;
 
@@ -49,53 +56,60 @@ namespace Mercurius.DBus {
                 bool success = true;
 
                 foreach (Mod mod in mods) {
-                    if (!await modelProfile.RemoveModFromListAsync(mod, force))
+                    if (!await profile.RemoveModFromListAsync(mod, force))
                         success = false;
                 }
 
                 return success;
             }
 
-            return await modelProfile.RemoveModFromListAsync(mods.ElementAt(0), force);
+            return await profile.RemoveModFromListAsync(mods.ElementAt(0), force);
         }
         public async Task<bool> SyncAsync() {
             APIClient client = new APIClient();
+            Profile profile = await GetModelProfileAsync();
+
             try {
-                await ProfileManager.SyncProfileAsync(modelProfile, client);
+                await ProfileManager.SyncProfileAsync(profile, client);
             } catch (ProfileException) {
                 return false;
             }
             return true;
         }
-        public Task<Mod[]> ListModsAsync() {
-            foreach (Mod mod in modelProfile.Mods) {
+        public async Task<Mod[]> ListModsAsync() {
+            Profile profile = await GetModelProfileAsync();
+
+            foreach (Mod mod in profile.Mods) {
                 mod.CheckFileExists();
             }
 
-            return Task.FromResult<Mod[]>(modelProfile.Mods.ToArray<Mod>());
+            return profile.Mods.ToArray<Mod>();
         }
         public async Task<ValidityReport> VerifyAsync() {
+            Profile profile = await GetModelProfileAsync();
             APIClient client = new APIClient();
             List<Mod> toRemove = new List<Mod>();
             List<Mod> toAdd = new List<Mod>();
 
+            logger.Debug("Verifying profile {0} upon request", profile.Name);
 
-            IEnumerable<Mod> incompatible = modelProfile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(modelProfile.MinecraftVersion));
-        
+
+            IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion)); // Should also check loader compatibility
+            logger.Debug("Found {0} incompatible mods", incompatible.Count());
+
             if (incompatible.Count() > 0) {
-                logger.Debug("Found {0} incompatible mods", incompatible.Count());
                 foreach (Mod mod in incompatible) {
                     toRemove.Add(mod);
 
-                    await modelProfile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
+                    await profile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
                 }
             }
 
-            string[] installedDeps = await modelProfile.ResolveDependenciesAsync();
+            string[] installedDeps = await profile.ResolveDependenciesAsync();
 
 
-            foreach (Mod mod in modelProfile.Mods) {
-                IEnumerable<Mod> matchingIds = modelProfile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
+            foreach (Mod mod in profile.Mods) {
+                IEnumerable<Mod> matchingIds = profile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
 
                 if (matchingIds.Count() > 1) {
                     logger.Debug("Found {0} duplicates of {1}", matchingIds.Count(), mod.VersionId);
@@ -106,13 +120,13 @@ namespace Mercurius.DBus {
             }
 
             foreach (Mod removeable in toRemove) {
-                await modelProfile.RemoveModFromListAsync(removeable, true);
+                await profile.RemoveModFromListAsync(removeable, true);
             }
 
             return new ValidityReport {
                 incompatible = incompatible.ToArray<Mod>(),
                 missingDependencies = installedDeps,
-                synced = modelProfile.isSynced()
+                synced = profile.isSynced()
             };
         }
         public Task CheckForUpdatesAsync() {

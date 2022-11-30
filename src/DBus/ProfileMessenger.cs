@@ -37,16 +37,14 @@ namespace Mercurius.DBus {
             
             return dbusProfile.ObjectPath;
         }
-        public Task DeleteProfileAsync(string name) {
+        public async Task DeleteProfileAsync(string name) {
             if (!Profile.Exists(name)) {
                 throw new ProfileException($"Profile {name} doesn't exist!");
             }
 
-            Profile profile = ProfileManager.GetLoadedProfile(name);
+            Profile profile = await ProfileManager.GetLoadedProfileAsync(name);
 
             profile.Delete();
-
-            return Task.CompletedTask;
         }
         public ObjectPath ObjectPath { get => _objectPath; }
     }

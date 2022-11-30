@@ -23,7 +23,7 @@ namespace Mercurius.Profiles {
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private bool _disposed = false;
-        private byte[] checksum;
+        private string checksum;
 
         internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
             Profile profile = new Profile {
@@ -42,14 +42,17 @@ namespace Mercurius.Profiles {
             return ProfileManager.GetLoadedProfiles().Keys.Contains(name);
         }
 
-        private void CalculateChecksum() {
+        public void GenerateChecksum() {
             using (MD5 md5Instance = MD5.Create()) {
                 using (var stream = File.OpenRead(Path)) {
-                   checksum = md5Instance.ComputeHash(stream);
+                   byte[] raw = md5Instance.ComputeHash(stream);
+                   checksum = BitConverter.ToString(raw).Replace("-","").ToLower();
+
+                   logger.Debug("Generated new checksum for {0}: {1}", Name, checksum);
                 }
             }
         }
-        private async Task<bool> VerifyLocalFileAsync() {
+        public async Task<bool> VerifyLocalFileAsync() {
             if (!File.Exists(Path)) {
                 DbusHandler.DeregisterProfile(Name);
                 Delete();
@@ -57,17 +60,21 @@ namespace Mercurius.Profiles {
                 throw new ProfileException($"Profile file at {Path} expected");
             }
 
-            byte[] hashResult;
+            string hashResult;
 
             using (MD5 md5Instance = MD5.Create()) {
                 using (var stream = File.OpenRead(Path)) {
-                   hashResult  = md5Instance.ComputeHash(stream);
+                   byte[] rawHashResult = md5Instance.ComputeHash(stream);
+                   hashResult = BitConverter.ToString(rawHashResult).Replace("-","").ToLower();
                 }
             }
 
-            if (hashResult == checksum) {
+            if (hashResult.Equals(checksum)) {
+                logger.Debug("Checksum matches local file");
                 return true;
             } else {
+                logger.Debug("New checksum found, reloading profile...");
+
                 ProfileManager.UnloadProfile(this);
                 Profile reloaded = await ProfileManager.LoadProfileAsync(Name);
 
@@ -83,7 +90,7 @@ namespace Mercurius.Profiles {
 
             await ProfileManager.OverwriteProfileAsync(newProfile, newProfile.Name);
             await ProfileManager.LoadProfileAsync(newProfile.Name);
-            return ProfileManager.GetLoadedProfile(newProfile.Name);
+            return await ProfileManager.GetLoadedProfileAsync(newProfile.Name);
         }
         internal async Task UpdateModListAsync(List<Mod> mods) {
             if (Mods is null) {

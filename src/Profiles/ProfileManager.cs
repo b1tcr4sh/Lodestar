@@ -33,9 +33,16 @@ namespace Mercurius.Profiles {
             if (!Directory.Exists(ProfilePath)) Directory.CreateDirectory(ProfilePath); 
         }
         
-        public static Profile GetLoadedProfile(string name) {
-            if (LoadedProfiles.Keys.Contains(name)) return LoadedProfiles[name];
-            else throw new ProfileException($"Profile {name} doesn't exist!");
+        public static async Task<Profile> GetLoadedProfileAsync(string name) {
+            if (!LoadedProfiles.Keys.Contains(name)) throw new ProfileException($"Profile {name} doesn't exist!");
+
+            Profile foundProfile = LoadedProfiles[name];
+
+            if (await foundProfile.VerifyLocalFileAsync()) {
+                return foundProfile;
+            } else {
+                return LoadedProfiles[name];
+            }
         }
         public static IReadOnlyDictionary<string, Profile> GetLoadedProfiles() {
             if (LoadedProfiles is null || LoadedProfiles.Count <= 0) return new Dictionary<string, Profile>() as IReadOnlyDictionary<string, Profile>;
@@ -64,8 +71,10 @@ namespace Mercurius.Profiles {
 
                     if (profile.Name.Contains(" "))
                         logger.Warn($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
-                    else if (!LoadedProfiles.ContainsKey(profile.Name))
+                    else if (!LoadedProfiles.ContainsKey(profile.Name)) {
+                        profile.GenerateChecksum();
                         LoadedProfiles.Add(profile.Name, profile); 
+                    }
                 } catch (Exception e) {
                     logger.Warn(@$"Error occurred loading profile at {file}");
                     logger.Trace(e.Message);
@@ -93,6 +102,8 @@ namespace Mercurius.Profiles {
                     if (profile.Name.ToLower().Equals(name.ToLower())) {
                         logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
+                        profile.GenerateChecksum();
+
                         LoadedProfiles.Add(profile.Name, profile);
                         return profile;
                     }
@@ -114,7 +125,8 @@ namespace Mercurius.Profiles {
                     profile = JsonSerializer.Deserialize<Profile>(fileContents);
                     logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
-                        LoadedProfiles.Add(profile.Name, profile);
+                    profile.GenerateChecksum();
+                    LoadedProfiles.Add(profile.Name, profile);
                 } catch (Exception e) {
                     logger.Warn(@$"Error occurred loading profile at {path}:");
                     logger.Warn(e.Message);
@@ -124,10 +136,12 @@ namespace Mercurius.Profiles {
             return profile;
         }
         internal static async Task WriteProfileAsync(Profile profile) {
-            if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) return;
+            if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) throw new ProfileException($"File {profile.Name} already has exisint file!");
 
             logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
             using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name}.profile.json", FileMode.CreateNew, FileAccess.Write);
+
+            profile.GenerateChecksum();
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
@@ -136,7 +150,9 @@ namespace Mercurius.Profiles {
             if (!File.Exists($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile Expected at {ProfilePath}/{existingProfileName.ToLower()}.profile.json Doesnt' Exist!");
             
             logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
-            using FileStream stream = new FileStream($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json", FileMode.Create, FileAccess.Write);
+            using FileStream stream = new FileStream(profile.Path, FileMode.Create, FileAccess.Write);
+
+            profile.GenerateChecksum();
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
