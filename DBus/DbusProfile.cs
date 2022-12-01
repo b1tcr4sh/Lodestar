@@ -79,8 +79,9 @@ namespace Mercurius.DBus {
         public async Task<Mod[]> ListModsAsync() {
             Profile profile = await GetModelProfileAsync();
 
+
             foreach (Mod mod in profile.Mods) {
-                mod.CheckFileExists();
+                Console.WriteLine(mod.Title);
             }
 
             return profile.Mods.ToArray<Mod>();
