@@ -119,8 +119,9 @@ namespace Mercurius.DBus {
             foreach (Mod mod in profile.Mods) {
                 IEnumerable<Mod> matchingIds = profile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
 
+                logger.Debug("Found {0} duplicates of {1}", matchingIds.Count() - 1, mod.VersionId);
+
                 if (matchingIds.Count() > 1) {
-                    logger.Debug("Found {0} duplicates of {1}", matchingIds.Count(), mod.VersionId);
                     foreach(Mod duplicate in matchingIds.Skip(1)) {
                         toRemove.Add(duplicate);
                     }
