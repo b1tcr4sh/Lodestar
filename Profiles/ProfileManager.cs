@@ -228,9 +228,4 @@ namespace Mercurius.Profiles {
                 }
         }
     }
-    public enum Repo {
-        modrinth,
-        curseforge,
-        custom
-    }
 }

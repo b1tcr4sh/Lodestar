@@ -281,10 +281,4 @@ namespace Mercurius.Profiles {
             _disposed = true;
         }
     }
-    public enum ClientType {
-        ClientSide, ServerSide
-    }
-    public enum ModLoader {
-        unknown, forge, fabric, quilt, liteloader, rift, modloader
-    }
 }

@@ -84,8 +84,4 @@ namespace Mercurius.Profiles {
             return File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{FileName}"); 
         }
     }
-
-    public enum ClientDependency {
-        ClientSide, ServerSide, ClientServerDependent, Unknown
-    }
 }
