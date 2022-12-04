@@ -129,10 +129,10 @@ namespace Mercurius.Profiles {
             logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
             using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name}.profile.json", FileMode.CreateNew, FileAccess.Write);
 
-            profile.GenerateChecksum();
-
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
+
+            profile.GenerateChecksum();
         }
         internal static async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
             if (!File.Exists($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile Expected at {ProfilePath}/{existingProfileName.ToLower()}.profile.json Doesnt' Exist!");
@@ -140,10 +140,10 @@ namespace Mercurius.Profiles {
             logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
             using FileStream stream = new FileStream(profile.Path, FileMode.Create, FileAccess.Write);
 
-            profile.GenerateChecksum();
-
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
             stream.Close();
+
+            profile.GenerateChecksum();
         }
         internal static bool DeleteProfileFile(string profileName) {
             if (!File.Exists($"{ProfilePath}/{profileName.ToLower()}.profile.json")) {
