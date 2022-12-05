@@ -19,6 +19,7 @@
     <PackageReference Include="nlog" Version="5.0.4" />
     <PackageReference Include="nlog.extensions.logging" Version="5.0.4" />
     <PackageReference Include="Tmds.DBus" Version="0.11.0" />
+    <PackageReference Include="tmds.dbus.protocol" Version="0.11.1-151-9f126c13809fceab8388328aff84b0d8e89b2aae" />
   </ItemGroup>
 
 </Project>
