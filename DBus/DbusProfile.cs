@@ -76,13 +76,8 @@ namespace Mercurius.DBus {
             }
             return true;
         }
-        public async Task<Mod[]> ListModsAsync() {
+        public async Task<Mod[]> ListModsAsync() { // Throws error?
             Profile profile = await GetModelProfileAsync();
-
-
-            foreach (Mod mod in profile.Mods) {
-                Console.WriteLine(mod.Title);
-            }
 
             return profile.Mods.ToArray<Mod>();
         }
@@ -90,12 +85,11 @@ namespace Mercurius.DBus {
             Profile profile = await GetModelProfileAsync();
             APIClient client = new APIClient();
             List<Mod> toRemove = new List<Mod>();
-            List<Mod> toAdd = new List<Mod>();
+            List<string> toAdd = new List<string>();
             bool repaired = true;
 
             logger.Debug("Verifying profile {0} upon request", profile.Name);
-
-
+            // Check for incompatible mods
             IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion) || !mod.Loaders.Contains(profile.Loader));
             logger.Debug("Found {0} incompatible mods", incompatible.Count());
 
@@ -104,7 +98,7 @@ namespace Mercurius.DBus {
                     toRemove.Add(mod);
 
                     try {
-                        await profile.AddModAsync(client, mod.ProjectId, Repo.modrinth, false);
+                        toAdd.Add(mod.ProjectId);
                     } catch (Exception e) {
                         logger.Warn(e);
                         logger.Trace(e.StackTrace);
@@ -113,9 +107,14 @@ namespace Mercurius.DBus {
                 }
             }
 
-            string[] installedDeps = await profile.ResolveDependenciesAsync();
+            await profile.RemoveModsFromListAsync(toRemove, true);
+
+            await profile.AddModsAsync(client, toAdd.ToArray<string>(), Repo.modrinth, false);
 
 
+            // Check for duplicates 
+            logger.Info("Pruning duplicates...");
+            toRemove = new List<Mod>();
             foreach (Mod mod in profile.Mods) {
                 IEnumerable<Mod> matchingIds = profile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
 
@@ -127,10 +126,10 @@ namespace Mercurius.DBus {
                     }
                 }
             }
+            await profile.RemoveModsFromListAsync(toRemove, true);
 
-            foreach (Mod removeable in toRemove) {
-                await profile.RemoveModFromListAsync(removeable, true);
-            }
+            // Resolve dependencies
+            string[] installedDeps = await profile.ResolveDependenciesAsync();
 
             return new ValidityReport {
                 incompatible = incompatible.ToArray<Mod>(),
