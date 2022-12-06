@@ -35,18 +35,26 @@ namespace Mercurius.DBus {
             logger.Info("Starting DBus Server Service....");
 
             ServerConnectionOptions server = new ServerConnectionOptions();
-            Connection connection = new Connection(server);
+            // Connection connection = new Connection(server);
+            Connection connection = new Connection(Address.Session!);
 
             DbusConnection = connection;
 
             await connection.ConnectAsync();
+            await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {}, ServiceRegistrationOptions.Default);
+            await connection.RegisterServiceAsync("org.mercurius.profile", () => {}, ServiceRegistrationOptions.Default);
+
+            // await connection.ActivateServiceAsync("org.mercurius.lodestar");
+
             await connection.RegisterObjectAsync(new ProfileMessenger());
 
             foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
                 await connection.RegisterObjectAsync(new DbusProfile(profile));
             }
-            string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");
-            logger.Info($"Dbus Server Listening at {boundAddress}");
+
+            
+            // string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");
+            // logger.Info($"Dbus Server Listening at {boundAddress}");
         }
         public Task StopAsync(CancellationToken cancellationToken) {
              logger.Info("Stopping Dbus Server Service.");
