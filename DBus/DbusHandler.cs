@@ -34,31 +34,33 @@ namespace Mercurius.DBus {
         public async Task StartAsync(CancellationToken cancellationToken) {
             logger.Info("Starting DBus Server Service....");
 
-            ServerConnectionOptions server = new ServerConnectionOptions();
-            // Connection connection = new Connection(server);
             Connection connection = new Connection(Address.Session!);
 
             DbusConnection = connection;
 
-            await connection.ConnectAsync();
+            try {
+                await connection.ConnectAsync();
+            } catch (ConnectException e) {
+                logger.Fatal("Could not establish connection to system bus... ?");
+                logger.Fatal(e.Message);
+                Environment.Exit(-1);
+            } catch (DisconnectedException) {
+                logger.Fatal("Could not establish connection to system bus... ?");
+            }
+
+
             await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {
-                logger.Warn("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
+                logger.Fatal("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
             }, ServiceRegistrationOptions.Default);
             await connection.RegisterServiceAsync("org.mercurius.profile", () => {
-                logger.Warn("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
+                logger.Fatal("Lost service name 'org.mercurius.profile, probably need to restart... ?");
             }, ServiceRegistrationOptions.Default);
-
-            // await connection.ActivateServiceAsync("org.mercurius.lodestar");
 
             await connection.RegisterObjectAsync(new ProfileMessenger());
 
             foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
                 await connection.RegisterObjectAsync(new DbusProfile(profile));
             }
-
-            
-            // string boundAddress = await server.StartAsync("tcp:host=localhost,port=44881");
-            // logger.Info($"Dbus Server Listening at {boundAddress}");
         }
         public Task StopAsync(CancellationToken cancellationToken) {
              logger.Info("Stopping Dbus Server Service.");
