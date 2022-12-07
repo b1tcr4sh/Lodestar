@@ -148,6 +148,10 @@ namespace Mercurius.Profiles {
 
             VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
 
+            if (Mods.Any<Mod>(mod => mod.VersionId.Equals(version.id))) {
+                throw new ProfileException($"Profile already contains {project.title}");
+            }
+
             Mod mod = new Mod(version, project);
 
             List<Mod> modsToAdd = new List<Mod>();
@@ -160,9 +164,13 @@ namespace Mercurius.Profiles {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                     ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
 
-                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    mod.AddDependency(dependency.version_id);
-                    modsToAdd.Add(dependencyMod);
+                    if (Mods.Any<Mod>(mod => mod.VersionId.Equals(dependencyVersion.id))) {
+                        logger.Warn($"Profile already contains {dependencyProject.title}, skipping...");
+                    } else {
+                        Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                        mod.AddDependency(dependency.version_id);
+                        modsToAdd.Add(dependencyMod);
+                    }
                 }
             }
             modsToAdd.Add(mod);
