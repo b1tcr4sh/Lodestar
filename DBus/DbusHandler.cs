@@ -41,8 +41,12 @@ namespace Mercurius.DBus {
             DbusConnection = connection;
 
             await connection.ConnectAsync();
-            await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {}, ServiceRegistrationOptions.Default);
-            await connection.RegisterServiceAsync("org.mercurius.profile", () => {}, ServiceRegistrationOptions.Default);
+            await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {
+                logger.Warn("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
+            }, ServiceRegistrationOptions.Default);
+            await connection.RegisterServiceAsync("org.mercurius.profile", () => {
+                logger.Warn("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
+            }, ServiceRegistrationOptions.Default);
 
             // await connection.ActivateServiceAsync("org.mercurius.lodestar");
 
