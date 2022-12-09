@@ -1,41 +1,46 @@
 using Tmds.DBus;
 using System.Runtime.InteropServices;
 using Mercurius.Profiles;
+using NLog;
 
 namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.ProfileMessenger")]
     public interface IProfileMessenger : IDBusObject {
-        Task<ObjectPath[]> ListProfilesAsync();
-        Task<ObjectPath> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide);
+        Task<string[]> ListProfilesAsync();
+        Task<bool> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide);
         Task DeleteProfileAsync(string name);
     }
 
 
     public class ProfileMessenger : IProfileMessenger {
         private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/ProfileMessenger");
+        private static ILogger logger = LogManager.GetCurrentClassLogger();
 
-        public Task<ObjectPath[]> ListProfilesAsync() {
-            List<ObjectPath> paths = new List<ObjectPath>();
+        public Task<string[]> ListProfilesAsync() {
+            List<string> names = new List<string>();
 
             foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
-                paths.Add(new ObjectPath($"/org/mercurius/profile/{profile.Name}"));
+                names.Add(profile.Name);
             }
-            return Task.FromResult<ObjectPath[]>(paths.ToArray<ObjectPath>());
+            return Task.FromResult<string[]>(names.ToArray<string>());
         }
 
-        public async Task<ObjectPath> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
+        public async Task<bool> CreateProfileAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
             Profile profile;
             
             try {
                 profile = await Profile.CreateNewAsync(name, minecraftVersion, loader, serverSide);
-            } catch (Exception e) {
-                throw new DBusException("ProfileCreationFailure", e.Message);
+            } catch (ProfileException e) {
+                logger.Warn("Failed to create profile... ?");
+                logger.Warn(e.Message);
+                logger.Trace(e.StackTrace);
+                return false;
             }
 
             DbusProfile dbusProfile = new DbusProfile(profile);
             await DbusHandler.RegisterProfileAsync(dbusProfile);
             
-            return dbusProfile.ObjectPath;
+            return true;
         }
         public async Task DeleteProfileAsync(string name) {
             if (!Profile.Exists(name)) {
