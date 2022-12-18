@@ -140,12 +140,16 @@ namespace Mercurius.DBus {
         public Task GenerateAsync(bool startFromCleanSlate) {
             throw new NotImplementedException();
         }
+        public Task<Mod[]> AddVersionAsync(string id, Repo service, bool ignoreDependencies) {
+            throw new NotImplementedException();
+        }
     }
 
     [DBusInterface("org.mercurius.profile")]
     public interface IDbusProfile : IDBusObject {
         public Task<ProfileInfo> GetProfileInfoAsync();
         public Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies);
+        public Task<Mod[]> AddVersionAsync(string version, Repo service, bool ignoreDependencies);
         public Task<bool> RemoveModAsync(string id, bool force);
         public Task<bool> SyncAsync();
         public Task<Mod[]> ListModsAsync();
