@@ -47,21 +47,41 @@ namespace Mercurius.Modrinth {
         public async Task<ProjectModel> GetProjectAsync(string projectId) {
             logger.Debug($"Getting Project with ID {projectId}...");
 
-            ProjectModel deserializedRes;
+            ProjectModel deserializedRes = new ProjectModel();
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
-            deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
+            try {
+                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
+                deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
+            } catch (HttpRequestException e) {
+                if (e.StatusCode == HttpStatusCode.NotFound) {
+                    throw new ProjectInvalidException($"Project ID {projectId} is invalid!");
+                } else {
+                    throw new Exception($"Failed to connect...?  {e.Message}");
+                }
+            }
             
 
             return deserializedRes;
         }
         public async Task<VersionModel> GetVersionInfoAsync(string versionId) {
+            if (versionId is null) {
+                throw new ArgumentNullException();
+            }
+
             logger.Debug($"Getting Project Version with ID {versionId}...");
 
-            VersionModel deserializedRes;
+            VersionModel deserializedRes = new VersionModel();
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
-            deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
+            try {
+                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
+                deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
+            } catch (HttpRequestException e) {
+                if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
+                    throw new VersionInvalidException("Invalid version id");
+                } else {
+                    throw new Exception($"failed to connect: {e.StatusCode}");
+                }
+            }
 
 
             return deserializedRes;
@@ -106,6 +126,27 @@ namespace Mercurius.Modrinth {
         public ApiException(string message) : base(message) { }
         public ApiException(string message, System.Exception inner) : base(message, inner) { }
         protected ApiException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+    [System.Serializable]
+    public class VersionInvalidException : System.Exception
+    {
+        public VersionInvalidException() { }
+        public VersionInvalidException(string message) : base(message) { }
+        public VersionInvalidException(string message, System.Exception inner) : base(message, inner) { }
+        protected VersionInvalidException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [System.Serializable]
+    public class ProjectInvalidException : System.Exception
+    {
+        public ProjectInvalidException() { }
+        public ProjectInvalidException(string message) : base(message) { }
+        public ProjectInvalidException(string message, System.Exception inner) : base(message, inner) { }
+        protected ProjectInvalidException(
             System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }

@@ -132,8 +132,9 @@ namespace Mercurius.Profiles {
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
             return success;            
         }
-        public async Task<Mod> AddModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies) {
-            logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
+        public async Task<IReadOnlyList<Mod>> AddModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies, bool dryRun) {
+            if (dryRun) logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
+            else logger.Debug("Dry running fetch for mod {0}", projectId);
 
             ProjectModel project = await client.GetProjectAsync(projectId);
             VersionModel[] versions = await client.ListVersionsAsync(project);
@@ -161,8 +162,23 @@ namespace Mercurius.Profiles {
                 logger.Debug("Resolving Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
-                    VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                    if (dependency.version_id is null) {
+                        throw new VersionInvalidException("A dependency was null from Mopdrinth...?");
+                    }
+
+                    VersionModel dependencyVersion;
+                    ProjectModel dependencyProject;
+
+                    try {
+                        dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                        dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);                        
+                    } catch (VersionInvalidException) {
+                        logger.Warn("Version could not be found... ?");
+                        break;
+                    } catch (ProjectInvalidException) {
+                        logger.Warn("Project could not be found...?");
+                        break;
+                    }
 
                     if (Mods.Any<Mod>(mod => mod.VersionId.Equals(dependencyVersion.id))) {
                         logger.Warn($"Profile already contains {dependencyProject.title}, skipping...");
@@ -175,9 +191,11 @@ namespace Mercurius.Profiles {
             }
             modsToAdd.Add(mod);
 
-            await UpdateModListAsync(modsToAdd);
-            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
-            return mod;
+            if (!dryRun) {
+                await UpdateModListAsync(modsToAdd);
+                logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
+            }
+            return modsToAdd;
         }
         public async Task<Mod[]> AddModsAsync(APIClient client, string[] projectIds, Repo service, bool ignoreDependencies) {
             List<Mod> modsToAdd = new List<Mod>();
@@ -237,9 +255,7 @@ namespace Mercurius.Profiles {
                     ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
 
                     Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    // mod.AddDependency(dependencyMod);
                     mod.AddDependency(dependency.version_id);
-                    // await AddModAsync(client, dependency.project_id, service, false);
                     modsToAdd.Add(dependencyMod);
                 }
             }

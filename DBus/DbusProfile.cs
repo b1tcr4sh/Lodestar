@@ -32,19 +32,12 @@ namespace Mercurius.DBus {
                 Loader = profile.Loader
             };
         }
-        public async Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies) {
+        public async Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies) {
             APIClient client = new APIClient();
             Profile profile = await GetModelProfileAsync();
 
-            try {
-                return await profile.AddModAsync(client, id, service, ignoreDependencies);
-            } catch (HttpRequestException e) {
-                if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
-                    throw new Exception("Invalid mod id");
-                } else {
-                    throw new Exception($"failed to connect: {e.StatusCode}");
-                }
-            }
+            
+            return (await profile.AddModAsync(client, id, service, ignoreDependencies, false)).ToArray<Mod>();
         }
         public async Task<bool> RemoveModAsync(string id, bool force) {
             Profile profile = await GetModelProfileAsync();
@@ -152,7 +145,7 @@ namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.profile")]
     public interface IDbusProfile : IDBusObject {
         public Task<ProfileInfo> GetProfileInfoAsync();
-        public Task<Mod> AddModAsync(string id, Repo service, bool ignoreDependencies);
+        public Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies);
         public Task<bool> RemoveModAsync(string id, bool force);
         public Task<bool> SyncAsync();
         public Task<Mod[]> ListModsAsync();
