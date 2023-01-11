@@ -37,16 +37,25 @@ namespace Mercurius.Configuration {
         }
         private static async Task CreateConfigFile() {
             string minecraftDirectory;
+            bool systemBus;
 
             PlatformID platform = Environment.OSVersion.Platform;
-            if (platform == PlatformID.Win32NT) minecraftDirectory = $@"{userPath}/AppData/Roaming/.minecraft/";
-                else if (platform == PlatformID.Unix) minecraftDirectory = $@"{userPath}/.minecraft/";
-                else minecraftDirectory = string.Empty;
+            if (platform == PlatformID.Win32NT) {
+                minecraftDirectory = $@"{userPath}/AppData/Roaming/.minecraft/";
+                systemBus = false;
+            } else if (platform == PlatformID.Unix) {
+                minecraftDirectory = $@"{userPath}/.minecraft/";
+                systemBus = true;
+            } else {
+                minecraftDirectory = string.Empty;
+                systemBus = false;
+            }
 
             SettingsFile config = new SettingsFile {
                 Minecraft_Directory = minecraftDirectory,
                 Profile_Directory = $"{programDirectory}/Profiles/",
-                Server_Mod_Directory = string.Empty
+                Server_Mod_Directory = string.Empty,
+                Dbus_System_Bus = systemBus
             };
 
             string contents = JsonSerializer.Serialize<SettingsFile>(config, new JsonSerializerOptions { WriteIndented = true });

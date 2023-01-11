@@ -34,7 +34,14 @@ namespace Mercurius.DBus {
         public async Task StartAsync(CancellationToken cancellationToken) {
             logger.Info("Starting DBus Server Service....");
 
-            Connection connection = new Connection(Address.Session!);
+            Connection connection;
+
+            if (SettingsManager.Settings.Dbus_System_Bus) {
+                connection = new Connection(Address.Session!);
+            } else {
+                ServerConnectionOptions server = new ServerConnectionOptions();
+                connection = new Connection(server);
+            }
 
             DbusConnection = connection;
 
@@ -46,15 +53,19 @@ namespace Mercurius.DBus {
                 Environment.Exit(-1);
             } catch (DisconnectedException) {
                 logger.Fatal("Could not establish connection to system bus... ?");
+                Environment.Exit(-1);
             }
 
+            if (SettingsManager.Settings.Dbus_System_Bus) {
+                await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {
+                    logger.Fatal("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
+                }, ServiceRegistrationOptions.Default);
+                await connection.RegisterServiceAsync("org.mercurius.profile", () => {
+                    logger.Fatal("Lost service name 'org.mercurius.profile, probably need to restart... ?");
+                }, ServiceRegistrationOptions.Default);
+            }
 
-            await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {
-                logger.Fatal("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
-            }, ServiceRegistrationOptions.Default);
-            await connection.RegisterServiceAsync("org.mercurius.profile", () => {
-                logger.Fatal("Lost service name 'org.mercurius.profile, probably need to restart... ?");
-            }, ServiceRegistrationOptions.Default);
+            
 
             await connection.RegisterObjectAsync(new ProfileMessenger());
 
