@@ -28,7 +28,15 @@ namespace Mercurius {
                     ConsoleOutputColor.Red,
                     ConsoleOutputColor.Black));
 
+            FileTarget logFile = new FileTarget();
+            logFile.Layout = "[${date:format=HH\\:MM\\:ss}] ${logger} -> ${message}";
+            logFile.CleanupFileName = true;
+            logFile.ArchiveFileName = "./latest.log";
+            logFile.ArchiveFileKind = FilePathKind.Relative;
+
+
             NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, LogLevel.Trace);
+            // NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(logFile, LogLevel.Trace);
 
             var builder = new HostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) => {
