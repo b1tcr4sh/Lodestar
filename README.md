@@ -23,6 +23,19 @@ Lodestar is a package manager daemon written for developers with customizeablili
 | [Modrinth](https://modrinth.org) | ✅ | 🔮 | 🔮 |
 | [Curseforge](https://www.curseforge.com/minecraft/mc-mods) | 🚧 | 🔮 | 🔮 |
 
+### Specifications
+
+- Mod management
+  - Creates and manages "profiles" to store collections of compatible mod metadate for specific modloaders and game versions
+    - Profiles stored as JSON files and can be share between users
+   - Automatic resolving and installing of mod Jars
+   - Dependency management
+   - Compatibility checks
+ - DBus
+  - Can connect to DBus system bus or host peer bus (Configurable in settings.json)
+  - Exposes profiles as DBus objects
+    - Remote management of profiles and mods over DBus api.
+
 
 ## Installation
 
