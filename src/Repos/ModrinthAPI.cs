@@ -4,17 +4,16 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Mercurius.Modrinth.Models;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
 using NLog;
 
 namespace Mercurius.Modrinth {
-    public class APIClient {
+    public class ModrinthAPI {
         private HttpClient client;
         private const string BaseUrl = @"https://api.modrinth.com/v2/";
         private ILogger logger;
-        public APIClient() {
+        public ModrinthAPI() {
             logger = LogManager.GetCurrentClassLogger();
 
             client = new HttpClient();

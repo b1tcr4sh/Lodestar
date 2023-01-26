@@ -33,7 +33,7 @@ namespace Mercurius.DBus {
             };
         }
         public async Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies) {
-            APIClient client = new APIClient();
+            ModrinthAPI client = new ModrinthAPI();
             Profile profile = await GetModelProfileAsync();
 
             
@@ -59,7 +59,7 @@ namespace Mercurius.DBus {
             return await profile.RemoveModFromListAsync(mods.ElementAt(0), force);
         }
         public async Task<bool> SyncAsync() {
-            APIClient client = new APIClient();
+            ModrinthAPI client = new ModrinthAPI();
             Profile profile = await GetModelProfileAsync();
 
             try {
@@ -76,7 +76,7 @@ namespace Mercurius.DBus {
         }
         public async Task<ValidityReport> VerifyAsync() {
             Profile profile = await GetModelProfileAsync();
-            APIClient client = new APIClient();
+            ModrinthAPI client = new ModrinthAPI();
             List<Mod> toRemove = new List<Mod>();
             List<string> toAdd = new List<string>();
             bool repaired = true;

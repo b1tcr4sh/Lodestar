@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Mercurius.Modrinth.Models;
 using Mercurius.Modrinth;
 using Mercurius.Configuration;
 using Mercurius.DBus;
@@ -162,7 +161,7 @@ namespace Mercurius.Profiles {
                 // LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
-        internal static async Task SyncProfileAsync(Profile profile, APIClient client) {
+        internal static async Task SyncProfileAsync(Profile profile, ModrinthAPI client) {
             logger.Info("Syncing {0}", profile.Name);
 
 

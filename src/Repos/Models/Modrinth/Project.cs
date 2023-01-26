@@ -1,4 +1,4 @@
-namespace Mercurius.Modrinth.Models {
+namespace Mercurius.Modrinth {
     public struct ProjectModel {
         public string slug { get; set; }
         public string title { get; set; }

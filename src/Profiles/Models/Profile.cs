@@ -132,7 +132,7 @@ namespace Mercurius.Profiles {
             await ProfileManager.OverwriteProfileAsync(this, this.Name);
             return success;            
         }
-        public async Task<IReadOnlyList<Mod>> AddModAsync(APIClient client, string projectId, Repo service, bool ignoreDependencies, bool dryRun) {
+        public async Task<IReadOnlyList<Mod>> AddModAsync(ModrinthAPI client, string projectId, Repo service, bool ignoreDependencies, bool dryRun) {
             if (dryRun) logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
             else logger.Debug("Dry running fetch for mod {0}", projectId);
 
@@ -197,7 +197,7 @@ namespace Mercurius.Profiles {
             }
             return modsToAdd;
         }
-        public async Task<Mod[]> AddModsAsync(APIClient client, string[] projectIds, Repo service, bool ignoreDependencies) {
+        public async Task<Mod[]> AddModsAsync(ModrinthAPI client, string[] projectIds, Repo service, bool ignoreDependencies) {
             List<Mod> modsToAdd = new List<Mod>();
 
             foreach (string projectId in projectIds) {
@@ -238,7 +238,7 @@ namespace Mercurius.Profiles {
             await UpdateModListAsync(modsToAdd);
             return modsToAdd.ToArray<Mod>();
         }
-        public async Task<Mod> AddVersionAsync(APIClient client, string versionId, bool ignoreDependencies) {
+        public async Task<Mod> AddVersionAsync(ModrinthAPI client, string versionId, bool ignoreDependencies) {
             VersionModel version = await client.GetVersionInfoAsync(versionId);
             ProjectModel project = await client.GetProjectAsync(version.project_id);
 
@@ -266,7 +266,7 @@ namespace Mercurius.Profiles {
             return mod;
         }
         public async Task<string[]> ResolveDependenciesAsync() {
-            APIClient client = new APIClient();
+            ModrinthAPI client = new ModrinthAPI();
             List<string> installedDependencies = new List<string>();
             List<string> unmetDeps = new List<string>();
 
