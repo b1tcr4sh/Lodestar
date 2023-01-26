@@ -1,4 +1,3 @@
-using Mercurius.Modrinth.Models;
 using Mercurius.Configuration;
 using Mercurius.Modrinth;
 using Mercurius.DBus;
