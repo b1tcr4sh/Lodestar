@@ -266,7 +266,7 @@ namespace Mercurius.Profiles {
             return mod;
         }
         public async Task<string[]> ResolveDependenciesAsync() {
-            ModrinthAPI client = new ModrinthAPI();
+            ModrinthAPI client = APIManager.Modrinth;
             List<string> installedDependencies = new List<string>();
             List<string> unmetDeps = new List<string>();
 

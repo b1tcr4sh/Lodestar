@@ -55,7 +55,8 @@ namespace Mercurius.Configuration {
                 Minecraft_Directory = minecraftDirectory,
                 Profile_Directory = $"{programDirectory}/Profiles/",
                 Server_Mod_Directory = string.Empty,
-                Dbus_System_Bus = systemBus
+                Dbus_System_Bus = systemBus,
+                Cureforge_Api_Key = String.Empty
             };
 
             string contents = JsonSerializer.Serialize<SettingsFile>(config, new JsonSerializerOptions { WriteIndented = true });

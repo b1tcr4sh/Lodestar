@@ -11,17 +11,13 @@ using NLog;
 
 namespace Mercurius.API {
     public class ModrinthAPI {
-        private HttpClient client;
+        private HttpClient _client;
         private const string BaseUrl = @"https://api.modrinth.com/v2/";
         private ILogger logger;
-        public ModrinthAPI() {
+        internal ModrinthAPI(HttpClient client) {
             logger = LogManager.GetCurrentClassLogger();
 
-            client = new HttpClient();
-
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("user-agent", "Mercurius");
+            _client = client; 
         }
         public async Task<SearchModel> SearchAsync(string query) {
             logger.Debug($"Querying Labrynth with {query}...");
@@ -29,7 +25,7 @@ namespace Mercurius.API {
             SearchModel deserializedRes;
 
             try {
-                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"search?query={query}");
+                Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"search?query={query}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
             } catch (Exception e) {
                 logger.Warn(e.Message);
@@ -50,7 +46,7 @@ namespace Mercurius.API {
             ProjectModel deserializedRes = new ProjectModel();
 
             try {
-                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
+                Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == HttpStatusCode.NotFound) {
@@ -73,7 +69,7 @@ namespace Mercurius.API {
             VersionModel deserializedRes = new VersionModel();
 
             try {
-                Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
+                Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
@@ -91,7 +87,7 @@ namespace Mercurius.API {
 
             VersionModel[] deserializedRes;
 
-            Stream responseStream = await client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
+            Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
             deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
            
             return deserializedRes;
@@ -105,7 +101,7 @@ namespace Mercurius.API {
 
             HttpResponseMessage response;
 
-            response = await client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
+            response = await _client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
 
             using Stream readStream = await response.Content.ReadAsStreamAsync();
             using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}", FileMode.Create);

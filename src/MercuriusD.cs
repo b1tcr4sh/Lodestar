@@ -1,10 +1,7 @@
 using Mercurius;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
-using Mercurius.DBus;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using Mercurius.API;
 using Microsoft.Extensions.Hosting;
 using NLog;
 
@@ -20,6 +17,7 @@ using NLog;
             logger.Info("Starting Mercurius Daemon...");
 
             SettingsManager.Init();
+            APIManager.Init();
             ProfileManager.InitializeDirectory();
             ProfileManager.LoadAllProfiles();
 
