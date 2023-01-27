@@ -1,4 +1,4 @@
-namespace Mercurius.Modrinth {
+namespace Mercurius.API.Modrinth {
     public struct VersionModel {
         public string name { get; set; }
         public string version_number { get; set; }

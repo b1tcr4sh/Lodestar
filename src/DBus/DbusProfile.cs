@@ -3,7 +3,7 @@ using Mercurius;
 using Mercurius.Profiles;
 using Mercurius.Configuration;
 using Tmds.DBus;
-using Mercurius.Modrinth;
+using Mercurius.API;
 using NLog;
 
 namespace Mercurius.DBus {

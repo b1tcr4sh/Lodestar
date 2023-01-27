@@ -6,9 +6,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Mercurius.Configuration;
 using Mercurius.Profiles;
+using Mercurius.API.Modrinth;
 using NLog;
 
-namespace Mercurius.Modrinth {
+namespace Mercurius.API {
     public class ModrinthAPI {
         private HttpClient client;
         private const string BaseUrl = @"https://api.modrinth.com/v2/";

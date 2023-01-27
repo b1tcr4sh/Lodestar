@@ -1,7 +1,8 @@
 using System.Security.Cryptography;
 using Mercurius.Configuration;
 using Mercurius.DBus;
-using Mercurius.Modrinth;
+using Mercurius.API;
+using Mercurius.API.Modrinth;
 using Tmds.DBus;
 using System.Threading.Tasks;
 using NLog;
