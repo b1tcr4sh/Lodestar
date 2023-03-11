@@ -38,9 +38,13 @@ namespace Mercurius.DBus {
 
             if (SettingsManager.Settings.Dbus_System_Bus) {
                 connection = new Connection(Address.Session!);
+                logger.Info("Connected to DBus session bus");
             } else {
                 ServerConnectionOptions server = new ServerConnectionOptions();
                 connection = new Connection(server);
+
+                await server.StartAsync("tcp:host=localhost,port=44881");
+                logger.Info("DBus peer listening at tcp port 44881");
             }
 
             DbusConnection = connection;

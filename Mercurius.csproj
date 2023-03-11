@@ -5,7 +5,7 @@
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Vivid</Authors>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
   </PropertyGroup>
