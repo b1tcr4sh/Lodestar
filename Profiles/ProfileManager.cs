@@ -222,10 +222,14 @@ namespace Mercurius.Profiles {
                 } else
                     installQueue.Add(mod);
             }
+
+            if (installQueue.Count > 0) {
                 logger.Debug("Attempting to install mods...");
-                foreach (Mod mod in installQueue) {
-                    await client.DownloadVersionAsync(mod);
-                }
+            }
+            
+            foreach (Mod mod in installQueue) {
+                await client.DownloadVersionAsync(mod);
+            }
         }
     }
 }

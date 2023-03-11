@@ -162,16 +162,25 @@ namespace Mercurius.Profiles {
                 logger.Debug("Resolving Dependencies...");
 
                 foreach (Dependency dependency in version.dependencies) {
-                    if (dependency.version_id is null) {
-                        throw new VersionInvalidException("A dependency was null from Mopdrinth...?");
-                    }
-
-                    VersionModel dependencyVersion;
-                    ProjectModel dependencyProject;
+                    VersionModel dependencyVersion = new VersionModel();
+                    ProjectModel dependencyProject = new ProjectModel();
 
                     try {
-                        dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                        dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);                        
+                        if (dependency.version_id is null) {
+                            dependencyProject = await client.GetProjectAsync(dependency.project_id);
+
+                            foreach (string versionId in dependencyProject.versions.Reverse()) {
+                                VersionModel ver = await client.GetVersionInfoAsync(versionId);
+                                Console.WriteLine(String.Join(" ", ver.game_versions));
+                                if (ver.game_versions.Contains(this.MinecraftVersion)) {
+                                    dependencyVersion = ver;
+                                    break;
+                                }
+                            }
+                        } else {
+                            dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
+                            dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                        }                              
                     } catch (VersionInvalidException) {
                         logger.Warn("Version could not be found... ?");
                         break;
@@ -180,11 +189,16 @@ namespace Mercurius.Profiles {
                         break;
                     }
 
+                    if (dependencyVersion.id is null) {
+                        throw new ProfileException("Couldn't find a valid installation candidate... ?");
+                    }
+
+                    Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
+                    mod.AddDependency(dependencyMod.VersionId);
+
                     if (Mods.Any<Mod>(mod => mod.VersionId.Equals(dependencyVersion.id))) {
                         logger.Warn($"Profile already contains {dependencyProject.title}, skipping...");
                     } else {
-                        Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                        mod.AddDependency(dependency.version_id);
                         modsToAdd.Add(dependencyMod);
                     }
                 }
