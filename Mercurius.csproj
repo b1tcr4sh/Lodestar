@@ -6,16 +6,24 @@
     <Authors>Vivid</Authors>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+
+    <RuntimeIdentifier Condition=" '$(RuntimeIdentifier)' == '' ">win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RuntimeIdentifier)' == 'win-x64' ">
     <OutputType>WinExe</OutputType>
       <TargetFramework>net7.0-windows</TargetFramework>
       <UseWindowsForms>true</UseWindowsForms>
+      <SelfContained>true</SelfContained>
+      <PublishSingleFile>true</PublishSingleFile>
+      <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RuntimeIdentifier)' == 'linux-x64' ">
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>
