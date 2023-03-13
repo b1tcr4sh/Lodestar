@@ -4,10 +4,18 @@
     <Version>1.0.1</Version>
     <VersionPrefix>1.0.1</VersionPrefix>
     <Authors>Vivid</Authors>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(RuntimeIdentifier)' == 'win-x64' ">
+    <OutputType>WinExe</OutputType>
+      <TargetFramework>net7.0-windows</TargetFramework>
+      <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RuntimeIdentifier)' == 'linux-x64' ">
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
