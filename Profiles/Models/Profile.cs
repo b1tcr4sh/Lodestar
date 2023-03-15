@@ -172,7 +172,7 @@ namespace Mercurius.Profiles {
                             foreach (string versionId in dependencyProject.versions.Reverse()) {
                                 VersionModel ver = await client.GetVersionInfoAsync(versionId);
                                 Console.WriteLine(String.Join(" ", ver.game_versions));
-                                if (ver.game_versions.Contains(this.MinecraftVersion)) {
+                                if (ver.game_versions.Contains(this.MinecraftVersion) && ver.loaders.Contains(Loader.ToString())) {
                                     dependencyVersion = ver;
                                     break;
                                 }
