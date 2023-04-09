@@ -137,7 +137,7 @@ namespace Mercurius.Profiles {
             else logger.Debug("Dry running fetch for mod {0}", projectId);
 
             ProjectModel project = await client.GetProjectAsync(projectId);
-            VersionModel[] versions = await client.ListVersionsAsync(project);
+            VersionModel[] versions = await client.ListVersionsAsync(project.id);
 
             VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
             viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(Loader.ToString().ToLower())).ToArray<VersionModel>();
@@ -204,7 +204,7 @@ namespace Mercurius.Profiles {
                 logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
 
                 ProjectModel project = await client.GetProjectAsync(projectId);
-                VersionModel[] versions = await client.ListVersionsAsync(project);
+                VersionModel[] versions = await client.ListVersionsAsync(project.id);
 
                 VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
                 viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(Loader.ToString().ToLower())).ToArray<VersionModel>();

@@ -16,6 +16,7 @@ namespace Mercurius.Profiles {
         public string VersionId { get; set; } = String.Empty;
         public string MinecraftVersion { get; set; } = String.Empty;
         public string ModVersion { get; set; } = String.Empty;
+        public Repo Repo { get; set; } = Repo.modrinth;
         public ModLoader[] Loaders { get; set; } = new ModLoader[] { ModLoader.unknown };
         public IEnumerable<string> DependencyVersions { get; set; } = new String[0];
         public ClientDependency ClientDependency { get; set; } = ClientDependency.Unknown;

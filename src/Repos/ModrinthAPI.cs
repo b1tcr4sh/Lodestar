@@ -10,43 +10,38 @@ using Mercurius.API.Modrinth;
 using NLog;
 
 namespace Mercurius.API {
-    public class ModrinthAPI {
-        private HttpClient _client;
-        private const string BaseUrl = @"https://api.modrinth.com/v2/";
-        private ILogger logger;
-        internal ModrinthAPI(HttpClient client) {
-            logger = LogManager.GetCurrentClassLogger();
-
-            _client = client; 
-        }
+    public class ModrinthAPI : Repository {
+        // private const string BaseUrl = @"https://api.modrinth.com/v2/";
+        private ILogger _logger;
+        public ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
         public async Task<SearchModel> SearchAsync(string query) {
-            logger.Debug($"Querying Labrynth with {query}...");
+            _logger.Debug($"Querying Labrynth with {query}...");
 
             SearchModel deserializedRes;
 
             try {
-                Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"search?query={query}");
+                Stream responseStream = await _http.GetStreamAsync(_base + $@"search?query={query}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
             } catch (Exception e) {
-                logger.Warn(e.Message);
-                logger.Trace(e.StackTrace);
+                _logger.Warn(e.Message);
+                _logger.Trace(e.StackTrace);
                 throw new ApiException("Connection Failed!");
             }
 
             if (deserializedRes.hits.Length <= 0) {
-                logger.Debug("No results found... Sorry");
+                _logger.Debug("No results found... Sorry");
                 throw new ApiException("No results found");
             }
 
             return deserializedRes;
         }
         public async Task<ProjectModel> GetProjectAsync(string projectId) {
-            logger.Debug($"Getting Project with ID {projectId}...");
+            _logger.Debug($"Getting Project with ID {projectId}...");
 
             ProjectModel deserializedRes = new ProjectModel();
 
             try {
-                Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"project/{projectId}");
+                Stream responseStream = await _http.GetStreamAsync(_base + $@"project/{projectId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == HttpStatusCode.NotFound) {
@@ -59,17 +54,17 @@ namespace Mercurius.API {
 
             return deserializedRes;
         }
-        public async Task<VersionModel> GetVersionInfoAsync(string versionId) {
+        public override async Task<Mod> GetModAsync(string versionId) {
             if (versionId is null) {
                 throw new ArgumentNullException();
             }
 
-            logger.Debug($"Getting Project Version with ID {versionId}...");
+            _logger.Debug($"Getting Project Version with ID {versionId}...");
 
             VersionModel deserializedRes = new VersionModel();
 
             try {
-                Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"version/{versionId}");
+                Stream responseStream = await _http.GetStreamAsync(_base + $@"version/{versionId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
@@ -79,41 +74,16 @@ namespace Mercurius.API {
                 }
             }
 
-
+            throw new NotImplementedException();
             return deserializedRes;
         }
-        public async Task<VersionModel[]> ListVersionsAsync(ProjectModel project) {
-            logger.Debug($"Getting List of Versions for {project.title}...");
-
+        public async Task<VersionModel[]> ListVersionsAsync(string id) {
             VersionModel[] deserializedRes;
 
-            Stream responseStream = await _client.GetStreamAsync(BaseUrl + $@"project/{project.id}/version");
+            Stream responseStream = await _http.GetStreamAsync(_base + $@"project/{id}/version");
             deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
            
             return deserializedRes;
-        }
-        public async Task DownloadVersionAsync(Mod mod) {
-            if (mod.Title is null) {
-                throw new ArgumentNullException("Mod values are null!");
-            }
-
-            logger.Debug($"Starting Download of {mod.Title}: version {mod.ModVersion}");
-
-            HttpResponseMessage response;
-
-            response = await _client.GetAsync(mod.DownloadURL, HttpCompletionOption.ResponseContentRead);
-
-            using Stream readStream = await response.Content.ReadAsStreamAsync();
-            using Stream writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}", FileMode.Create);
-
-            await readStream.CopyToAsync(writeStream);
-            readStream.Close();
-            writeStream.Close();
-
-            logger.Debug($"Completed Download of {mod.Title}: version {mod.ModVersion}");
-
-            //TODO Report download progress
-            //TODO Check download SHA256
         }
     }
     
