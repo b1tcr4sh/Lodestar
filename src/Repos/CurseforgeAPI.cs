@@ -10,9 +10,9 @@ using NLog;
 namespace Mercurius.API {
     public class CurseforgeAPI : Repository { 
         private ILogger _logger;
-        public CurseforgeAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
+        protected internal CurseforgeAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
 
-        public async Task<Project> GetProjectAsync(string projectId) {
+        protected internal async Task<Project> GetProjectAsync(string projectId) {
             _logger.Debug($"Getting Project with ID {projectId}...");
             
             Project deserializedProject;
@@ -29,12 +29,12 @@ namespace Mercurius.API {
 
             return deserializedProject;
         }
-        public async Task<Curseforge.File[]> ListVersionsAsync(string projectId) { // Model is a bit different between the two routes :(
+        protected internal async Task<Curseforge.File[]> ListVersionsAsync(string projectId) { // Model is a bit different between the two routes :(
             _logger.Debug($"Getting List of Versions for {projectId}...");
 
             throw new NotImplementedException();
         }
-        public override async Task<Mod> GetModAsync(string versionId) { // Model is a bit different between the two routes :(
+        protected internal override async Task<Mod> GetModAsync(string versionId) { // Model is a bit different between the two routes :(
             throw new NotImplementedException();
         }
     }

@@ -13,8 +13,8 @@ namespace Mercurius.API {
     public class ModrinthAPI : Repository {
         // private const string BaseUrl = @"https://api.modrinth.com/v2/";
         private ILogger _logger;
-        public ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
-        public async Task<SearchModel> SearchAsync(string query) {
+        protected internal ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
+        protected internal async Task<SearchModel> SearchAsync(string query) {
             _logger.Debug($"Querying Labrynth with {query}...");
 
             SearchModel deserializedRes;
@@ -35,7 +35,7 @@ namespace Mercurius.API {
 
             return deserializedRes;
         }
-        public async Task<ProjectModel> GetProjectAsync(string projectId) {
+        protected internal async Task<ProjectModel> GetProjectAsync(string projectId) {
             _logger.Debug($"Getting Project with ID {projectId}...");
 
             ProjectModel deserializedRes = new ProjectModel();
@@ -54,7 +54,7 @@ namespace Mercurius.API {
 
             return deserializedRes;
         }
-        public override async Task<Mod> GetModAsync(string versionId) {
+        protected internal override async Task<Mod> GetModAsync(string versionId) {
             if (versionId is null) {
                 throw new ArgumentNullException();
             }

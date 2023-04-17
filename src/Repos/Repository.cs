@@ -4,16 +4,16 @@ using Mercurius.Configuration;
 
 namespace Mercurius.API {
     public abstract class Repository {
-        internal HttpClient _http;
-        internal string _base;
+        private protected HttpClient _http;
+        private protected string _base;
         public Repository(string baseUrl, HttpClient client) {
             _base = baseUrl;
             _http = client;
         }
-        abstract public Task<Mod> GetModAsync(string id);
+        abstract protected internal Task<Mod> GetModAsync(string id);
         // abstract public Task</*plugin*/> GetPluginAsync(string id);
         // abstract public Task</*resource pack*/> GetResourcePackAsync(string id);
-        public async Task<bool> DownlodMod(Mod mod) {
+        protected internal async Task<bool> DownlodMod(Mod mod) {
             if (mod.DownloadURL is null) {
                 throw new ArgumentNullException("Mod values are null!");
             }
