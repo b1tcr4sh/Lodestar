@@ -13,7 +13,9 @@ namespace Mercurius.API {
     public class ModrinthAPI : Repository {
         // private const string BaseUrl = @"https://api.modrinth.com/v2/";
         private ILogger _logger;
-        protected internal ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
+        protected internal ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {
+            _objectPath = "/org/mercurius/modrinth";
+        }
         protected internal async Task<SearchModel> SearchAsync(string query) {
             _logger.Debug($"Querying Labrynth with {query}...");
 
@@ -61,11 +63,14 @@ namespace Mercurius.API {
 
             _logger.Debug($"Getting Project Version with ID {versionId}...");
 
-            VersionModel deserializedRes = new VersionModel();
+            VersionModel version;
+            ProjectModel project;
 
             try {
-                Stream responseStream = await _http.GetStreamAsync(_base + $@"version/{versionId}");
-                deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel>(responseStream);
+                Stream versionRes = await _http.GetStreamAsync(_base + $@"version/{versionId}");
+                version = await JsonSerializer.DeserializeAsync<VersionModel>(versionRes);
+                Stream projectRes = await _http.GetStreamAsync(_base + $@"project/{version.project_id}");
+                project = await JsonSerializer.DeserializeAsync<ProjectModel>(projectRes);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
                     throw new VersionInvalidException("Invalid version id");
@@ -74,10 +79,9 @@ namespace Mercurius.API {
                 }
             }
 
-            throw new NotImplementedException();
-            return deserializedRes;
+            return new Mod(version, project);
         }
-        public async Task<VersionModel[]> ListVersionsAsync(string id) {
+        protected internal async Task<VersionModel[]> ListVersionsAsync(string id) {
             VersionModel[] deserializedRes;
 
             Stream responseStream = await _http.GetStreamAsync(_base + $@"project/{id}/version");

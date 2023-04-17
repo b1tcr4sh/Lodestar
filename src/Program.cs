@@ -7,8 +7,10 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NLog.Extensions.Logging;
+
 using Mercurius.DBus;
 using Mercurius.Configuration;
+using Mercurius.API;
 
 namespace Mercurius {
     public class Program {
@@ -48,10 +50,10 @@ namespace Mercurius {
                 }
             })
             .ConfigureServices((hostContext, services) => {
-                services.AddSingleton<IHostedService, DaemonService>();                
-            })
-            .ConfigureServices((hostContext, services) => {
-                services.AddSingleton<IHostedService, DbusHandler>();
+                services.AddSingleton<IHostedService, DaemonService>();     
+                services.AddSingleton<IHostedService, DbusHandler>(); 
+                services.AddSingleton<Repository>(new ModrinthAPI(@"https://api.modrinth.com/v2/", new HttpClient()));      
+                services.AddSingleton<Repository>(new CurseforgeAPI(@"https://api.curseforge.com/", new HttpClient()));
             })
             .ConfigureLogging((hostingContext, logging) => {
                 logging.AddNLog(hostingContext.Configuration);

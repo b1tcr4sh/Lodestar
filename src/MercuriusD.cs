@@ -17,7 +17,6 @@ using NLog;
             logger.Info("Starting Mercurius Daemon...");
 
             SettingsManager.Init();
-            APIManager.Init();
             ProfileManager.InitializeDirectory();
             ProfileManager.LoadAllProfiles();
 

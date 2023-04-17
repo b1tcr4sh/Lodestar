@@ -1,15 +1,20 @@
+using Tmds.DBus;
+
 using Mercurius.Profiles;
 using Mercurius.API.Modrinth;
 using Mercurius.Configuration;
 
 namespace Mercurius.API {
-    public abstract class Repository {
+    public abstract class Repository : IDisposable, IDBusObject {
         private protected HttpClient _http;
         private protected string _base;
+        protected ObjectPath _objectPath; 
+        public ObjectPath ObjectPath { get => _objectPath; }
         public Repository(string baseUrl, HttpClient client) {
             _base = baseUrl;
             _http = client;
         }
+        public void Dispose() {}
         abstract protected internal Task<Mod> GetModAsync(string id);
         // abstract public Task</*plugin*/> GetPluginAsync(string id);
         // abstract public Task</*resource pack*/> GetResourcePackAsync(string id);

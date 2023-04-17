@@ -10,7 +10,9 @@ using NLog;
 namespace Mercurius.API {
     public class CurseforgeAPI : Repository { 
         private ILogger _logger;
-        protected internal CurseforgeAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {}
+        protected internal CurseforgeAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {
+            _objectPath = "/org/mercurius/curseforge";
+        }
 
         protected internal async Task<Project> GetProjectAsync(string projectId) {
             _logger.Debug($"Getting Project with ID {projectId}...");

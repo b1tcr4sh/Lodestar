@@ -12,10 +12,12 @@ namespace Mercurius.DBus {
         private ObjectPath _objectPath;
         private Profile modelProfile; 
         private ILogger logger;
+        private ModrinthAPI _modrinth;
+        private CurseforgeAPI _curseforge;
 
         private async Task<Profile> GetModelProfileAsync() => await ProfileManager.GetLoadedProfileAsync(modelProfile.Name);
 
-        internal DbusProfile(Profile profile) {
+        internal DbusProfile(Profile profile, ModrinthAPI modrinth, CurseforgeAPI curseforge) {
             _objectPath = new ObjectPath(String.Format($"/org/mercurius/profile/{profile.Name}"));
             modelProfile = profile;
             logger = NLog.LogManager.GetCurrentClassLogger();
@@ -33,11 +35,20 @@ namespace Mercurius.DBus {
             };
         }
         public async Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies) {
-            ModrinthAPI client = APIManager.Modrinth;
+            Repository repo;
+            switch (service) {
+                case Repo.modrinth:
+                    repo = _modrinth;
+                    break;
+                case Repo.curseforge:
+                    repo = _curseforge;
+                    break;
+            }
+
             Profile profile = await GetModelProfileAsync();
 
             
-            return (await profile.AddModAsync(client, id, service, ignoreDependencies, false)).ToArray<Mod>();
+            return (await profile.AddModAsync(repo, id, service, ignoreDependencies, false)).ToArray<Mod>();
         }
         public async Task<bool> RemoveModAsync(string id, bool force) {
             Profile profile = await GetModelProfileAsync();
