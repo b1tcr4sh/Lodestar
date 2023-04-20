@@ -196,7 +196,7 @@ namespace Mercurius.Profiles {
                         modsToAdd.Add(dependencyMod);
                     }
                 }
-            }
+            }DeregisterProfile
             modsToAdd.Add(mod);
 
             if (!dryRun) {
@@ -352,10 +352,10 @@ namespace Mercurius.Profiles {
         // }
         internal void Delete() {
             if (File.Exists(Path))
-                ProfileManager.DeleteProfileFile(Name);
+                Manager.DeleteProfileFile(Name);
                 
             // Dipose/unload
-            ProfileManager.UnloadProfile(this);   
+            Manager.UnloadProfile(this);   
             Dispose();         
         }
         public void Dispose() {
@@ -365,7 +365,7 @@ namespace Mercurius.Profiles {
         private void Dispose(bool disposing) {
             if (_disposed) return;
             if (disposing) {
-                ProfileManager.UnloadProfile(this);
+                Manager.UnloadProfile(this);
             }
 
             _disposed = true;

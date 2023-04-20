@@ -10,7 +10,7 @@ namespace Mercurius.Profiles {
     public enum ModLoader {
         unknown, forge, fabric, quilt, liteloader, rift, modloader
     }
-        public enum ClientDependency {
-        ClientSide, ServerSide, ClientServerDependent, Unknown
+    public enum ClientDependency {
+        Client, Server, Mutual, Unknown
     }
 }

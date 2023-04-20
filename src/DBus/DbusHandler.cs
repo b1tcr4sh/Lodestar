@@ -23,12 +23,10 @@ namespace Mercurius.DBus {
         private static Connection DbusConnection;
 
         private readonly ILogger logger;
-        // private readonly IOptions<DaemonConfig> _config;
-        public DbusHandler() {
+        private ProfileManager _manager;
+        public DbusHandler(ProfileManager manager) {
             logger = LogManager.GetCurrentClassLogger();
-
-            //  _logger = logger;
-            //  _config = config;
+            _manager = manager;
          }
 
         public async Task StartAsync(CancellationToken cancellationToken) {
@@ -71,9 +69,9 @@ namespace Mercurius.DBus {
 
             
 
-            await connection.RegisterObjectAsync(new ProfileMessenger());
+            await connection.RegisterObjectAsync(new ProfileMessenger(_manager));
 
-            foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
+            foreach (Profile profile in _manager.GetLoadedProfiles().Values) {
                 await connection.RegisterObjectAsync(new DbusProfile(profile));
             }
         }

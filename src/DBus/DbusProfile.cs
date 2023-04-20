@@ -12,8 +12,7 @@ namespace Mercurius.DBus {
         private ObjectPath _objectPath;
         private Profile modelProfile; 
         private ILogger logger;
-        private ModrinthAPI _modrinth;
-        private CurseforgeAPI _curseforge;
+
 
         private async Task<Profile> GetModelProfileAsync() => await modelProfile.Manager.GetLoadedProfileAsync(modelProfile.Name);
 
@@ -72,9 +71,11 @@ namespace Mercurius.DBus {
 
             return profile.Mods.ToArray<Mod>();
         }
-        public async Task<ValidityReport> VerifyAsync() {
+        public async Task<ValidityReport> VerifyAsync() { // Unstable; Full of undefined behabior
+            throw new NotImplementedException();
+
             Profile profile = await GetModelProfileAsync();
-            ModrinthAPI client = APIManager.Modrinth; // Needs to be repalced
+            // ModrinthAPI client = APIManager.Modrinth; // Needs to be repalced
             List<Mod> toRemove = new List<Mod>();
             List<string> toAdd = new List<string>();
             bool repaired = true;
@@ -132,10 +133,10 @@ namespace Mercurius.DBus {
         public Task CheckForUpdatesAsync() {
             throw new NotImplementedException();
         }
-        public Task UpdateModAsync(string id) { // Needs to be manager-side so it can fetch specific version
+        public Task UpdateModAsync(Mod toUpdate, string newMinecraftVersion) { // Needs to be manager-side so it can fetch specific version
             throw new NotImplementedException();
         }
-        public Task GenerateAsync(bool startFromCleanSlate) {
+        public Task GenerateAsync(bool startFromCleanSlate, Remote source) {
             throw new NotImplementedException();
         }
         public Task<Mod[]> AddVersionAsync(string id, Remote service, bool ignoreDependencies) {
@@ -153,8 +154,8 @@ namespace Mercurius.DBus {
         public Task<Mod[]> ListModsAsync();
         public Task<ValidityReport> VerifyAsync(); // Should check to make sure all dependencies are met and everything is compatible; auto fix incompatibilities or return false if can't
         public Task CheckForUpdatesAsync(); // Should return struct describing mods and if they're outdated
-        public Task UpdateModAsync(string id); // Should fetch newest compatible version of mod
-        public Task GenerateAsync(bool startFromCleanSlate); // Should generate mod metadata from mod files (properly this time)
+        public Task UpdateModAsync(Mod toUpdate, string newMinecraftVersion); // Should fetch newest compatible version of mod
+        public Task GenerateAsync(bool startFromCleanSlate, Remote source); // Should generate mod metadata from mod files (properly this time)
     }
 
     [StructLayout(LayoutKind.Sequential)]

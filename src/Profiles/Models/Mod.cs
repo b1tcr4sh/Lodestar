@@ -44,19 +44,19 @@ namespace Mercurius.Profiles {
             switch (clientSideDependence) {
                 case "required":
                     if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
-                        ClientDependency = ClientDependency.ClientServerDependent;
+                        ClientDependency = ClientDependency.Mutual;
                     else if (serverSideDependency.Equals("unsupported"))
-                        ClientDependency = ClientDependency.ClientSide;
+                        ClientDependency = ClientDependency.Client;
                     break;
                 case "optional":
                     if (serverSideDependency.Equals("required"))
-                        ClientDependency = ClientDependency.ClientServerDependent;
+                        ClientDependency = ClientDependency.Mutual;
                     else if (serverSideDependency.Equals("optinoal") || serverSideDependency.Equals("unsupported"))
-                        ClientDependency = ClientDependency.ClientSide;
+                        ClientDependency = ClientDependency.Client;
                     break;
                 case "unsupported":
                     if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
-                        ClientDependency = ClientDependency.ServerSide;
+                        ClientDependency = ClientDependency.Server;
                     break;
                 default:
                     ClientDependency = ClientDependency.Unknown;
