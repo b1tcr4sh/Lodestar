@@ -1,12 +1,10 @@
-using System.Threading.Tasks;
-using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using NLog;
+
 using Mercurius.API;
 using Mercurius.Configuration;
 using Mercurius.DBus;
-using NLog;
 
 namespace Mercurius.Profiles {
     public class ProfileManager {

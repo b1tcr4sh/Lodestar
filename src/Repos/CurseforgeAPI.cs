@@ -1,11 +1,7 @@
-using System.Threading.Tasks;
 using System.Net;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using NLog;
 
-using Mercurius.Configuration;
-using Mercurius.API.Curseforge;
 using Mercurius.Profiles;
 using Mercurius.API.Modrinth; // TEMPEPPEPEP AHHAHA
 

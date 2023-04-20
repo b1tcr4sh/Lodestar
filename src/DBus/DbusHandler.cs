@@ -1,11 +1,9 @@
-using System;
-using System.Threading.Tasks;
-using System.Reflection;
 using Tmds.DBus;
-using Mercurius.Configuration;
-using Mercurius.Profiles;
 using Microsoft.Extensions.Hosting;
 using NLog;
+
+using Mercurius.Configuration;
+using Mercurius.Profiles;
 
 namespace Mercurius.DBus {
     public class DbusHandler : IDisposable, IHostedService {

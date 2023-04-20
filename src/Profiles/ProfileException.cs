@@ -1,5 +1,3 @@
-using System;
-
 namespace Mercurius.Profiles {
      [System.Serializable]
     public class ProfileException : System.Exception

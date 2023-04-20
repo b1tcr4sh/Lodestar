@@ -1,10 +1,8 @@
 using System.Runtime.InteropServices;
-using Mercurius;   
-using Mercurius.Profiles;
-using Mercurius.Configuration;
 using Tmds.DBus;
-using Mercurius.API;
 using NLog;
+
+using Mercurius.Profiles;
 
 namespace Mercurius.DBus {
     public class DbusProfile : IDbusProfile {

@@ -1,10 +1,7 @@
 using Mercurius.Configuration;
-using Mercurius.API;
-using Mercurius.DBus;
-using Tmds.DBus;
-using Mercurius.API.Modrinth;
 using System.Runtime.InteropServices;
-using System.Text.Json.Serialization;
+
+using Mercurius.API.Modrinth;
 
 namespace Mercurius.Profiles {
     [StructLayout(LayoutKind.Sequential)]

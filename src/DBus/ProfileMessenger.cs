@@ -1,7 +1,7 @@
 using Tmds.DBus;
-using System.Runtime.InteropServices;
-using Mercurius.Profiles;
 using NLog;
+
+using Mercurius.Profiles;
 
 namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.ProfileMessenger")]
