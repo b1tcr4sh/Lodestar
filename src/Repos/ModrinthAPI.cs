@@ -12,13 +12,15 @@ namespace Mercurius.API {
         protected internal ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {
             _objectPath = "/org/mercurius/modrinth";
         }
-        protected internal async Task<SearchModel> SearchAsync(string query) {
+
+        public override async Task<Mod[] /* Unified search result model array */> SearchModAsync(string query, string version, string loader) {
+            throw new NotImplementedException();
             _logger.Debug($"Querying Labrynth with {query}...");
 
             SearchModel deserializedRes;
 
             try {
-                Stream responseStream = await _http.GetStreamAsync(_base + $@"search?query={query}");
+                Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"search?query={query}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
             } catch (Exception e) {
                 _logger.Warn(e.Message);
@@ -31,15 +33,16 @@ namespace Mercurius.API {
                 throw new ApiException("No results found");
             }
 
-            return deserializedRes;
+            // return deserializedRes;
         }
-        public override async Task<ProjectModel> GetModProjectAsync(string projectId) {
+        internal override async Task<ProjectModel> GetModProjectAsync(string projectId) {
+            throw new NotImplementedException(); // Need to create some kind of unified project model
             _logger.Debug($"Getting Project with ID {projectId}...");
 
             ProjectModel deserializedRes = new ProjectModel();
 
             try {
-                Stream responseStream = await _http.GetStreamAsync(_base + $@"project/{projectId}");
+                Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{projectId}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == HttpStatusCode.NotFound) {
@@ -52,7 +55,7 @@ namespace Mercurius.API {
 
             return deserializedRes;
         }
-        public override async Task<Mod> GetModVersionAsync(string versionId) {
+        internal override async Task<Mod> GetModVersionAsync(string versionId) {
             if (versionId is null) {
                 throw new ArgumentNullException();
             }
@@ -63,9 +66,9 @@ namespace Mercurius.API {
             ProjectModel project;
 
             try {
-                Stream versionRes = await _http.GetStreamAsync(_base + $@"version/{versionId}");
+                Stream versionRes = await _http.GetStreamAsync(_baseUrl + $@"version/{versionId}");
                 version = await JsonSerializer.DeserializeAsync<VersionModel>(versionRes);
-                Stream projectRes = await _http.GetStreamAsync(_base + $@"project/{version.project_id}");
+                Stream projectRes = await _http.GetStreamAsync(_baseUrl + $@"project/{version.project_id}");
                 project = await JsonSerializer.DeserializeAsync<ProjectModel>(projectRes);
             } catch (HttpRequestException e) {
                 if (e.StatusCode == System.Net.HttpStatusCode.NotFound) {
@@ -75,45 +78,78 @@ namespace Mercurius.API {
                 }
             }
 
-            return new Mod(version, project);
+            return ModFromVersion(version, project);
         }
-        protected internal async Task<VersionModel[]> ListVersionsAsync(string id) {
+        internal override async Task<Mod[]> ListModVersionsAsync(string id) {
+            List<Mod> mods = new List<Mod>();
             VersionModel[] deserializedRes;
 
-            Stream responseStream = await _http.GetStreamAsync(_base + $@"project/{id}/version");
+            Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{id}/version");
             deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
            
-            return deserializedRes;
-        }
-    }
-    
-    public class ApiException : Exception {
-        public ApiException() { }
-        public ApiException(string message) : base(message) { }
-        public ApiException(string message, System.Exception inner) : base(message, inner) { }
-        protected ApiException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
-    [System.Serializable]
-    public class VersionInvalidException : System.Exception
-    {
-        public VersionInvalidException() { }
-        public VersionInvalidException(string message) : base(message) { }
-        public VersionInvalidException(string message, System.Exception inner) : base(message, inner) { }
-        protected VersionInvalidException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-    }
+            foreach (VersionModel version in deserializedRes) {
+                ProjectModel project = await GetModProjectAsync(version.project_id);
+                mods.Add(ModFromVersion(version, project));
+            }
 
-    [System.Serializable]
-    public class ProjectInvalidException : System.Exception
-    {
-        public ProjectInvalidException() { }
-        public ProjectInvalidException(string message) : base(message) { }
-        public ProjectInvalidException(string message, System.Exception inner) : base(message, inner) { }
-        protected ProjectInvalidException(
-            System.Runtime.Serialization.SerializationInfo info,
-            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+            return mods.ToArray<Mod>();
+        }
+        private Mod ModFromVersion(VersionModel version, ProjectModel project) {
+            Mod mod = new Mod();
+            mod.Title = project.title;
+            mod.ProjectId = version.project_id;
+            mod.VersionId = version.id;
+            mod.MinecraftVersion = version.game_versions[0];
+            mod.ModVersion = version.version_number;
+            mod.DownloadURL = version.files.Where<modFile>((file) => file.primary).ToArray<modFile>()[0].url;
+            mod.DependencyVersions = new Dictionary<string, Remote>();
+            mod.ClientDependency = RequiredBy.unknown;
+
+            modFile primaryFile = version.files[0];
+            foreach (modFile file in version.files) {
+                if (file.primary) primaryFile = file;
+            }
+            mod.FileName = primaryFile.filename;
+
+
+            string serverSideDependency = project.server_side;
+            string clientSideDependence = project.client_side;
+
+            switch (clientSideDependence) {
+                case "required":
+                    if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
+                        mod.ClientDependency = RequiredBy.mutuak;
+                    else if (serverSideDependency.Equals("unsupported"))
+                        mod.ClientDependency = RequiredBy.client;
+                    break;
+                case "optional":
+                    if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
+                        mod.ClientDependency = RequiredBy.mutuak;
+                    else if (serverSideDependency.Equals("unsupported"))
+                        mod.ClientDependency = RequiredBy.client;
+                    break;
+                case "unsupported":
+                    if (serverSideDependency.Equals("required") || serverSideDependency.Equals("optional"))
+                        mod.ClientDependency = RequiredBy.server;
+                    break;
+                default:
+                    mod.ClientDependency = RequiredBy.unknown;
+                    break;
+            }
+
+            List<ModLoader> loaders = new List<ModLoader>();
+            foreach (string loader in version.loaders) {
+                ModLoader parsed;
+
+                if (!Enum.TryParse<ModLoader>(loader, out parsed)) {
+                    throw new ProfileException("Invalid mod loader given... ?");
+                }
+
+                loaders.Add(parsed);
+            }  
+            mod.Loaders = loaders.ToArray<ModLoader>();
+
+            return mod;
+        }
     }
 }

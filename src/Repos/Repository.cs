@@ -5,19 +5,22 @@ using Mercurius.API.Modrinth;
 using Mercurius.Configuration;
 
 namespace Mercurius.API {
-    public abstract class Repository : IDisposable, IDBusObject {
-        private protected HttpClient _http;
-        private protected string _base;
+    public abstract class Repository : IDisposable, IRepository {
+        protected HttpClient _http;
+        protected string _baseUrl;
         protected ObjectPath _objectPath; 
         public ObjectPath ObjectPath { get => _objectPath; }
         public abstract Remote Source { get; } 
         public Repository(string baseUrl, HttpClient client) {
-            _base = baseUrl;
+            _baseUrl = baseUrl;
             _http = client;
         }
         public void Dispose() {}
-        abstract public Task<ProjectModel> GetModProjectAsync(string id);
-        abstract public Task<Mod> GetModVersionAsync(string id);
+        abstract public Task<Mod[]> SearchModAsync(string query, string version, string loader);
+
+        abstract internal Task<ProjectModel> GetModProjectAsync(string id);
+        abstract internal Task<Mod> GetModVersionAsync(string id);
+        abstract internal Task<Mod[]> ListModVersionsAsync(string id);
         // abstract public Task</*plugin*/> GetPluginAsync(string id);
         // abstract public Task</*resource pack*/> GetResourcePackAsync(string id);
         protected internal async Task<bool> DownlodModAsync(Mod mod) {
@@ -55,5 +58,34 @@ namespace Mercurius.API {
         // public async Task</*resourcePack8?> DownloadResourcePackAsync(pack) {
 
         // }
+    }
+    public class ApiException : Exception {
+        public ApiException() { }
+        public ApiException(string message) : base(message) { }
+        public ApiException(string message, System.Exception inner) : base(message, inner) { }
+        protected ApiException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+    [System.Serializable]
+    public class VersionInvalidException : System.Exception
+    {
+        public VersionInvalidException() { }
+        public VersionInvalidException(string message) : base(message) { }
+        public VersionInvalidException(string message, System.Exception inner) : base(message, inner) { }
+        protected VersionInvalidException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    }
+
+    [System.Serializable]
+    public class ProjectInvalidException : System.Exception
+    {
+        public ProjectInvalidException() { }
+        public ProjectInvalidException(string message) : base(message) { }
+        public ProjectInvalidException(string message, System.Exception inner) : base(message, inner) { }
+        protected ProjectInvalidException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }

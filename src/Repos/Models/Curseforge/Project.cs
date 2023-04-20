@@ -1,8 +1,8 @@
 namespace Mercurius.API.Curseforge {
-    public struct Project {
+    internal struct Project {
         public Data data;
     }
-    public struct Data {
+    internal struct Data {
         public int id;
         public int gameId;
         public string name;
@@ -19,7 +19,7 @@ namespace Mercurius.API.Curseforge {
         public Logo logo { get; set; }
         public Screenshot[] screenshots;
         public int mainFileId;
-        public File[] latestFiles;
+        public ShortFile[] latestFiles;
         public FileIndex[] latestFileIndexes;
         public string dateCreated;
         public string dateModified;
@@ -29,13 +29,13 @@ namespace Mercurius.API.Curseforge {
         public bool isAvailable;
         public int thumbsUpCount;
     }
-    public struct Links {
+    internal struct Links {
         string websiteUrl;
         string wikiUrl;
         string issuesUrl;
         string sourceUrl;
     }
-    public struct Category {
+    internal struct Category {
         public int id;
         public int gameId;
         public string name;
@@ -47,12 +47,12 @@ namespace Mercurius.API.Curseforge {
         public int classId;
         public int parentCategoryId;
     }
-    public struct Author {
+    internal struct Author {
         public int id;
         public string name;
         public string url;
     }
-    public struct Logo {
+    internal struct Logo {
         public int id { get; set; }
         public int modId { get; set; }
         public string title { get; set; }
@@ -60,8 +60,8 @@ namespace Mercurius.API.Curseforge {
         public string thumbnailUrl { get; set; }
         public string url { get; set; }
     }
-    public struct Screenshot {}
-    public struct File {
+    internal struct Screenshot {}
+    internal struct ShortFile {
         public int id;
         public int gameId;
         public int modId;
@@ -83,23 +83,23 @@ namespace Mercurius.API.Curseforge {
         public int fileFingerprint;
         public Module[] modules;
     }
-    public struct Hash {
+    internal struct Hash {
         public string value;
         public int algo;
     }
-    public struct GameVersion {
+    internal struct GameVersion {
         public string gamerVersionName;
         public string gameVersionPadded;
         public string gameVersion;
         public string gameVersionReleaseDate;
         public int gameVersionTypeId;
     }
-    public struct Dependency {}
-    public struct Module {
+    internal struct Dependency {}
+    internal struct Module {
         public string name;
         public string fingerprint;
     }
-    public struct FileIndex {
+    internal struct FileIndex {
         public string gameVersion;
         public int fileId;
         public string fileName;

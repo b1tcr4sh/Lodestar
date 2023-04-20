@@ -58,7 +58,7 @@ namespace Mercurius.DBus {
             Profile profile = await GetModelProfileAsync();
 
             try {
-                await profile.Manager.SyncProfileAsync(profile, _modrinth); // Sync needs to be update to get repo from each mod
+                await profile.Manager.SyncProfileAsync(profile);
             } catch (ProfileException) {
                 return false;
             }
@@ -73,7 +73,7 @@ namespace Mercurius.DBus {
             throw new NotImplementedException();
 
             Profile profile = await GetModelProfileAsync();
-            // ModrinthAPI client = APIManager.Modrinth; // Needs to be repalced
+            // ModrinthAPI client = APIManager.Modrinth;
             List<Mod> toRemove = new List<Mod>();
             List<string> toAdd = new List<string>();
             bool repaired = true;

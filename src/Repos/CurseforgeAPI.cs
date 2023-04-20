@@ -3,7 +3,8 @@ using System.Text.Json;
 using NLog;
 
 using Mercurius.Profiles;
-using Mercurius.API.Modrinth; // TEMPEPPEPEP AHHAHA
+using Mercurius.API.Modrinth; // just for nowsies
+using Mercurius.API.Curseforge;
 
 namespace Mercurius.API {
     public class CurseforgeAPI : Repository {
@@ -13,13 +14,17 @@ namespace Mercurius.API {
             _objectPath = "/org/mercurius/curseforge";
         }
 
-        public override async Task<ProjectModel /* Temp */ > GetModProjectAsync(string projectId) {
+        public override async Task<Mod[]> SearchModAsync(string query, string version, string loader) {
+            throw new NotImplementedException();
+        }
+
+        internal override async Task<ProjectModel /* Temp */ > GetModProjectAsync(string projectId) {
             _logger.Debug($"Getting Project with ID {projectId}...");
             
             ProjectModel deserializedProject;
 
             try {
-            deserializedProject = await JsonSerializer.DeserializeAsync<ProjectModel>(await _http.GetStreamAsync(_base+ @"/mods/" + projectId));
+            deserializedProject = await JsonSerializer.DeserializeAsync<ProjectModel>(await _http.GetStreamAsync(_baseUrl+ @"/mods/" + projectId));
             } catch (HttpRequestException e) {
                 if (e.StatusCode == HttpStatusCode.NotFound) {
                     throw new ProjectInvalidException($"Project ID {projectId} is invalid!");
@@ -30,12 +35,10 @@ namespace Mercurius.API {
 
             return deserializedProject;
         }
-        public override async Task<Mod> GetModVersionAsync(string versionId) { // Model is a bit different between the two routes :(
+        internal override async Task<Mod> GetModVersionAsync(string versionId) { // Model is a bit different between the two routes :(
             throw new NotImplementedException();
         }
-        protected internal async Task<Curseforge.File[]> ListVersionsAsync(string projectId) { // Model is a bit different between the two routes :(
-            _logger.Debug($"Getting List of Versions for {projectId}...");
-
+        internal override async Task<Mod[]> ListModVersionsAsync(string projectId) { // Model is a bit different between the two routes :(
             throw new NotImplementedException();
         }
     }

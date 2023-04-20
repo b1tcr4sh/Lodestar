@@ -169,7 +169,7 @@ namespace Mercurius.Profiles {
                 // LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
-        internal async Task SyncProfileAsync(Profile profile, Repository client) {
+        internal async Task SyncProfileAsync(Profile profile) {
             logger.Info("Syncing {0}", profile.Name);
 
 
@@ -231,6 +231,8 @@ namespace Mercurius.Profiles {
             }
             logger.Debug("Attempting to install mods...");
             foreach (Mod mod in installQueue) {
+                Repository client = Apis.Get(mod.Repo);
+
                 await client.DownlodModAsync(mod);
             }
         }

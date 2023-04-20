@@ -23,20 +23,21 @@ namespace Mercurius.Profiles {
 
 
         public static Profile CreateNew(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager) {
-            return new Profile(name, minecraftVersion, loader, serverSide, manager, manager.Apis); 
-        }
-        internal Profile(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager, APIs apis) {
-            Name = name;
-            MinecraftVersion = minecraftVersion;
-            ServerSide = serverSide;
-            Loader = loader;
-            Mods = new List<Mod>();
-            Manager = manager;
-            Apis = apis;
+            Profile profile = new Profile {
+                Name = name,
+                MinecraftVersion = minecraftVersion,
+                ServerSide = serverSide,
+                Loader = loader,
+                Mods = new List<Mod>,
+                Manager = manager,
+                Apis = manager.Apis
+            };
+            
+            manager.WriteProfileAsync(profile).GetAwaiter().GetResult();
+            manager.LoadProfileAsync(name).GetAwaiter().GetResult();
 
-            Manager.WriteProfileAsync(this).GetAwaiter().GetResult();
-            Manager.LoadProfileAsync(Name).GetAwaiter().GetResult();
-        } 
+            return profile;
+        }
 
         public bool Exists() {
             return Manager.GetLoadedProfiles().Keys.Contains(Name);
@@ -144,19 +145,19 @@ namespace Mercurius.Profiles {
             Repository client = Apis.Get(service);
 
             ProjectModel project = await client.GetModProjectAsync(projectId);
-            VersionModel[] versions = await client.ListVersionsAsync(project.id);
+            Mod[] versions = await client.ListModVersionsAsync(project.id);
 
-            VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
-            viableVersions = viableVersions.Where<VersionModel>((version) => version.loaders.Contains(Loader.ToString().ToLower())).ToArray<VersionModel>();
+            Mod[] viableVersions = versions.Where<Mod>((version) => version.MinecraftVersion.Equals(MinecraftVersion)).ToArray<Mod>();
+            viableVersions = viableVersions.Where<Mod>((version) => version.Loaders.Contains(Loader)).ToArray<Mod>();
 
             if (viableVersions.Count() < 1) {
                 logger.Debug("Found no installation candidates for install");
                 throw new Exception("Found no valid installation candidates");
             }
+            Mod version = viableVersions[0];
+            // VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].VersionId);
 
-            VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].id);
-
-            if (Mods.Any<Mod>(mod => mod.VersionId.Equals(version.id))) {
+            if (Mods.Any<Mod>(mod => mod.VersionId.Equals(version.VersionId))) {
                 throw new ProfileException($"Profile already contains {project.title}");
             }
 
@@ -165,10 +166,10 @@ namespace Mercurius.Profiles {
             List<Mod> modsToAdd = new List<Mod>();
             
             // resolve dependencies
-            if (version.dependencies.Count() > 0 && !ignoreDependencies) {
+            if (version.DependencyVersions.Count() > 0 && !ignoreDependencies) {
                 logger.Debug("Resolving Dependencies...");
 
-                foreach (Dependency dependency in version.dependencies) {
+                foreach (string dependency in version.DependencyVersions) {
                     if (dependency.version_id is null) {
                         throw new VersionInvalidException("A dependency was null from Mopdrinth...?");
                     }
@@ -230,7 +231,7 @@ namespace Mercurius.Profiles {
                 if (version.dependencies.Count() > 0 && !ignoreDependencies) {
                     logger.Debug("Resolving Dependencies...");
 
-                    foreach (Dependency dependency in version.dependencies) {
+                    foreach (API.Modrinth.Dependency dependency in version.dependencies) {
                         VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                         ProjectModel dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);
 
@@ -258,7 +259,7 @@ namespace Mercurius.Profiles {
             if (version.dependencies.Count() > 0 && !ignoreDependencies) {
                 logger.Debug("Resolving Dependencies...");
 
-                foreach (Dependency dependency in version.dependencies) {
+                foreach (API.Modrinth.Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                     ProjectModel dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);
 

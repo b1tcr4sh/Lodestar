@@ -5,12 +5,15 @@ namespace Mercurius.Profiles {
         custom
     }
     public enum ClientType {
-        ClientSide, ServerSide
+        Client, Server
     }
     public enum ModLoader {
         unknown, forge, fabric, quilt, liteloader, rift, modloader
     }
-    public enum ClientDependency {
-        Client, Server, Mutual, Unknown
+    public enum RequiredBy {
+        client, server, mutuak, unknown
+    }
+    public enum DependencyType {
+        required, optional, incompatible, embedded
     }
 }
