@@ -22,8 +22,8 @@ namespace Mercurius.Profiles {
         private string checksum;
 
 
-        internal static Profile CreateNew(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager, APIs apis) {
-            return new Profile(name, minecraftVersion, loader, serverSide, manager, apis); 
+        public static Profile CreateNew(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager) {
+            return new Profile(name, minecraftVersion, loader, serverSide, manager, manager.Apis); 
         }
         internal Profile(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager, APIs apis) {
             Name = name;
@@ -85,7 +85,7 @@ namespace Mercurius.Profiles {
             }
         }
 
-        internal async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
+        internal async Task<Profile> UpdateFileAsync(Profile oldProfile, Profile newProfile) {
             if (oldProfile.Equals(newProfile)) return oldProfile;
 
             await Manager.OverwriteProfileAsync(newProfile, newProfile.Name);

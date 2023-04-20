@@ -35,7 +35,7 @@ namespace Mercurius.DBus {
             Profile profile;
             
             try {
-                profile = await Profile.CreateNewAsync(name, minecraftVersion, loader, serverSide);
+                profile = Profile.CreateNew(name, minecraftVersion, loader, serverSide, _manager);
             } catch (ProfileException e) {
                 logger.Warn("Failed to create profile... ?");
                 logger.Warn(e.Message);

@@ -11,9 +11,9 @@ namespace Mercurius.Profiles {
         private Dictionary<string, Profile> LoadedProfiles;
         private string ProfilePath;
         private Logger logger = LogManager.GetCurrentClassLogger();
-        private APIs _apis;
+        public APIs Apis;
         public ProfileManager(APIs apis) {
-            _apis = apis;
+            Apis = apis;
             InitializeDirectory();
             LoadAllProfiles();
         }
