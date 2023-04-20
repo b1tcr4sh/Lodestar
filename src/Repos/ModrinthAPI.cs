@@ -11,7 +11,7 @@ using NLog;
 
 namespace Mercurius.API {
     public class ModrinthAPI : Repository {
-        // private const string BaseUrl = @"https://api.modrinth.com/v2/";
+        public override Remote Source { get; } = Remote.modrinth;
         private ILogger _logger;
         protected internal ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {
             _objectPath = "/org/mercurius/modrinth";
@@ -37,7 +37,7 @@ namespace Mercurius.API {
 
             return deserializedRes;
         }
-        protected internal async Task<ProjectModel> GetProjectAsync(string projectId) {
+        public override async Task<ProjectModel> GetModProjectAsync(string projectId) {
             _logger.Debug($"Getting Project with ID {projectId}...");
 
             ProjectModel deserializedRes = new ProjectModel();
@@ -56,7 +56,7 @@ namespace Mercurius.API {
 
             return deserializedRes;
         }
-        protected internal override async Task<Mod> GetModAsync(string versionId) {
+        public override async Task<Mod> GetModVersionAsync(string versionId) {
             if (versionId is null) {
                 throw new ArgumentNullException();
             }

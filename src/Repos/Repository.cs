@@ -10,15 +10,17 @@ namespace Mercurius.API {
         private protected string _base;
         protected ObjectPath _objectPath; 
         public ObjectPath ObjectPath { get => _objectPath; }
+        public abstract Remote Source { get; } 
         public Repository(string baseUrl, HttpClient client) {
             _base = baseUrl;
             _http = client;
         }
         public void Dispose() {}
-        abstract protected internal Task<Mod> GetModAsync(string id);
+        abstract public Task<ProjectModel> GetModProjectAsync(string id);
+        abstract public Task<Mod> GetModVersionAsync(string id);
         // abstract public Task</*plugin*/> GetPluginAsync(string id);
         // abstract public Task</*resource pack*/> GetResourcePackAsync(string id);
-        protected internal async Task<bool> DownlodMod(Mod mod) {
+        protected internal async Task<bool> DownlodModAsync(Mod mod) {
             if (mod.DownloadURL is null) {
                 throw new ArgumentNullException("Mod values are null!");
             }

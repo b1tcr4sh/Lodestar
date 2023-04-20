@@ -14,27 +14,33 @@ namespace Mercurius.Profiles {
         public bool ServerSide { get; set; }
         public ModLoader Loader { get; set; }
         public List<Mod> Mods { get; set; }
-
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
+        
+        public ProfileManager Manager;
+        public APIs Apis;
         private ILogger logger = LogManager.GetCurrentClassLogger();
         private bool _disposed = false;
         private string checksum;
 
-        internal static async Task<Profile> CreateNewAsync(string name, string minecraftVersion, ModLoader loader, bool serverSide) {
-            Profile profile = new Profile {
-                Name = name,
-                MinecraftVersion = minecraftVersion,
-                ServerSide = serverSide,
-                Loader = loader,
-                Mods = new List<Mod>()
-            };
-            await ProfileManager.WriteProfileAsync(profile);
-            await ProfileManager.LoadProfileAsync(profile.Name);
 
-            return profile;
+        internal static Profile CreateNew(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager, APIs apis) {
+            return new Profile(name, minecraftVersion, loader, serverSide, manager, apis); 
         }
-        public static bool Exists(string name) {
-            return ProfileManager.GetLoadedProfiles().Keys.Contains(name);
+        internal Profile(string name, string minecraftVersion, ModLoader loader, bool serverSide, ProfileManager manager, APIs apis) {
+            Name = name;
+            MinecraftVersion = minecraftVersion;
+            ServerSide = serverSide;
+            Loader = loader;
+            Mods = new List<Mod>();
+            Manager = manager;
+            Apis = apis;
+
+            Manager.WriteProfileAsync(this).GetAwaiter().GetResult();
+            Manager.LoadProfileAsync(Name).GetAwaiter().GetResult();
+        } 
+
+        public bool Exists() {
+            return Manager.GetLoadedProfiles().Keys.Contains(Name);
         }
 
         public void GenerateChecksum() {
@@ -70,8 +76,8 @@ namespace Mercurius.Profiles {
             } else {
                 logger.Debug("New checksum found, reloading profile...");
 
-                ProfileManager.UnloadProfile(this);
-                Profile reloaded = await ProfileManager.LoadProfileAsync(Name);
+                Manager.UnloadProfile(this);
+                Profile reloaded = await Manager.LoadProfileAsync(Name);
 
                 DbusHandler.DeregisterProfile(Name);
                 await DbusHandler.RegisterProfileAsync(new DbusProfile(reloaded));
@@ -83,9 +89,9 @@ namespace Mercurius.Profiles {
         internal async Task<Profile> UpdateAsync(Profile oldProfile, Profile newProfile) {
             if (oldProfile.Equals(newProfile)) return oldProfile;
 
-            await ProfileManager.OverwriteProfileAsync(newProfile, newProfile.Name);
-            await ProfileManager.LoadProfileAsync(newProfile.Name);
-            return await ProfileManager.GetLoadedProfileAsync(newProfile.Name);
+            await Manager.OverwriteProfileAsync(newProfile, newProfile.Name);
+            await Manager.LoadProfileAsync(newProfile.Name);
+            return await Manager.GetLoadedProfileAsync(newProfile.Name);
         }
         internal async Task UpdateModListAsync(List<Mod> mods) {
             if (Mods is null) {
@@ -94,12 +100,12 @@ namespace Mercurius.Profiles {
                 Mods.AddRange(mods);
             }
 
-            await ProfileManager.OverwriteProfileAsync(this, this.Name);
+            await Manager.OverwriteProfileAsync(this, this.Name);
         }
         internal async Task UpdateModListAsync(Mod mod) {
             Mods.Add(mod);
 
-            await ProfileManager.OverwriteProfileAsync(this, this.Name);
+            await Manager.OverwriteProfileAsync(this, this.Name);
         }
         internal async Task<bool> RemoveModFromListAsync(Mod modToRemove, bool force) {
 
@@ -110,7 +116,7 @@ namespace Mercurius.Profiles {
             }
 
             bool success = Mods.Remove(modToRemove);
-            await ProfileManager.OverwriteProfileAsync(this, this.Name);
+            await Manager.OverwriteProfileAsync(this, this.Name);
 
             return success;
         }
@@ -129,14 +135,16 @@ namespace Mercurius.Profiles {
                 }
             }
 
-            await ProfileManager.OverwriteProfileAsync(this, this.Name);
+            await Manager.OverwriteProfileAsync(this, this.Name);
             return success;            
         }
-        public async Task<IReadOnlyList<Mod>> AddModAsync(ModrinthAPI client, string projectId, Repo service, bool ignoreDependencies, bool dryRun) {
+        public async Task<IReadOnlyList<Mod>> AddLatestModVersionAsync(string projectId, Remote service, bool ignoreDependencies, bool dryRun) {
             if (dryRun) logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
             else logger.Debug("Dry running fetch for mod {0}", projectId);
 
-            ProjectModel project = await client.GetProjectAsync(projectId);
+            Repository client = Apis.Get(service);
+
+            ProjectModel project = await client.GetModProjectAsync(projectId);
             VersionModel[] versions = await client.ListVersionsAsync(project.id);
 
             VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
@@ -171,7 +179,7 @@ namespace Mercurius.Profiles {
 
                     try {
                         dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                        dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);                        
+                        dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);                        
                     } catch (VersionInvalidException) {
                         logger.Warn("Version could not be found... ?");
                         break;
@@ -197,13 +205,14 @@ namespace Mercurius.Profiles {
             }
             return modsToAdd;
         }
-        public async Task<Mod[]> AddModsAsync(ModrinthAPI client, string[] projectIds, Repo service, bool ignoreDependencies) {
+        public async Task<Mod[]> AddModsAsync(string[] projectIds, Remote service, bool ignoreDependencies) {
             List<Mod> modsToAdd = new List<Mod>();
+            Repository client = Apis.Get(service);
 
             foreach (string projectId in projectIds) {
                 logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
 
-                ProjectModel project = await client.GetProjectAsync(projectId);
+                ProjectModel project = await client.GetModProjectAsync(projectId);
                 VersionModel[] versions = await client.ListVersionsAsync(project.id);
 
                 VersionModel[] viableVersions = versions.Where<VersionModel>((version) => version.game_versions.Contains<string>(MinecraftVersion)).ToArray<VersionModel>();
@@ -224,7 +233,7 @@ namespace Mercurius.Profiles {
 
                     foreach (Dependency dependency in version.dependencies) {
                         VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                        ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                        ProjectModel dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);
 
                         Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
                         mod.AddDependency(dependency.version_id);
@@ -238,9 +247,9 @@ namespace Mercurius.Profiles {
             await UpdateModListAsync(modsToAdd);
             return modsToAdd.ToArray<Mod>();
         }
-        public async Task<Mod> AddVersionAsync(ModrinthAPI client, string versionId, bool ignoreDependencies) {
+        public async Task<Mod> AddModVersionAsync(ModrinthAPI client, string versionId, bool ignoreDependencies) {
             VersionModel version = await client.GetVersionInfoAsync(versionId);
-            ProjectModel project = await client.GetProjectAsync(version.project_id);
+            ProjectModel project = await client.GetModProjectAsync(version.project_id);
 
             Mod mod = new Mod(version, project);
 
@@ -252,7 +261,7 @@ namespace Mercurius.Profiles {
 
                 foreach (Dependency dependency in version.dependencies) {
                     VersionModel dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
-                    ProjectModel dependencyProject = await client.GetProjectAsync(dependencyVersion.project_id);
+                    ProjectModel dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);
 
                     Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
                     mod.AddDependency(dependency.version_id);
@@ -292,7 +301,7 @@ namespace Mercurius.Profiles {
             logger.Info("Adding missing dependencies...");
             foreach (string unmet in unmetDeps) {
                 installedDependencies.Add(unmet);
-                await AddVersionAsync(client, unmet, false);
+                await AddModVersionAsync(client, unmet, false);
             }
             return installedDependencies.ToArray<string>();
         }

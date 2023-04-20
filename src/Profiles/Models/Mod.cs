@@ -16,9 +16,9 @@ namespace Mercurius.Profiles {
         public string VersionId { get; set; } = String.Empty;
         public string MinecraftVersion { get; set; } = String.Empty;
         public string ModVersion { get; set; } = String.Empty;
-        public Repo Repo { get; set; } = Repo.modrinth;
+        public Remote Repo { get; set; } = Remote.custom;
         public ModLoader[] Loaders { get; set; } = new ModLoader[] { ModLoader.unknown };
-        public IEnumerable<string> DependencyVersions { get; set; } = new String[0];
+        public Dictionary<string, Remote> DependencyVersions { get; set; } = new Dictionary<string, Remote>();
         public ClientDependency ClientDependency { get; set; } = ClientDependency.Unknown;
 
         internal Mod(VersionModel version, ProjectModel project) {
@@ -28,7 +28,7 @@ namespace Mercurius.Profiles {
             MinecraftVersion = version.game_versions[0];
             ModVersion = version.version_number;
             DownloadURL = version.files.Where<modFile>((file) => file.primary).ToArray<modFile>()[0].url;
-            DependencyVersions = new List<string>();
+            DependencyVersions = new Dictionary<string, Remote>();
             ClientDependency = ClientDependency.Unknown;
 
             modFile primaryFile = version.files[0];
@@ -78,7 +78,7 @@ namespace Mercurius.Profiles {
         }
 
         internal void AddDependency(string id) {
-            DependencyVersions = DependencyVersions.Append(id);
+            DependencyVersions.Add(id, Repo);
         }
 
         internal bool CheckFileExists() {

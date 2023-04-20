@@ -15,11 +15,17 @@ namespace Mercurius.DBus {
     public class ProfileMessenger : IProfileMessenger {
         private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/ProfileMessenger");
         private static ILogger logger = LogManager.GetCurrentClassLogger();
+        
+        private ProfileManager _manager;
+
+        public ProfileMessenger(ProfileManager manager) {
+            _manager = manager;
+        }
 
         public Task<string[]> ListProfilesAsync() {
             List<string> names = new List<string>();
 
-            foreach (Profile profile in ProfileManager.GetLoadedProfiles().Values) {
+            foreach (Profile profile in _manager.GetLoadedProfiles().Values) {
                 names.Add(profile.Name);
             }
             return Task.FromResult<string[]>(names.ToArray<string>());
@@ -43,11 +49,11 @@ namespace Mercurius.DBus {
             return true;
         }
         public async Task DeleteProfileAsync(string name) {
-            if (!Profile.Exists(name)) {
+            if (!_manager.ProfileExists(name)) {
                 throw new ProfileException($"Profile {name} doesn't exist!");
             }
 
-            Profile profile = await ProfileManager.GetLoadedProfileAsync(name);
+            Profile profile = await _manager.GetLoadedProfileAsync(name);
 
             profile.Delete();
         }

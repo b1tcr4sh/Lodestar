@@ -11,6 +11,7 @@ using NLog.Extensions.Logging;
 using Mercurius.DBus;
 using Mercurius.Configuration;
 using Mercurius.API;
+using Mercurius.Profiles;
 
 namespace Mercurius {
     public class Program {
@@ -40,6 +41,12 @@ namespace Mercurius {
             NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target, LogLevel.Trace);
             // NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(logFile, LogLevel.Trace);
 
+            SettingsManager.Init();
+
+            APIs apis = new APIs();
+            apis.Add(new ModrinthAPI(@"https://api.modrinth.com/v2/", new HttpClient()));
+            apis.Add(new CurseforgeAPI(@"https://api.curseforge.com/", new HttpClient()));
+
             var builder = new HostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) => {
                 config.AddEnvironmentVariables();
@@ -50,10 +57,9 @@ namespace Mercurius {
                 }
             })
             .ConfigureServices((hostContext, services) => {
-                services.AddSingleton<IHostedService, DaemonService>();     
                 services.AddSingleton<IHostedService, DbusHandler>(); 
-                services.AddSingleton<Repository>(new ModrinthAPI(@"https://api.modrinth.com/v2/", new HttpClient()));      
-                services.AddSingleton<Repository>(new CurseforgeAPI(@"https://api.curseforge.com/", new HttpClient()));
+                services.AddSingleton<APIs>(apis);      
+                services.AddSingleton<ProfileManager>();
             })
             .ConfigureLogging((hostingContext, logging) => {
                 logging.AddNLog(hostingContext.Configuration);

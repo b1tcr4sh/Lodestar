@@ -9,11 +9,18 @@ using Mercurius.DBus;
 using NLog;
 
 namespace Mercurius.Profiles {
-    public static class ProfileManager {
-        private static Dictionary<string, Profile> LoadedProfiles;
-        private static string ProfilePath;
-        private static Logger logger = LogManager.GetCurrentClassLogger();
-        public static void InitializeDirectory() {
+    public class ProfileManager {
+        private Dictionary<string, Profile> LoadedProfiles;
+        private string ProfilePath;
+        private Logger logger = LogManager.GetCurrentClassLogger();
+        private APIs _apis;
+        public ProfileManager(APIs apis) {
+            _apis = apis;
+            InitializeDirectory();
+            LoadAllProfiles();
+        }
+
+        private void InitializeDirectory() {
             LoadedProfiles = new Dictionary<string, Profile>();
             if (SettingsManager.Settings is null) {
                 logger.Fatal("Couldn't find configuration file!");
@@ -25,13 +32,13 @@ namespace Mercurius.Profiles {
                 logger.Debug("Created Profiles Directory at {0}", ProfilePath);
             } 
         }
-        public static void InitializeDirectory(string path) {
+        private void InitializeDirectory(string path) {
             LoadedProfiles = new Dictionary<string, Profile>();
             ProfilePath = @path;
             if (!Directory.Exists(ProfilePath)) Directory.CreateDirectory(ProfilePath); 
         }
         
-        public static async Task<Profile> GetLoadedProfileAsync(string name) {
+        public async Task<Profile> GetLoadedProfileAsync(string name) {
             if (!LoadedProfiles.Keys.Contains(name)) throw new ProfileException($"Profile {name} doesn't exist!");
 
             Profile foundProfile = LoadedProfiles[name];
@@ -42,12 +49,12 @@ namespace Mercurius.Profiles {
                 return LoadedProfiles[name];
             }
         }
-        public static IReadOnlyDictionary<string, Profile> GetLoadedProfiles() {
+        public IReadOnlyDictionary<string, Profile> GetLoadedProfiles() {
             if (LoadedProfiles is null || LoadedProfiles.Count <= 0) return new Dictionary<string, Profile>() as IReadOnlyDictionary<string, Profile>;
 
             return LoadedProfiles as IReadOnlyDictionary<string, Profile>;
         }
-        public static void LoadAllProfiles() {
+        public void LoadAllProfiles() {
             LoadedProfiles = new Dictionary<string, Profile>();
             string[] files = Directory.GetFiles(ProfilePath);
             
@@ -76,7 +83,7 @@ namespace Mercurius.Profiles {
             logger.Info($"Loaded {LoadedProfiles.Count} profiles");
         }
         
-        public static async Task<Profile> LoadProfileAsync(string name) {
+        public async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
 
             foreach (string file in files) {
@@ -101,8 +108,7 @@ namespace Mercurius.Profiles {
             }
             throw new ProfileException($"Profile {name} wasn't found!");
         }
-        
-        public static async Task<Profile> LoadProfilFromFileAsync(string path) {
+        public async Task<Profile> LoadProfilFromFileAsync(string path) {
             logger.Debug("Attempting to load profile from {0}", path);
 
             Profile profile;
@@ -122,7 +128,11 @@ namespace Mercurius.Profiles {
                 } 
             return profile;
         }
-        internal static async Task WriteProfileAsync(Profile profile) {
+        public bool ProfileExists(string name) {
+            return GetLoadedProfiles().Keys.Contains(name);
+        }
+
+        internal async Task WriteProfileAsync(Profile profile) {
             if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) throw new ProfileException($"File {profile.Name} already has exisint file!");
 
             logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
@@ -133,7 +143,7 @@ namespace Mercurius.Profiles {
 
             profile.GenerateChecksum();
         }
-        internal static async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
+        internal async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
             if (!File.Exists($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile Expected at {ProfilePath}/{existingProfileName.ToLower()}.profile.json Doesnt' Exist!");
             
             logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
@@ -144,7 +154,7 @@ namespace Mercurius.Profiles {
 
             profile.GenerateChecksum();
         }
-        internal static bool DeleteProfileFile(string profileName) {
+        internal bool DeleteProfileFile(string profileName) {
             if (!File.Exists($"{ProfilePath}/{profileName.ToLower()}.profile.json")) {
                 logger.Debug("Attempted to Delete Profile {0}, but File Didn't Exist... ?", profileName);
                 return false;
@@ -154,14 +164,14 @@ namespace Mercurius.Profiles {
             logger.Debug("Deleted Profile at {0}", $"{ProfilePath}/{profileName.ToLower()}.profile.json");
             return true;
         }
-        internal static void UnloadProfile(Profile profile) {
+        internal void UnloadProfile(Profile profile) {
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);
                 logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
                 // LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
-        internal static async Task SyncProfileAsync(Profile profile, ModrinthAPI client) {
+        internal async Task SyncProfileAsync(Profile profile, Repository client) {
             logger.Info("Syncing {0}", profile.Name);
 
 
@@ -223,7 +233,7 @@ namespace Mercurius.Profiles {
             }
                 logger.Debug("Attempting to install mods...");
                 foreach (Mod mod in installQueue) {
-                    await client.DownloadVersionAsync(mod);
+                    await client.DownlodModAsync(mod);
                 }
         }
     }

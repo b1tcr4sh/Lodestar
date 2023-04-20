@@ -1,5 +1,5 @@
 namespace Mercurius.Profiles {
-    public enum Repo {
+    public enum Remote {
         modrinth,
         curseforge,
         custom

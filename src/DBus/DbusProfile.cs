@@ -15,9 +15,9 @@ namespace Mercurius.DBus {
         private ModrinthAPI _modrinth;
         private CurseforgeAPI _curseforge;
 
-        private async Task<Profile> GetModelProfileAsync() => await ProfileManager.GetLoadedProfileAsync(modelProfile.Name);
+        private async Task<Profile> GetModelProfileAsync() => await modelProfile.Manager.GetLoadedProfileAsync(modelProfile.Name);
 
-        internal DbusProfile(Profile profile, ModrinthAPI modrinth, CurseforgeAPI curseforge) {
+        internal DbusProfile(Profile profile) {
             _objectPath = new ObjectPath(String.Format($"/org/mercurius/profile/{profile.Name}"));
             modelProfile = profile;
             logger = NLog.LogManager.GetCurrentClassLogger();
@@ -34,21 +34,9 @@ namespace Mercurius.DBus {
                 Loader = profile.Loader
             };
         }
-        public async Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies) {
-            Repository repo;
-            switch (service) {
-                case Repo.modrinth:
-                    repo = _modrinth;
-                    break;
-                case Repo.curseforge:
-                    repo = _curseforge;
-                    break;
-            }
-
+        public async Task<Mod[]> AddModAsync(string id, Remote service, bool ignoreDependencies) {
             Profile profile = await GetModelProfileAsync();
-
-            
-            return (await profile.AddModAsync(repo, id, service, ignoreDependencies, false)).ToArray<Mod>();
+            return (await profile.AddLatestModVersionAsync(id, service, ignoreDependencies, false)).ToArray<Mod>();
         }
         public async Task<bool> RemoveModAsync(string id, bool force) {
             Profile profile = await GetModelProfileAsync();
@@ -70,11 +58,10 @@ namespace Mercurius.DBus {
             return await profile.RemoveModFromListAsync(mods.ElementAt(0), force);
         }
         public async Task<bool> SyncAsync() {
-            ModrinthAPI client = APIManager.Modrinth;
             Profile profile = await GetModelProfileAsync();
 
             try {
-                await ProfileManager.SyncProfileAsync(profile, client);
+                await profile.Manager.SyncProfileAsync(profile, _modrinth); // Sync needs to be update to get repo from each mod
             } catch (ProfileException) {
                 return false;
             }
@@ -87,7 +74,7 @@ namespace Mercurius.DBus {
         }
         public async Task<ValidityReport> VerifyAsync() {
             Profile profile = await GetModelProfileAsync();
-            ModrinthAPI client = APIManager.Modrinth;
+            ModrinthAPI client = APIManager.Modrinth; // Needs to be repalced
             List<Mod> toRemove = new List<Mod>();
             List<string> toAdd = new List<string>();
             bool repaired = true;
@@ -113,7 +100,7 @@ namespace Mercurius.DBus {
 
             await profile.RemoveModsFromListAsync(toRemove, true);
 
-            await profile.AddModsAsync(client, toAdd.ToArray<string>(), Repo.modrinth, false);
+            await profile.AddModsAsync(toAdd.ToArray<string>(), Remote.modrinth, false);
 
 
             // Check for duplicates 
@@ -151,7 +138,7 @@ namespace Mercurius.DBus {
         public Task GenerateAsync(bool startFromCleanSlate) {
             throw new NotImplementedException();
         }
-        public Task<Mod[]> AddVersionAsync(string id, Repo service, bool ignoreDependencies) {
+        public Task<Mod[]> AddVersionAsync(string id, Remote service, bool ignoreDependencies) {
             throw new NotImplementedException();
         }
     }
@@ -159,8 +146,8 @@ namespace Mercurius.DBus {
     [DBusInterface("org.mercurius.profile")]
     public interface IDbusProfile : IDBusObject {
         public Task<ProfileInfo> GetProfileInfoAsync();
-        public Task<Mod[]> AddModAsync(string id, Repo service, bool ignoreDependencies);
-        public Task<Mod[]> AddVersionAsync(string version, Repo service, bool ignoreDependencies);
+        public Task<Mod[]> AddModAsync(string id, Remote service, bool ignoreDependencies);
+        public Task<Mod[]> AddVersionAsync(string version, Remote service, bool ignoreDependencies);
         public Task<bool> RemoveModAsync(string id, bool force);
         public Task<bool> SyncAsync();
         public Task<Mod[]> ListModsAsync();
