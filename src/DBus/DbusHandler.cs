@@ -12,8 +12,8 @@ namespace Mercurius.DBus {
         public static async Task RegisterProfileAsync(DbusProfile profile) {
             await DbusConnection.RegisterObjectAsync(profile);
         }
-        public static void DeregisterProfile(string name) {
-            if (!Profile.Exists(name)) {
+        public static void DeregisterProfile(string name, ProfileManager manager) {
+            if (!manager.ProfileExists(name)) {
                 throw new ProfileException($"Profile {name} doesn't exist!");
             }
 

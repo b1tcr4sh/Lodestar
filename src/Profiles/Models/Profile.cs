@@ -1,11 +1,11 @@
 using System.Security.Cryptography;
+using System.Threading.Tasks;
+using NLog;
+
 using Mercurius.Configuration;
 using Mercurius.DBus;
 using Mercurius.API;
 using Mercurius.API.Modrinth;
-using Tmds.DBus;
-using System.Threading.Tasks;
-using NLog;
 
 namespace Mercurius.Profiles {
     public class Profile : IDisposable {
@@ -55,7 +55,7 @@ namespace Mercurius.Profiles {
         }
         public async Task<bool> VerifyLocalFileAsync() {
             if (!File.Exists(Path)) {
-                DbusHandler.DeregisterProfile(Name);
+                DbusHandler.DeregisterProfile(Name, Manager);
                 Delete();
                 
                 throw new ProfileException($"Profile file at {Path} expected");
@@ -79,7 +79,7 @@ namespace Mercurius.Profiles {
                 Manager.UnloadProfile(this);
                 Profile reloaded = await Manager.LoadProfileAsync(Name);
 
-                DbusHandler.DeregisterProfile(Name);
+                DbusHandler.DeregisterProfile(Name, Manager);
                 await DbusHandler.RegisterProfileAsync(new DbusProfile(reloaded));
                 Dispose();
                 return false;
@@ -109,7 +109,7 @@ namespace Mercurius.Profiles {
         }
         internal async Task<bool> RemoveModFromListAsync(Mod modToRemove, bool force) {
 
-            IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.Contains<string>(modToRemove.VersionId));
+            IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.ContainsKey(modToRemove.VersionId));
        
             if (dependants.Count() > 0 && !force) {
                 throw new DependencyException($"{modToRemove.Title} is a dependency!");
@@ -124,7 +124,7 @@ namespace Mercurius.Profiles {
             bool success = true;
 
             foreach (Mod modToRemove in modsToRemove) {
-                IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.Contains<string>(modToRemove.VersionId));
+                IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.ContainsKey(modToRemove.VersionId));
        
                 if (dependants.Count() > 0 && !force) {
                     logger.Warn("{0} is a dependency!", modToRemove.Title);
@@ -196,7 +196,7 @@ namespace Mercurius.Profiles {
                         modsToAdd.Add(dependencyMod);
                     }
                 }
-            }DeregisterProfile
+            }
             modsToAdd.Add(mod);
 
             if (!dryRun) {
@@ -354,9 +354,8 @@ namespace Mercurius.Profiles {
             if (File.Exists(Path))
                 Manager.DeleteProfileFile(Name);
                 
-            // Dipose/unload
-            Manager.UnloadProfile(this);   
-            Dispose();         
+            // Dipose/unload   
+            Dispose(true);         
         }
         public void Dispose() {
             Dispose(false);

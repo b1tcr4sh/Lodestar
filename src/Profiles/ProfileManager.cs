@@ -231,10 +231,10 @@ namespace Mercurius.Profiles {
                 } else
                     installQueue.Add(mod);
             }
-                logger.Debug("Attempting to install mods...");
-                foreach (Mod mod in installQueue) {
-                    await client.DownlodModAsync(mod);
-                }
+            logger.Debug("Attempting to install mods...");
+            foreach (Mod mod in installQueue) {
+                await client.DownlodModAsync(mod);
+            }
         }
     }
 }
