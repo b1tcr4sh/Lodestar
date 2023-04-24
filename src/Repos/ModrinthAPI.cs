@@ -94,7 +94,7 @@ namespace Mercurius.API {
 
             return mods.ToArray<Mod>();
         }
-        public Mod ModFromVersion(VersionModel version, ProjectModel project) {
+        private Mod ModFromVersion(VersionModel version, ProjectModel project) {
             Mod mod = new Mod();
             mod.Title = project.title;
             mod.ProjectId = version.project_id;
