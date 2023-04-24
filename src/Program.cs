@@ -39,8 +39,9 @@ namespace Mercurius {
                 }
             })
             .ConfigureServices((hostContext, services) => {
-                services.AddSingleton(logger);
-                services.AddSingleton<IHostedService, DbusHandler>(); 
+                services.AddSingleton<ILogger>(logger);
+                services.AddSingleton<IDbusHandler, DbusHandler>();
+                services.AddHostedService<DbusServer>(); 
                 services.AddSingleton<APIs>(apis);      
                 services.AddSingleton<ProfileManager>();
             })

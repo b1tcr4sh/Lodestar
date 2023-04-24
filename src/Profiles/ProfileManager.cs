@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Serilog;
+using Microsoft.Extensions.Hosting;
 
 using Mercurius.API;
 using Mercurius.Configuration;
@@ -11,14 +12,15 @@ namespace Mercurius.Profiles {
         private Dictionary<string, Profile> LoadedProfiles;
         private string ProfilePath;
         private ILogger _logger;
-        internal DbusHandler dbusHandler;
+        internal IDbusHandler dbusHandler;
         public APIs Apis;
-        public ProfileManager(APIs apis, ILogger logger, DbusHandler handler) {
+        public ProfileManager(APIs apis, ILogger logger, IDbusHandler handler) {
             Apis = apis;
             dbusHandler = handler;
+            _logger = logger;
+
             InitializeDirectory();
             LoadAllProfiles();
-            _logger = logger;
         }
 
         private void InitializeDirectory() {
