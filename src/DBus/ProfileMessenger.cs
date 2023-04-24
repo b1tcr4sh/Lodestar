@@ -15,11 +15,13 @@ namespace Mercurius.DBus {
     public class ProfileMessenger : IProfileMessenger {
         private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/ProfileMessenger");
         private static ILogger _logger = Log.Logger;
+        private DbusHandler dbusHandler;
         
         private ProfileManager _manager;
 
-        public ProfileMessenger(ProfileManager manager) {
+        public ProfileMessenger(ProfileManager manager, DbusHandler handler) {
             _manager = manager;
+            dbusHandler = handler;
         }
 
         public Task<string[]> ListProfilesAsync() {
@@ -44,7 +46,7 @@ namespace Mercurius.DBus {
             }
 
             DbusProfile dbusProfile = new DbusProfile(profile);
-            await DbusHandler.RegisterProfileAsync(dbusProfile);
+            await dbusHandler.RegisterProfileAsync(dbusProfile);
             
             return true;
         }

@@ -11,9 +11,11 @@ namespace Mercurius.Profiles {
         private Dictionary<string, Profile> LoadedProfiles;
         private string ProfilePath;
         private ILogger _logger;
+        internal DbusHandler dbusHandler;
         public APIs Apis;
-        public ProfileManager(APIs apis, ILogger logger) {
+        public ProfileManager(APIs apis, ILogger logger, DbusHandler handler) {
             Apis = apis;
+            dbusHandler = handler;
             InitializeDirectory();
             LoadAllProfiles();
             _logger = logger;

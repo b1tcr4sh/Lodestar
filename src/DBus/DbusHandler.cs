@@ -7,18 +7,18 @@ using Mercurius.Profiles;
 
 namespace Mercurius.DBus {
     public class DbusHandler : IDisposable, IHostedService {
-        public static async Task RegisterProfileAsync(DbusProfile profile) {
-            await DbusConnection.RegisterObjectAsync(profile);
+        public async Task RegisterProfileAsync(DbusProfile profile) {
+            await connection.RegisterObjectAsync(profile);
         }
-        public static void DeregisterProfile(string name, ProfileManager manager) {
+        public void DeregisterProfile(string name, ProfileManager manager) {
             if (!manager.ProfileExists(name)) {
                 throw new ProfileException($"Profile {name} doesn't exist!");
             }
 
-            DbusConnection.UnregisterObject(new ObjectPath($"/org/mercurius/profile/{name}"));
+            connection.UnregisterObject(new ObjectPath($"/org/mercurius/profile/{name}"));
         }
 
-        private static Connection DbusConnection;
+        private Connection connection;
 
         private readonly ILogger _logger;
         private ProfileManager _manager;
@@ -30,7 +30,6 @@ namespace Mercurius.DBus {
         public async Task StartAsync(CancellationToken cancellationToken) {
             _logger.Information("Starting DBus Server Service....");
 
-            Connection connection;
 
             if (SettingsManager.Settings.Dbus_System_Bus) {
                 connection = new Connection(Address.Session!);
@@ -42,8 +41,6 @@ namespace Mercurius.DBus {
                 await server.StartAsync("tcp:host=localhost,port=44881");
                 _logger.Information("DBus peer listening at tcp port 44881");
             }
-
-            DbusConnection = connection;
 
             try {
                 await connection.ConnectAsync();
@@ -67,7 +64,7 @@ namespace Mercurius.DBus {
 
             
 
-            await connection.RegisterObjectAsync(new ProfileMessenger(_manager));
+            await connection.RegisterObjectAsync(new ProfileMessenger(_manager, this));
 
             foreach (Profile profile in _manager.GetLoadedProfiles().Values) {
                 await connection.RegisterObjectAsync(new DbusProfile(profile));

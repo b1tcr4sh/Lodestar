@@ -55,7 +55,7 @@ namespace Mercurius.Profiles {
         }
         public async Task<bool> VerifyLocalFileAsync() {
             if (!File.Exists(Path)) {
-                DbusHandler.DeregisterProfile(Name, Manager);
+                Manager.dbusHandler.DeregisterProfile(Name, Manager);
                 Delete();
                 
                 throw new ProfileException($"Profile file at {Path} expected");
@@ -79,8 +79,8 @@ namespace Mercurius.Profiles {
                 Manager.UnloadProfile(this);
                 Profile reloaded = await Manager.LoadProfileAsync(Name);
 
-                DbusHandler.DeregisterProfile(Name, Manager);
-                await DbusHandler.RegisterProfileAsync(new DbusProfile(reloaded));
+                Manager.dbusHandler.DeregisterProfile(Name, Manager);
+                await Manager.dbusHandler.RegisterProfileAsync(new DbusProfile(reloaded));
                 Dispose();
                 return false;
             }
