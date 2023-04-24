@@ -1,5 +1,5 @@
 using Tmds.DBus;
-using NLog;
+using Serilog;
 
 using Mercurius.Profiles;
 
@@ -14,7 +14,7 @@ namespace Mercurius.DBus {
 
     public class ProfileMessenger : IProfileMessenger {
         private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/ProfileMessenger");
-        private static ILogger logger = LogManager.GetCurrentClassLogger();
+        private static ILogger _logger = Log.Logger;
         
         private ProfileManager _manager;
 
@@ -37,9 +37,9 @@ namespace Mercurius.DBus {
             try {
                 profile = Profile.CreateNew(name, minecraftVersion, loader, serverSide, _manager);
             } catch (ProfileException e) {
-                logger.Warn("Failed to create profile... ?");
-                logger.Warn(e.Message);
-                logger.Trace(e.StackTrace);
+                _logger.Warning("Failed to create profile... ?");
+                _logger.Warning(e.Message);
+                _logger.Warning(e.StackTrace);
                 return false;
             }
 

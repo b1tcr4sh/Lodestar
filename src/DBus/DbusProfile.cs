@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 using Tmds.DBus;
-using NLog;
+using Serilog;
 
 using Mercurius.Profiles;
 
@@ -9,7 +9,7 @@ namespace Mercurius.DBus {
         public ObjectPath ObjectPath { get => _objectPath; }
         private ObjectPath _objectPath;
         private Profile modelProfile; 
-        private ILogger logger;
+        private ILogger _logger;
 
 
         private async Task<Profile> GetModelProfileAsync() => await modelProfile.Manager.GetLoadedProfileAsync(modelProfile.Name);
@@ -17,7 +17,7 @@ namespace Mercurius.DBus {
         internal DbusProfile(Profile profile) {
             _objectPath = new ObjectPath(String.Format($"/org/mercurius/profile/{profile.Name}"));
             modelProfile = profile;
-            logger = NLog.LogManager.GetCurrentClassLogger();
+            _logger = Log.Logger;
         }
 
         public async Task<ProfileInfo> GetProfileInfoAsync() {
@@ -78,10 +78,10 @@ namespace Mercurius.DBus {
             List<string> toAdd = new List<string>();
             bool repaired = true;
 
-            logger.Debug("Verifying profile {0} upon request", profile.Name);
+            _logger.Debug("Verifying profile {0} upon request", profile.Name);
             // Check for incompatible mods
             IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion) || !mod.Loaders.Contains(profile.Loader));
-            logger.Debug("Found {0} incompatible mods", incompatible.Count());
+            _logger.Debug("Found {0} incompatible mods", incompatible.Count());
 
             if (incompatible.Count() > 0) {
                 foreach (Mod mod in incompatible) {
@@ -90,8 +90,8 @@ namespace Mercurius.DBus {
                     try {
                         toAdd.Add(mod.ProjectId);
                     } catch (Exception e) {
-                        logger.Warn(e);
-                        logger.Trace(e.StackTrace);
+                        _logger.Warning(e.Message);
+                        _logger.Warning(e.StackTrace);
                         repaired = false;
                     }
                 }
@@ -103,12 +103,12 @@ namespace Mercurius.DBus {
 
 
             // Check for duplicates 
-            logger.Info("Pruning duplicates...");
+            _logger.Information("Pruning duplicates...");
             toRemove = new List<Mod>();
             foreach (Mod mod in profile.Mods) {
                 IEnumerable<Mod> matchingIds = profile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
 
-                logger.Debug("Found {0} duplicates of {1}", matchingIds.Count() - 1, mod.VersionId);
+                _logger.Debug("Found {0} duplicates of {1}", matchingIds.Count() - 1, mod.VersionId);
 
                 if (matchingIds.Count() > 1) {
                     foreach(Mod duplicate in matchingIds.Skip(1)) {

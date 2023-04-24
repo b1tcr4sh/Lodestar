@@ -1,6 +1,6 @@
 using Tmds.DBus;
 using Microsoft.Extensions.Hosting;
-using NLog;
+using Serilog;
 
 using Mercurius.Configuration;
 using Mercurius.Profiles;
@@ -20,27 +20,27 @@ namespace Mercurius.DBus {
 
         private static Connection DbusConnection;
 
-        private readonly ILogger logger;
+        private readonly ILogger _logger;
         private ProfileManager _manager;
-        public DbusHandler(ProfileManager manager) {
-            logger = LogManager.GetCurrentClassLogger();
+        public DbusHandler(ProfileManager manager, ILogger logger) {
+            _logger = logger;
             _manager = manager;
          }
 
         public async Task StartAsync(CancellationToken cancellationToken) {
-            logger.Info("Starting DBus Server Service....");
+            _logger.Information("Starting DBus Server Service....");
 
             Connection connection;
 
             if (SettingsManager.Settings.Dbus_System_Bus) {
                 connection = new Connection(Address.Session!);
-                logger.Info("Connected to DBus session bus");
+                _logger.Information("Connected to DBus session bus");
             } else {
                 ServerConnectionOptions server = new ServerConnectionOptions();
                 connection = new Connection(server);
 
                 await server.StartAsync("tcp:host=localhost,port=44881");
-                logger.Info("DBus peer listening at tcp port 44881");
+                _logger.Information("DBus peer listening at tcp port 44881");
             }
 
             DbusConnection = connection;
@@ -48,20 +48,20 @@ namespace Mercurius.DBus {
             try {
                 await connection.ConnectAsync();
             } catch (ConnectException e) {
-                logger.Fatal("Could not establish connection to system bus... ?");
-                logger.Fatal(e.Message);
+                _logger.Fatal("Could not establish connection to system bus... ?");
+                _logger.Fatal(e.Message);
                 Environment.Exit(-1);
             } catch (DisconnectedException) {
-                logger.Fatal("Could not establish connection to system bus... ?");
+                _logger.Fatal("Could not establish connection to system bus... ?");
                 Environment.Exit(-1);
             }
 
             if (SettingsManager.Settings.Dbus_System_Bus) {
                 await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {
-                    logger.Fatal("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
+                    _logger.Fatal("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
                 }, ServiceRegistrationOptions.Default);
                 await connection.RegisterServiceAsync("org.mercurius.profile", () => {
-                    logger.Fatal("Lost service name 'org.mercurius.profile, probably need to restart... ?");
+                    _logger.Fatal("Lost service name 'org.mercurius.profile, probably need to restart... ?");
                 }, ServiceRegistrationOptions.Default);
             }
 
@@ -74,11 +74,11 @@ namespace Mercurius.DBus {
             }
         }
         public Task StopAsync(CancellationToken cancellationToken) {
-             logger.Info("Stopping Dbus Server Service.");
+             _logger.Information("Stopping Dbus Server Service.");
              return Task.CompletedTask;
          }
         public void Dispose() {
-            logger.Info("Disposing DBus Server Service....");
+            _logger.Information("Disposing DBus Server Service....");
         }
     }
 }

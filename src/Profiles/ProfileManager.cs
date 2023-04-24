@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using NLog;
+using Serilog;
 
 using Mercurius.API;
 using Mercurius.Configuration;
@@ -10,24 +10,25 @@ namespace Mercurius.Profiles {
     public class ProfileManager {
         private Dictionary<string, Profile> LoadedProfiles;
         private string ProfilePath;
-        private Logger logger = LogManager.GetCurrentClassLogger();
+        private ILogger _logger;
         public APIs Apis;
-        public ProfileManager(APIs apis) {
+        public ProfileManager(APIs apis, ILogger logger) {
             Apis = apis;
             InitializeDirectory();
             LoadAllProfiles();
+            _logger = logger;
         }
 
         private void InitializeDirectory() {
             LoadedProfiles = new Dictionary<string, Profile>();
             if (SettingsManager.Settings is null) {
-                logger.Fatal("Couldn't find configuration file!");
+                _logger.Fatal("Couldn't find configuration file!");
                 System.Environment.Exit(1);
             } 
             ProfilePath = SettingsManager.Settings.Profile_Directory;
             if (!Directory.Exists(ProfilePath)) {
                 Directory.CreateDirectory(ProfilePath);
-                logger.Debug("Created Profiles Directory at {0}", ProfilePath);
+                _logger.Debug("Created Profiles Directory at {0}", ProfilePath);
             } 
         }
         private void InitializeDirectory(string path) {
@@ -62,14 +63,14 @@ namespace Mercurius.Profiles {
                     Profile profile = JsonSerializer.Deserialize<Profile>(contents);
 
                     if (profile.Name.Contains(" "))
-                        logger.Warn($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
+                        _logger.Warning($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
                     else if (!LoadedProfiles.ContainsKey(profile.Name)) {
                         profile.GenerateChecksum();
                         LoadedProfiles.Add(profile.Name, profile); 
                     }
                 } catch (Exception e) {
-                    logger.Warn(@$"Error occurred loading profile at {file}");
-                    logger.Trace(e.Message);
+                    _logger.Warning(@$"Error occurred loading profile at {file}");
+                    _logger.Warning(e.Message);
                 }
             }
 
@@ -78,21 +79,21 @@ namespace Mercurius.Profiles {
                     LoadedProfiles.Remove(profile.Key);
             }
 
-            logger.Info($"Loaded {LoadedProfiles.Count} profiles");
+            _logger.Information($"Loaded {LoadedProfiles.Count} profiles");
         }
         
         public async Task<Profile> LoadProfileAsync(string name) {
             string[] files = Directory.GetFiles(ProfilePath);
 
             foreach (string file in files) {
-                logger.Debug("Attempting to load profile from {0}", file);
+                _logger.Debug("Attempting to load profile from {0}", file);
 
                 try {
                     string fileContents = await File.ReadAllTextAsync(file, Encoding.ASCII);
                     Profile profile = JsonSerializer.Deserialize<Profile>(fileContents);
 
                     if (profile.Name.ToLower().Equals(name.ToLower())) {
-                        logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
+                        _logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                         profile.GenerateChecksum();
 
@@ -100,27 +101,27 @@ namespace Mercurius.Profiles {
                         return profile;
                     }
                 } catch (Exception e) {
-                    logger.Warn(@$"Error occurred loading profile at {file}:");
-                    logger.Warn(e.Message);
+                    _logger.Warning(@$"Error occurred loading profile at {file}:");
+                    _logger.Warning(e.Message);
                 } 
             }
             throw new ProfileException($"Profile {name} wasn't found!");
         }
         public async Task<Profile> LoadProfilFromFileAsync(string path) {
-            logger.Debug("Attempting to load profile from {0}", path);
+            _logger.Debug("Attempting to load profile from {0}", path);
 
             Profile profile;
 
                 try {
                     string fileContents = await File.ReadAllTextAsync(path, Encoding.ASCII);
                     profile = JsonSerializer.Deserialize<Profile>(fileContents);
-                    logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
+                    _logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                     profile.GenerateChecksum();
                     LoadedProfiles.Add(profile.Name, profile);
                 } catch (Exception e) {
-                    logger.Warn(@$"Error occurred loading profile at {path}:");
-                    logger.Warn(e.Message);
+                    _logger.Warning(@$"Error occurred loading profile at {path}:");
+                    _logger.Warning(e.Message);
 
                     throw new ProfileException("Profile failed to load");
                 } 
@@ -133,7 +134,7 @@ namespace Mercurius.Profiles {
         internal async Task WriteProfileAsync(Profile profile) {
             if (File.Exists($@"{ProfilePath}/{profile.Name}.profile.json")) throw new ProfileException($"File {profile.Name} already has exisint file!");
 
-            logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
+            _logger.Debug("Writing New Profile {0} to {1}", profile, ProfilePath);
             using FileStream stream = new FileStream($@"{ProfilePath}/{profile.Name}.profile.json", FileMode.CreateNew, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
@@ -144,7 +145,7 @@ namespace Mercurius.Profiles {
         internal async Task OverwriteProfileAsync(Profile profile, string existingProfileName) {
             if (!File.Exists($@"{ProfilePath}/{existingProfileName.ToLower()}.profile.json")) throw new ProfileException($"Profile Expected at {ProfilePath}/{existingProfileName.ToLower()}.profile.json Doesnt' Exist!");
             
-            logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
+            _logger.Debug("Overwriting Profile {0} at {1}", profile, ProfilePath);
             using FileStream stream = new FileStream(profile.Path, FileMode.Create, FileAccess.Write);
 
             await JsonSerializer.SerializeAsync<Profile>(stream, profile, new JsonSerializerOptions { IncludeFields = true, WriteIndented = true });
@@ -154,23 +155,23 @@ namespace Mercurius.Profiles {
         }
         internal bool DeleteProfileFile(string profileName) {
             if (!File.Exists($"{ProfilePath}/{profileName.ToLower()}.profile.json")) {
-                logger.Debug("Attempted to Delete Profile {0}, but File Didn't Exist... ?", profileName);
+                _logger.Debug("Attempted to Delete Profile {0}, but File Didn't Exist... ?", profileName);
                 return false;
             }
 
             File.Delete($"{ProfilePath}/{profileName.ToLower()}.profile.json");
-            logger.Debug("Deleted Profile at {0}", $"{ProfilePath}/{profileName.ToLower()}.profile.json");
+            _logger.Debug("Deleted Profile at {0}", $"{ProfilePath}/{profileName.ToLower()}.profile.json");
             return true;
         }
         internal void UnloadProfile(Profile profile) {
             if (LoadedProfiles.ContainsKey(profile.Name)) {
                 LoadedProfiles.Remove(profile.Name);
-                logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
+                _logger.Debug("Unloaded Profile {0} at {1}", profile.Name, profile.Path);
                 // LoadAllProfiles();
             } else throw new ProfileException($"Profile {profile.Name} doesn't exist!");
         }
         internal async Task SyncProfileAsync(Profile profile) {
-            logger.Info("Syncing {0}", profile.Name);
+            _logger.Information("Syncing {0}", profile.Name);
 
 
             List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
@@ -196,22 +197,22 @@ namespace Mercurius.Profiles {
             }
 
             if (existingFiles.Count <= 0) {
-                logger.Info("There are no Residiual Mod jars to Remove");
+                _logger.Information("There are no Residiual Mod jars to Remove");
             } else {
-                logger.Info("Removing Residual Mod jars...");
+                _logger.Information("Removing Residual Mod jars...");
                 foreach (string filePath in existingFiles) {
                     File.Delete(filePath);
-                    logger.Debug("Deleted mod jar at {0}", filePath);
+                    _logger.Debug("Deleted mod jar at {0}", filePath);
                 }
                     
             }
 
             if (profile.Mods.Count <= 0) {
-                logger.Info("Profile has no mods to sync!");
+                _logger.Information("Profile has no mods to sync!");
                 throw new ProfileException("Profile has no mods to sync!");
             }
 
-            logger.Debug("Queuing {0} mods for install", profile.Mods.Count);
+            _logger.Debug("Queuing {0} mods for install", profile.Mods.Count);
             List<Mod> preQueue = new List<Mod>();
             preQueue.AddRange(profile.Mods);
             // foreach (Mod mod in selectedProfile.Mods) { // Dependencies are already root level now, so no need to collect them before install
@@ -224,12 +225,12 @@ namespace Mercurius.Profiles {
 
             foreach (Mod mod in preQueue) {
                 if (File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}")) {
-                    logger.Debug("{0}: {1} is already installed, skipping...", mod.Title, mod.ModVersion);
+                    _logger.Debug("{0}: {1} is already installed, skipping...", mod.Title, mod.ModVersion);
                         
                 } else
                     installQueue.Add(mod);
             }
-            logger.Debug("Attempting to install mods...");
+            _logger.Debug("Attempting to install mods...");
             foreach (Mod mod in installQueue) {
                 Repository client = Apis.Get(mod.Repo);
 

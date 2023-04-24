@@ -1,19 +1,19 @@
 using System.Text;
 using System.Text.Json;
-using NLog;
+using Serilog;
 
 namespace Mercurius.Configuration {
     public static class SettingsManager {
         public static SettingsFile Settings { get; private set; }
         private static string userPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         private static string programDirectory = $"{userPath}/.mercurius";
-        private static Logger logger;
+        private static ILogger _logger;
 
-        public static async void Init() {
-            logger = LogManager.GetCurrentClassLogger();
+        public static async void Init(ILogger logger) {
+            _logger = logger;
 
             if (!Directory.Exists(programDirectory)) {
-                logger.Debug("Creating program folder at {0}", userPath);
+                _logger.Debug("Creating program folder at {0}", userPath);
                 Directory.CreateDirectory(programDirectory);
             }
 
@@ -25,8 +25,8 @@ namespace Mercurius.Configuration {
                     Settings = JsonSerializer.Deserialize<SettingsFile>(settings);
                     logger.Debug("Loaded configuration at {0}/{1}", programDirectory, "settings.json");
                 } catch (JsonException e) {
-                    logger.Fatal("Error loading config file... ?");
-                    logger.Trace(e.Message);
+                    _logger.Fatal("Error loading config file... ?");
+                    _logger.Fatal(e.Message);
                     Environment.Exit(1);
                 }
             }
@@ -63,7 +63,7 @@ namespace Mercurius.Configuration {
             
             Settings = config;
 
-            logger.Info($"Created a new configuration file at {programDirectory}/settings.json");
+            _logger.Information($"Created a new configuration file at {programDirectory}/settings.json");
         }
     }
 }

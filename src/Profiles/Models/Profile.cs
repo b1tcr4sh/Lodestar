@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using NLog;
+using Serilog;
 
 using Mercurius.Configuration;
 using Mercurius.DBus;
@@ -17,7 +17,7 @@ namespace Mercurius.Profiles {
         
         public ProfileManager Manager;
         public APIs Apis;
-        private ILogger logger = LogManager.GetCurrentClassLogger();
+        private ILogger logger = Log.Logger;
         private bool _disposed = false;
         private string checksum;
 
@@ -127,7 +127,7 @@ namespace Mercurius.Profiles {
                 IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.ContainsKey(modToRemove.VersionId));
        
                 if (dependants.Count() > 0 && !force) {
-                    logger.Warn("{0} is a dependency!", modToRemove.Title);
+                    logger.Warning("{0} is a dependency!", modToRemove.Title);
                 } else {
                     if (!Mods.Remove(modToRemove)) {
                         success = false;
@@ -184,15 +184,15 @@ namespace Mercurius.Profiles {
 
                         dependencyMod = await client.GetModVersionAsync(dependency.Key);                      
                     } catch (VersionInvalidException) {
-                        logger.Warn("Version could not be found... ?");
+                        logger.Warning("Version could not be found... ?");
                         break;
                     } catch (ProjectInvalidException) {
-                        logger.Warn("Project could not be found...?");
+                        logger.Warning("Project could not be found...?");
                         break;
                     }
 
                     if (Mods.Any<Mod>(mod => mod.VersionId.Equals(dependencyMod.VersionId))) {
-                        logger.Warn($"Profile already contains {dependencyMod.Title}, skipping...");
+                        logger.Warning($"Profile already contains {dependencyMod.Title}, skipping...");
                     } else {
                         // Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
                         mod.AddDependency(dependency.Key);
@@ -204,7 +204,7 @@ namespace Mercurius.Profiles {
 
             if (!dryRun) {
                 await UpdateModListAsync(modsToAdd);
-                logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
+                logger.Information("Successfully added mod {0} to profile {1}", mod.Title, Name);
             }
             return modsToAdd;
         }
@@ -242,7 +242,7 @@ namespace Mercurius.Profiles {
                     }
                 }
                 modsToAdd.Add(mod);
-                logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
+                logger.Information("Successfully added mod {0} to profile {1}", mod.Title, Name);
             }
 
             await UpdateModListAsync(modsToAdd);
@@ -274,7 +274,7 @@ namespace Mercurius.Profiles {
             modsToAdd.Add(mod);
 
             await UpdateModListAsync(modsToAdd);
-            logger.Info("Successfully added mod {0} to profile {1}", mod.Title, Name);
+            logger.Information("Successfully added mod {0} to profile {1}", mod.Title, Name);
             return mod;
         }
         public async Task<IEnumerable<KeyValuePair<string, Remote>>> ResolveDependenciesAsync() {
@@ -292,18 +292,18 @@ namespace Mercurius.Profiles {
 
                         if (!depencencyMet) {
                             unmetDeps.Add(dependency);
-                            logger.Info("dependency {0} is unmet!", dependency.Key);
+                            logger.Information("dependency {0} is unmet!", dependency.Key);
                         }
                     }
                 }
             }
 
             if (unmetDeps.Count() < 1) {
-                logger.Info("All dependencies were met!");
+                logger.Information("All dependencies were met!");
                 return installedDependencies;
             }
 
-            logger.Info("Adding missing dependencies...");
+            logger.Information("Adding missing dependencies...");
             foreach (KeyValuePair<string, Remote> unmet in unmetDeps) {
                 installedDependencies.Add(unmet);
                 await AddModVersionAsync(unmet.Key, unmet.Value, false);

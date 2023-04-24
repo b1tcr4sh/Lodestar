@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using NLog;
+using Serilog;
 
 using Mercurius.Profiles;
 using Mercurius.API.Modrinth;
@@ -9,8 +9,9 @@ namespace Mercurius.API {
     public class ModrinthAPI : Repository {
         public override Remote Source { get; } = Remote.modrinth;
         private ILogger _logger;
-        protected internal ModrinthAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {
+        protected internal ModrinthAPI(string baseUrl, HttpClient client, ILogger logger) : base(baseUrl, client) {
             _objectPath = "/org/mercurius/modrinth";
+            _logger = logger;
         }
 
         public override async Task<Mod[] /* Unified search result model array */> SearchModAsync(string query, string version, string loader) {
@@ -23,8 +24,8 @@ namespace Mercurius.API {
                 Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"search?query={query}");
                 deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
             } catch (Exception e) {
-                _logger.Warn(e.Message);
-                _logger.Trace(e.StackTrace);
+                _logger.Warning(e.Message);
+                _logger.Warning(e.StackTrace);
                 throw new ApiException("Connection Failed!");
             }
 

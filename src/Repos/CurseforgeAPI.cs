@@ -1,6 +1,6 @@
 using System.Net;
 using System.Text.Json;
-using NLog;
+using Serilog;
 
 using Mercurius.Profiles;
 using Mercurius.API.Modrinth; // just for nowsies
@@ -10,8 +10,9 @@ namespace Mercurius.API {
     public class CurseforgeAPI : Repository {
         public override Remote Source { get; } = Remote.curseforge;
         private ILogger _logger;
-        protected internal CurseforgeAPI(string baseUrl, HttpClient client) : base(baseUrl, client) {
+        protected internal CurseforgeAPI(string baseUrl, HttpClient client, ILogger logger) : base(baseUrl, client) {
             _objectPath = "/org/mercurius/curseforge";
+            _logger = logger;
         }
 
         public override async Task<Mod[]> SearchModAsync(string query, string version, string loader) {
