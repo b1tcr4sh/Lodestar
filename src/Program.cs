@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -31,7 +29,7 @@ namespace Mercurius {
             apis.Add(new ModrinthAPI(@"https://api.modrinth.com/v2/", new HttpClient(), logger));
             apis.Add(new CurseforgeAPI(@"https://api.curseforge.com/", new HttpClient(), logger));
 
-            var builder = new HostBuilder()
+            IHost host = new HostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) => {
                 config.AddEnvironmentVariables();
 
@@ -41,13 +39,15 @@ namespace Mercurius {
                 }
             })
             .ConfigureServices((hostContext, services) => {
+                services.AddSingleton(logger);
                 services.AddSingleton<IHostedService, DbusHandler>(); 
                 services.AddSingleton<APIs>(apis);      
                 services.AddSingleton<ProfileManager>();
             })
-            .UseSerilog(logger);
+            .UseSerilog(logger)
+            .Build();
 
-            await builder.RunConsoleAsync();
+            await host.RunAsync();
         }
     }
 }
