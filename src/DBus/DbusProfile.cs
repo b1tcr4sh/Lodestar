@@ -119,14 +119,14 @@ namespace Mercurius.DBus {
             await profile.RemoveModsFromListAsync(toRemove, true);
 
             // Resolve dependencies
-            string[] installedDeps = await profile.ResolveDependenciesAsync();
+            IEnumerable<KeyValuePair<string, Remote>> installedDeps = await profile.ResolveDependenciesAsync();
 
-            return new ValidityReport {
-                incompatible = incompatible.ToArray<Mod>(),
-                missingDependencies = installedDeps,
-                synced = profile.isSynced(),
-                repaired = repaired
-            };
+            // return new ValidityReport {
+            //     incompatible = incompatible.ToArray<Mod>(),
+            //     missingDependencies = installedDeps,
+            //     synced = profile.isSynced(),
+            //     repaired = repaired
+            // };
         }
         public Task CheckForUpdatesAsync() {
             throw new NotImplementedException();

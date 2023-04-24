@@ -28,11 +28,23 @@ namespace Mercurius.API {
                 throw new ArgumentNullException("Mod values are null!");
             }
 
-                Stream readStream;
-                Stream writeStream;
+            bool success = await DownloadAsync(mod.DownloadURL, mod.FileName);
+            // TODO Verify file hash
+
+            return success;
+        }
+        // public async Task</*plugin*/> DownloadPluginAsync(plugin) {
+
+        // }
+        // public async Task</*resourcePack8?> DownloadResourcePackAsync(pack) {
+
+        // }
+        private async Task<bool> DownloadAsync(string url, string filename) {
+            Stream readStream;
+            Stream writeStream;
             try {
-                readStream = await _http.GetStreamAsync(mod.DownloadURL);
-                writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{mod.FileName}", FileMode.Create);
+                readStream = await _http.GetStreamAsync(url);
+                writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{filename}", FileMode.Create);
             } catch (HttpRequestException e) {
                 // logger warn
                 return false;
@@ -48,16 +60,8 @@ namespace Mercurius.API {
             writeStream.Close();
 
             //TODO Report download progress
-            //TODO Check download SHA256
-
             return true;
         }
-        // public async Task</*plugin*/> DownloadPluginAsync(plugin) {
-
-        // }
-        // public async Task</*resourcePack8?> DownloadResourcePackAsync(pack) {
-
-        // }
     }
     public class ApiException : Exception {
         public ApiException() { }
