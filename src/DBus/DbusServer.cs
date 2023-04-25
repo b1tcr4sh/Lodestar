@@ -16,17 +16,6 @@ namespace Mercurius.DBus {
             _manager = manager;
             _handler = handler;
         }
-        public async Task RegisterProfileAsync(DbusProfile profile) {
-            await connection.RegisterObjectAsync(profile);
-        }
-        public void DeregisterProfile(string name, ProfileManager manager) {
-            if (!manager.ProfileExists(name)) {
-                throw new ProfileException($"Profile {name} doesn't exist!");
-            }
-
-            connection.UnregisterObject(new ObjectPath($"/org/mercurius/profile/{name}"));
-        }
-
         public async Task StartAsync(CancellationToken cancellationToken) {
             _logger.Information("Starting DBus Server Service....");
 
@@ -53,6 +42,8 @@ namespace Mercurius.DBus {
                 Environment.Exit(-1);
             }
 
+            _handler.setConnection(connection);  // I hate this, but I guess it workds for now
+
             if (SettingsManager.Settings.Dbus_System_Bus) {
                 await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {
                     _logger.Fatal("Lost service name 'org.mercurius.ProfileMessenger, probably need to restart... ?");
@@ -64,7 +55,7 @@ namespace Mercurius.DBus {
 
             
 
-            await connection.RegisterObjectAsync(new ProfileMessenger(_manager, this));
+            await connection.RegisterObjectAsync(new ProfileMessenger(_manager, _handler));
 
             foreach (Profile profile in _manager.GetLoadedProfiles().Values) {
                 await connection.RegisterObjectAsync(new DbusProfile(profile));
