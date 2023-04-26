@@ -1,4 +1,5 @@
 using Tmds.DBus;
+using Serilog;
 
 using Mercurius.Profiles;
 using Mercurius.API.Modrinth;
@@ -11,7 +12,8 @@ namespace Mercurius.API {
         protected ObjectPath _objectPath; 
         public ObjectPath ObjectPath { get => _objectPath; }
         public abstract Remote Source { get; } 
-        public Repository(string baseUrl, HttpClient client) {
+        protected ILogger _logger { get; set; }
+        public Repository(string baseUrl, HttpClient client, ILogger logger) {
             _baseUrl = baseUrl;
             _http = client;
         }
@@ -21,7 +23,8 @@ namespace Mercurius.API {
         abstract internal Task<ProjectModel> GetModProjectAsync(string id);
         abstract internal Task<Mod> GetModVersionAsync(string id);
         abstract internal Task<Mod[]> ListModVersionsAsync(string id);
-        // abstract public Task</*plugin*/> GetPluginAsync(string id);
+        // abstract public Task</*plugin*/> GetPluginVersionAsync(string id);
+        // abstract public Task</*plugin*/> GetPluginProjectAsync(string id);
         // abstract public Task</*resource pack*/> GetResourcePackAsync(string id);
         protected internal async Task<bool> DownlodModAsync(Mod mod) {
             if (mod.DownloadURL is null) {
@@ -29,10 +32,11 @@ namespace Mercurius.API {
             }
 
             bool success = await DownloadAsync(mod.DownloadURL, mod.FileName);
-            // TODO Verify file hash
+            // TODO VerifyHash(mod.hash or whatever);
 
             return success;
         }
+        // abstract protected bool VerifyHash(string hash);
         // public async Task</*plugin*/> DownloadPluginAsync(plugin) {
 
         // }
@@ -46,14 +50,14 @@ namespace Mercurius.API {
                 readStream = await _http.GetStreamAsync(url);
                 writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{filename}", FileMode.Create);
             } catch (HttpRequestException e) {
-                // logger warn
+                _logger.Warning("Download failed: " + e.StatusCode);
                 return false;
             }
 
             try {
                 await readStream.CopyToAsync(writeStream);
             } catch (Exception e) {
-                // logger warn message
+                _logger.Warning(e.Message);
                 return false;
             }
             readStream.Close();

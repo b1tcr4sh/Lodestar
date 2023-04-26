@@ -5,14 +5,14 @@ using Serilog;
 using Mercurius.Profiles;
 using Mercurius.API.Modrinth; // just for nowsies
 using Mercurius.API.Curseforge;
+using Mercurius.Configuration;
 
 namespace Mercurius.API {
     public class CurseforgeAPI : Repository {
         public override Remote Source { get; } = Remote.curseforge;
-        private ILogger _logger;
-        protected internal CurseforgeAPI(string baseUrl, HttpClient client, ILogger logger) : base(baseUrl, client) {
+        protected internal CurseforgeAPI(string baseUrl, HttpClient client, ILogger logger) : base(baseUrl, client, logger) {
             _objectPath = "/org/mercurius/curseforge";
-            _logger = logger;
+            _http.DefaultRequestHeaders.Add("x-api-key", SettingsManager.Settings.Cureforge_Api_Key);
         }
 
         public override async Task<Mod[]> SearchModAsync(string query, string version, string loader) {
@@ -42,5 +42,65 @@ namespace Mercurius.API {
         internal override async Task<Mod[]> ListModVersionsAsync(string projectId) { // Model is a bit different between the two routes :(
             throw new NotImplementedException();
         }
+
+        private async Task<Project> GetProjectAsync(string id) {
+            HttpResponseMessage res;
+            try {
+                res = await _http.GetAsync(_baseUrl + $"mods/{id}");
+            } catch (HttpRequestException e) {
+                throw new Exception(e.Message);
+                // Map to result
+            }
+            return await JsonSerializer.DeserializeAsync<Project>((await res.Content.ReadAsStreamAsync()));
+        }  
+        private async Task<CurseforgeVersion> GetVersionAsync(string versionId, string projectId) {
+            HttpResponseMessage res;
+            try {
+                res = await _http.GetAsync(_baseUrl + $"mods/{projectId}/files/{versionId}");
+            } catch (HttpRequestException e) {
+                throw new Exception(e.Message);
+                // Map to result
+            }
+            return await JsonSerializer.DeserializeAsync<CurseforgeVersion>((await res.Content.ReadAsStreamAsync()));
+        }
+        private async Task<CurseforgeVersionList> GetVersionListAsync(string id) {
+            HttpResponseMessage res;
+            try {
+                res = await _http.GetAsync(_baseUrl + $"mods/{id}/files");
+            } catch (HttpRequestException e) {
+                throw new Exception(e.Message);
+                // Map to result
+            }
+            return await JsonSerializer.DeserializeAsync<CurseforgeVersionList>((await res.Content.ReadAsStreamAsync()));
+        }
+        private Mod ModFromVersion(CurseforgeVersion version) {
+            Dictionary<string, Remote> dependencies = new Dictionary<string, Remote>();
+            foreach (FileDependency dep in version.data.dependencies) {
+                dependencies.Add(dep.modId.ToString(), Remote.curseforge);
+            }
+            
+            Mod mod = new Mod() {
+                Title = version.data.displayName,
+                FileName = version.data.fileName,
+                DownloadURL = version.data.downloadUrl,
+                Repo = Remote.curseforge,
+                ProjectId = version.data.modId.ToString(),
+                VersionId = version.data.id.ToString(),
+                DependencyVersions = dependencies,
+
+            };
+
+            return mod; // Mod doesn't seem to include a loader ??
+        }
+    }
+    [System.Serializable]
+    public class CurseforgeException : System.Exception
+    {
+        public CurseforgeException() { }
+        public CurseforgeException(string message) : base(message) { }
+        public CurseforgeException(string message, System.Exception inner) : base(message, inner) { }
+        protected CurseforgeException(
+            System.Runtime.Serialization.SerializationInfo info,
+            System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }

@@ -8,10 +8,8 @@ using Mercurius.API.Modrinth;
 namespace Mercurius.API {
     public class ModrinthAPI : Repository {
         public override Remote Source { get; } = Remote.modrinth;
-        private ILogger _logger;
-        protected internal ModrinthAPI(string baseUrl, HttpClient client, ILogger logger) : base(baseUrl, client) {
+        protected internal ModrinthAPI(string baseUrl, HttpClient client, ILogger logger) : base(baseUrl, client, logger) {
             _objectPath = "/org/mercurius/modrinth";
-            _logger = logger;
         }
 
         public override async Task<Mod[] /* Unified search result model array */> SearchModAsync(string query, string version, string loader) {

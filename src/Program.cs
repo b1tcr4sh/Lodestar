@@ -27,7 +27,9 @@ namespace Mercurius {
             SettingsManager.Init(logger);
             APIs apis = new APIs();
             apis.Add(new ModrinthAPI(@"https://api.modrinth.com/v2/", new HttpClient(), logger));
-            apis.Add(new CurseforgeAPI(@"https://api.curseforge.com/", new HttpClient(), logger));
+            if (!SettingsManager.Settings.Cureforge_Api_Key.Equals(String.Empty)) {
+                apis.Add(new CurseforgeAPI(@"https://api.curseforge.com/v1/", new HttpClient(), logger));
+            }
 
             IHost host = new HostBuilder()
             .ConfigureAppConfiguration((hostingContext, config) => {

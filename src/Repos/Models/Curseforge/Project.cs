@@ -1,8 +1,8 @@
 namespace Mercurius.API.Curseforge {
-    internal struct Project {
-        public Data data;
+    internal struct CurseforgeProject {
+        public Project data;
     }
-    internal struct Data {
+    internal struct Project {
         public int id;
         public int gameId;
         public string name;
