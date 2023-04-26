@@ -101,8 +101,8 @@ namespace Mercurius.API {
             mod.MinecraftVersion = version.game_versions[0];
             mod.ModVersion = version.version_number;
             mod.DownloadURL = version.files.Where<modFile>((file) => file.primary).ToArray<modFile>()[0].url;
-            mod.DependencyVersions = new Dictionary<string, Remote>();
             mod.ClientDependency = RequiredBy.unknown;
+            mod.DependencyVersions = new List<string>();
 
             modFile primaryFile = version.files[0];
             foreach (modFile file in version.files) {
@@ -147,6 +147,10 @@ namespace Mercurius.API {
                 loaders.Add(parsed);
             }  
             mod.Loaders = loaders.ToArray<ModLoader>();
+
+            foreach (Dependency dependency in version.dependencies) {
+                mod.DependencyVersions.Add(dependency.version_id);
+            }
 
             return mod;
         }

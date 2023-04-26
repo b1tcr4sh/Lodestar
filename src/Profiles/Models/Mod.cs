@@ -15,14 +15,18 @@ namespace Mercurius.Profiles {
         public string ModVersion { get; set; }
         public Remote Repo { get; set; }
         public ModLoader[] Loaders { get; set; }
-        public Dictionary<string, Remote> DependencyVersions { get; set; }
+        public List<string> DependencyVersions { get; set; }
         public RequiredBy ClientDependency { get; set; }
 
         internal void AddDependency(string id) {
-            DependencyVersions.Add(id, Repo);
+            DependencyVersions.Append(id);
         }
         internal bool CheckFileExists() {
             return File.Exists($"{SettingsManager.Settings.Minecraft_Directory}/mods/{FileName}"); 
         }
+    }
+    public struct DependencyVersion {
+        public string id { get; set; }
+        public Remote repo { get; set; }
     }
 }

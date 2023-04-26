@@ -74,9 +74,9 @@ namespace Mercurius.API {
             return await JsonSerializer.DeserializeAsync<CurseforgeVersionList>((await res.Content.ReadAsStreamAsync()));
         }
         private Mod ModFromVersion(CurseforgeVersion version) {
-            Dictionary<string, Remote> dependencies = new Dictionary<string, Remote>();
+            List<string> dependencies = new List<string>();
             foreach (FileDependency dep in version.data.dependencies) {
-                dependencies.Add(dep.modId.ToString(), Remote.curseforge);
+                dependencies.Add(dep.modId.ToString());
             }
             
             Mod mod = new Mod() {

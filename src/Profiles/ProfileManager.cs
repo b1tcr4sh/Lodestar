@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 using Microsoft.Extensions.Hosting;
 
@@ -13,6 +14,7 @@ namespace Mercurius.Profiles {
         private string ProfilePath;
         private ILogger _logger;
         internal IDbusHandler dbusHandler;
+        [JsonIgnore]
         public APIs Apis;
         public ProfileManager(APIs apis, ILogger logger, IDbusHandler handler) {
             Apis = apis;

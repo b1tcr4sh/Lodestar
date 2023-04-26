@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Serilog;
+using System.Text.Json.Serialization;
 
 using Mercurius.Configuration;
 using Mercurius.DBus;
@@ -15,7 +16,9 @@ namespace Mercurius.Profiles {
         public List<Mod> Mods { get; set; }
         public string Path { get => string.Format("{0}{1}.profile.json", SettingsManager.Settings.Profile_Directory, Name); } //"{SettingsManager.Settings.Profile_Directory}/{this.Name}.profile.json";
         
+        [JsonIgnore]
         public ProfileManager Manager;
+        [JsonIgnore]
         public APIs Apis;
         private ILogger logger = Log.Logger;
         private bool _disposed = false;
@@ -109,7 +112,7 @@ namespace Mercurius.Profiles {
         }
         internal async Task<bool> RemoveModFromListAsync(Mod modToRemove, bool force) {
 
-            IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.ContainsKey(modToRemove.VersionId));
+            IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.Contains(modToRemove.VersionId));
        
             if (dependants.Count() > 0 && !force) {
                 throw new DependencyException($"{modToRemove.Title} is a dependency!");
@@ -124,7 +127,7 @@ namespace Mercurius.Profiles {
             bool success = true;
 
             foreach (Mod modToRemove in modsToRemove) {
-                IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.ContainsKey(modToRemove.VersionId));
+                IEnumerable<Mod> dependants = Mods.Where<Mod>(mod => mod.DependencyVersions.Contains(modToRemove.VersionId));
        
                 if (dependants.Count() > 0 && !force) {
                     logger.Warning("{0} is a dependency!", modToRemove.Title);
@@ -169,8 +172,8 @@ namespace Mercurius.Profiles {
             if (mod.DependencyVersions.Count() > 0 && !ignoreDependencies) {
                 logger.Debug("Resolving Dependencies...");
 
-                foreach (KeyValuePair<string, Remote> dependency in mod.DependencyVersions) {
-                    if (dependency.Key is null) {
+                foreach (string dependency in mod.DependencyVersions) {
+                    if (dependency is null) {
                         throw new VersionInvalidException("A dependency was null from Mopdrinth...?");
                     }
 
@@ -182,7 +185,7 @@ namespace Mercurius.Profiles {
                         // dependencyVersion = await client.GetVersionInfoAsync(dependency.version_id);
                         // dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);  
 
-                        dependencyMod = await client.GetModVersionAsync(dependency.Key);                      
+                        dependencyMod = await client.GetModVersionAsync(dependency);                      
                     } catch (VersionInvalidException) {
                         logger.Warning("Version could not be found... ?");
                         break;
@@ -195,7 +198,7 @@ namespace Mercurius.Profiles {
                         logger.Warning($"Profile already contains {dependencyMod.Title}, skipping...");
                     } else {
                         // Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                        mod.AddDependency(dependency.Key);
+                        mod.AddDependency(dependency);
                         modsToAdd.Add(dependencyMod);
                     }
                 }
@@ -232,12 +235,12 @@ namespace Mercurius.Profiles {
                 if (mod.DependencyVersions.Count() > 0 && !ignoreDependencies) {
                     logger.Debug("Resolving Dependencies...");
 
-                    foreach (KeyValuePair<String, Remote> dependency in mod.DependencyVersions) {
-                        Mod dependencyVersion = await client.GetModVersionAsync(dependency.Key);
+                    foreach (string dependency in mod.DependencyVersions) {
+                        Mod dependencyVersion = await client.GetModVersionAsync(dependency);
                         // ProjectModel dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);
 
                         // Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                        mod.AddDependency(dependency.Key);
+                        mod.AddDependency(dependency);
                         modsToAdd.Add(dependencyVersion);
                     }
                 }
@@ -262,12 +265,12 @@ namespace Mercurius.Profiles {
             if (mod.DependencyVersions.Count() > 0 && !ignoreDependencies) {
                 logger.Debug("Resolving Dependencies...");
 
-                foreach (KeyValuePair<String, Remote> dependency in mod.DependencyVersions) {
-                    Mod dependencyVersion = await client.GetModVersionAsync(dependency.Key);
+                foreach (string dependency in mod.DependencyVersions) {
+                    Mod dependencyVersion = await client.GetModVersionAsync(dependency);
                     // ProjectModel dependencyProject = await client.GetModProjectAsync(dependencyVersion.project_id);
 
                     // Mod dependencyMod = new Mod(dependencyVersion, dependencyProject);
-                    mod.AddDependency(dependency.Key);
+                    mod.AddDependency(dependency);
                     modsToAdd.Add(dependencyVersion);
                 }
             }
@@ -277,22 +280,22 @@ namespace Mercurius.Profiles {
             logger.Information("Successfully added mod {0} to profile {1}", mod.Title, Name);
             return mod;
         }
-        public async Task<IEnumerable<KeyValuePair<string, Remote>>> ResolveDependenciesAsync() {
-            List<KeyValuePair<string, Remote>> installedDependencies = new List<KeyValuePair<String, Remote>>();
-            List<KeyValuePair<string, Remote>> unmetDeps = new List<KeyValuePair<String, Remote>>();
+        public async Task<IReadOnlyList<KeyValuePair<string, Remote>>> ResolveDependenciesAsync() {
+            List<KeyValuePair<string, Remote>> installedDependencies = new List<KeyValuePair<string, Remote>>();
+            List<KeyValuePair<string, Remote>> unmetDeps = new List<KeyValuePair<string, Remote>>();
             Repository client;
 
             foreach (Mod mod in Mods) {
                 logger.Debug("{0} has {1} listed dependencies", mod.Title, mod.DependencyVersions.Count());
                 if (mod.DependencyVersions.Count() > 0) {
-                    foreach (KeyValuePair<String, Remote> dependency in mod.DependencyVersions) {
-                        client = Apis.Get(dependency.Value);
+                    foreach (string dependency in mod.DependencyVersions) {
+                        client = Apis.Get(mod.Repo);
 
-                        bool depencencyMet = Mods.Any<Mod>(checking => checking.VersionId.Equals(dependency.Key));
+                        bool depencencyMet = Mods.Any<Mod>(checking => checking.VersionId.Equals(dependency));
 
                         if (!depencencyMet) {
-                            unmetDeps.Add(dependency);
-                            logger.Information("dependency {0} is unmet!", dependency.Key);
+                            unmetDeps.Add(new KeyValuePair<string, Remote>(dependency, mod.Repo));
+                            logger.Information("dependency {0} is unmet!", dependency);
                         }
                     }
                 }
