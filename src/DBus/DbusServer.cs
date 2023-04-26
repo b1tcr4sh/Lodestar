@@ -10,8 +10,8 @@ namespace Mercurius.DBus {
         private Connection connection;
         private readonly ILogger _logger;
         private ProfileManager _manager;
-        private DbusHandler _handler;
-        public DbusServer(ProfileManager manager, ILogger logger, DbusHandler handler) {
+        private IDbusHandler _handler;
+        public DbusServer(ProfileManager manager, ILogger logger, IDbusHandler handler) {
             _logger = logger;
             _manager = manager;
             _handler = handler;
@@ -42,7 +42,7 @@ namespace Mercurius.DBus {
                 Environment.Exit(-1);
             }
 
-            _handler.setConnection(connection);  // I hate this, but I guess it workds for now
+            _handler.SetConnection(connection);  // I hate this, but I guess it workds for now
 
             if (SettingsManager.Settings.Dbus_System_Bus) {
                 await connection.RegisterServiceAsync("org.mercurius.ProfileMessenger", () => {

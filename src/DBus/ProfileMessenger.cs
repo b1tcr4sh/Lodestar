@@ -15,11 +15,11 @@ namespace Mercurius.DBus {
     public class ProfileMessenger : IProfileMessenger {
         private static readonly ObjectPath _objectPath = new ObjectPath("/org/mercurius/ProfileMessenger");
         private static ILogger _logger = Log.Logger;
-        private DbusHandler dbusHandler;
+        private IDbusHandler dbusHandler;
         
         private ProfileManager _manager;
 
-        public ProfileMessenger(ProfileManager manager, DbusHandler handler) {
+        public ProfileMessenger(ProfileManager manager, IDbusHandler handler) {
             _manager = manager;
             dbusHandler = handler;
         }
