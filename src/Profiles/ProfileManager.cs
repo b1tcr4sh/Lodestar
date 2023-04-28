@@ -72,6 +72,8 @@ namespace Mercurius.Profiles {
                         _logger.Warning($"Profile at {profile.Path} was unable to be loaded (Name contained spaces)");
                     else if (!LoadedProfiles.ContainsKey(profile.Name)) {
                         profile.GenerateChecksum();
+                        profile.Manager = this;
+                        profile.Apis = Apis;
                         LoadedProfiles.Add(profile.Name, profile); 
                     }
                 } catch (Exception e) {
@@ -102,6 +104,8 @@ namespace Mercurius.Profiles {
                         _logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                         profile.GenerateChecksum();
+                        profile.Manager = this;
+                        profile.Apis = Apis;
 
                         LoadedProfiles.Add(profile.Name, profile);
                         return profile;
@@ -124,6 +128,8 @@ namespace Mercurius.Profiles {
                     _logger.Debug("Loaded profile {0} at {1}", profile.Name, profile.Path);
 
                     profile.GenerateChecksum();
+                    profile.Manager = this;
+                    profile.Apis = Apis;
                     LoadedProfiles.Add(profile.Name, profile);
                 } catch (Exception e) {
                     _logger.Warning(@$"Error occurred loading profile at {path}:");

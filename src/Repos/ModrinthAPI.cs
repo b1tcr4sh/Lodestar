@@ -149,7 +149,7 @@ namespace Mercurius.API {
             mod.Loaders = loaders.ToArray<ModLoader>();
 
             foreach (Dependency dependency in version.dependencies) {
-                mod.DependencyVersions.Add(dependency.version_id);
+                mod.DependencyVersions.Append(dependency.version_id);
             }
 
             return mod;

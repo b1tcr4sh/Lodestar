@@ -69,7 +69,9 @@ namespace Mercurius.DBus {
 
             return profile.Mods.ToArray<Mod>();
         }
-        public async Task<ValidityReport> VerifyAsync() { // Unstable; Full of undefined behabior
+        // public async Task PruneAsync() {} // Search for and return a list of duplicates
+
+        public async Task<ValidityReport> VerifyAsync() { // Unstable
             throw new NotImplementedException();
 
             Profile profile = await GetModelProfileAsync();
@@ -134,7 +136,7 @@ namespace Mercurius.DBus {
         public Task UpdateModAsync(Mod toUpdate, string newMinecraftVersion) { // Needs to be manager-side so it can fetch specific version
             throw new NotImplementedException();
         }
-        public Task GenerateAsync(bool startFromCleanSlate, Remote source) {
+        public Task GenerateAsync(bool startFromCleanSlate, Remote source) { // Attempt to generate mod entries from mod jars 
             throw new NotImplementedException();
         }
         public Task<Mod[]> AddVersionAsync(string id, Remote service, bool ignoreDependencies) {
