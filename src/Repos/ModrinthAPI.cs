@@ -38,7 +38,7 @@ namespace Mercurius.API {
             return projects.ToArray<Project>();
         }
         internal override async Task<Project> GetModProjectAsync(string projectId) {
-            _logger.Debug($"Getting Project with ID {projectId}...");
+            // _logger.Debug($"Getting Project with ID {projectId}...");
             ProjectModel project = await FetchProjectAsync(projectId);
 
             return ConvertProject(project, ProjectType.Mod);

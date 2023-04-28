@@ -186,7 +186,7 @@ namespace Mercurius.Profiles {
             _logger.Information("Syncing {0}", profile.Name);
 
 
-            List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").ToList<string>();
+            List<string> existingFiles = Directory.GetFiles($"{SettingsManager.Settings.Minecraft_Directory}/mods/").Where(file => file.Substring(file.Length - 4).Equals(".jar")).ToList<string>();
             List<string> modPaths = new List<string>();
 
             // if (existingFiles.Count <= 0) {

@@ -141,12 +141,19 @@ namespace Mercurius.Profiles {
             return success;            
         }
         public async Task<IReadOnlyList<Mod>> AddLatestModVersionAsync(string projectId, Remote service, bool ignoreDependencies, bool dryRun) {
-            if (dryRun) logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
+            if (!dryRun) logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
             else logger.Debug("Dry running fetch for mod {0}", projectId);
 
             Repository client = Apis.Get(service);
 
-            Project project = await client.GetModProjectAsync(projectId);
+            Project project;
+            try {
+                project = await client.GetModProjectAsync(projectId);
+            } catch (Exception e) {
+                logger.Fatal(e.Message);
+                logger.Fatal(e.StackTrace);
+                throw new Exception();
+            }
             Mod[] versions = await client.ListModVersionsAsync(project.Id);
 
             Mod[] viableVersions = versions.Where<Mod>((version) => version.MinecraftVersion.Equals(MinecraftVersion)).ToArray<Mod>();
