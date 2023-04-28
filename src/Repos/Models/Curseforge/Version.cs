@@ -1,11 +1,11 @@
-namespace Mercurius.API.Curseforge {
+namespace Mercurius.API.Models.Curseforge {
+    internal struct VersionModel {
+        public CurseforgeVersion data { get; set; }
+    }
+    internal struct VersionModelList {
+        public CurseforgeVersion[] data { get; set; }
+    }
     internal struct CurseforgeVersion {
-        public Version data { get; set; }
-    }
-    internal struct CurseforgeVersionList {
-        public Version[] data { get; set; }
-    }
-    internal struct Version {
         public int id { get; set; }
         public int gameId { get; set; }
         public int modId { get; set; }

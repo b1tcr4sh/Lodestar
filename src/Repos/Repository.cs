@@ -2,7 +2,6 @@ using Tmds.DBus;
 using Serilog;
 
 using Mercurius.Profiles;
-using Mercurius.API.Modrinth;
 using Mercurius.Configuration;
 
 namespace Mercurius.API {
@@ -18,9 +17,9 @@ namespace Mercurius.API {
             _http = client;
         }
         public void Dispose() {}
-        abstract public Task<Mod[]> SearchModAsync(string query, string version, string loader);
+        abstract public Task<Project[]> SearchModAsync(string query, string version, string loader);
 
-        abstract internal Task<ProjectModel> GetModProjectAsync(string id);
+        abstract internal Task<Project> GetModProjectAsync(string id);
         abstract internal Task<Mod> GetModVersionAsync(string id);
         abstract internal Task<Mod[]> ListModVersionsAsync(string id);
         // abstract public Task</*plugin*/> GetPluginVersionAsync(string id);
@@ -31,7 +30,7 @@ namespace Mercurius.API {
                 throw new ArgumentNullException("Mod values are null!");
             }
 
-            bool success = await DownloadAsync(mod.DownloadURL, mod.FileName);
+            bool success = await DownloadAsync(mod.DownloadURL, @$"{SettingsManager.Settings.Minecraft_Directory}/mods/", mod.FileName);
             // TODO VerifyHash(mod.hash or whatever);
 
             return success;
@@ -43,12 +42,12 @@ namespace Mercurius.API {
         // public async Task</*resourcePack8?> DownloadResourcePackAsync(pack) {
 
         // }
-        private async Task<bool> DownloadAsync(string url, string filename) {
+        private async Task<bool> DownloadAsync(string url, string basePath, string filename) {
             Stream readStream;
             Stream writeStream;
             try {
                 readStream = await _http.GetStreamAsync(url);
-                writeStream = File.Open(@$"{SettingsManager.Settings.Minecraft_Directory}/mods/{filename}", FileMode.Create);
+                writeStream = File.Open(@$"{basePath}{filename}", FileMode.Create);
             } catch (HttpRequestException e) {
                 _logger.Warning("Download failed: " + e.StatusCode);
                 return false;

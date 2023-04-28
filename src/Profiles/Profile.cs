@@ -5,7 +5,6 @@ using System.Text.Json.Serialization;
 using Mercurius.Configuration;
 using Mercurius.DBus;
 using Mercurius.API;
-using Mercurius.API.Modrinth;
 
 namespace Mercurius.Profiles {
     public class Profile : IDisposable {
@@ -147,8 +146,8 @@ namespace Mercurius.Profiles {
 
             Repository client = Apis.Get(service);
 
-            ProjectModel project = await client.GetModProjectAsync(projectId);
-            Mod[] versions = await client.ListModVersionsAsync(project.id);
+            Project project = await client.GetModProjectAsync(projectId);
+            Mod[] versions = await client.ListModVersionsAsync(project.Id);
 
             Mod[] viableVersions = versions.Where<Mod>((version) => version.MinecraftVersion.Equals(MinecraftVersion)).ToArray<Mod>();
             viableVersions = viableVersions.Where<Mod>((version) => version.Loaders.Contains(Loader)).ToArray<Mod>();
@@ -161,7 +160,7 @@ namespace Mercurius.Profiles {
             // VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].VersionId);
 
             if (Mods.Any<Mod>(mod => mod.VersionId.Equals(mod.VersionId))) {
-                throw new ProfileException($"Profile already contains {project.title}");
+                throw new ProfileException($"Profile already contains {project.Title}");
             }
 
             // Mod mod = new Mod(version, project);
@@ -218,8 +217,8 @@ namespace Mercurius.Profiles {
             foreach (string projectId in projectIds) {
                 logger.Debug("Attempting to add mod {0} to profile {1}", projectId, Name);
 
-                ProjectModel project = await client.GetModProjectAsync(projectId);
-                Mod[] versions = await client.ListModVersionsAsync(project.id);
+                Project project = await client.GetModProjectAsync(projectId);
+                Mod[] versions = await client.ListModVersionsAsync(project.Id);
 
                 Mod[] viableVersions = versions.Where<Mod>((version) => version.MinecraftVersion.Equals(MinecraftVersion)).ToArray<Mod>();
                 viableVersions = viableVersions.Where<Mod>((version) => version.Loaders.Contains(Loader)).ToArray<Mod>();

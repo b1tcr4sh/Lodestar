@@ -3,8 +3,7 @@ using System.Text.Json;
 using Serilog;
 
 using Mercurius.Profiles;
-using Mercurius.API.Modrinth; // just for nowsies
-using Mercurius.API.Curseforge;
+using Mercurius.API.Models.Curseforge;
 using Mercurius.Configuration;
 
 namespace Mercurius.API {
@@ -15,17 +14,17 @@ namespace Mercurius.API {
             _http.DefaultRequestHeaders.Add("x-api-key", SettingsManager.Settings.Cureforge_Api_Key);
         }
 
-        public override async Task<Mod[]> SearchModAsync(string query, string version, string loader) {
+        public override async Task<Project[]> SearchModAsync(string query, string version, string loader) {
             throw new NotImplementedException();
         }
 
-        internal override async Task<ProjectModel /* Temp */ > GetModProjectAsync(string projectId) {
+        internal override async Task<Project> GetModProjectAsync(string projectId) {
             _logger.Debug($"Getting Project with ID {projectId}...");
-            
+
             ProjectModel deserializedProject;
 
             try {
-            deserializedProject = await JsonSerializer.DeserializeAsync<ProjectModel>(await _http.GetStreamAsync(_baseUrl+ @"/mods/" + projectId));
+            deserializedProject = await JsonSerializer.DeserializeAsync<ProjectModel>(await _http.GetStreamAsync(_baseUrl + @"/mods/" + projectId));
             } catch (HttpRequestException e) {
                 if (e.StatusCode == HttpStatusCode.NotFound) {
                     throw new ProjectInvalidException($"Project ID {projectId} is invalid!");
@@ -34,7 +33,7 @@ namespace Mercurius.API {
                 }
             }
 
-            return deserializedProject;
+            return ConvertProject(deserializedProject, ProjectType.Mod);
         }
         internal override async Task<Mod> GetModVersionAsync(string versionId) { // Model is a bit different between the two routes :(
             throw new NotImplementedException();
@@ -43,7 +42,7 @@ namespace Mercurius.API {
             throw new NotImplementedException();
         }
 
-        private async Task<Project> GetProjectAsync(string id) {
+        private async Task<CurseforgeProject> GetProjectAsync(string id) {
             HttpResponseMessage res;
             try {
                 res = await _http.GetAsync(_baseUrl + $"mods/{id}");
@@ -51,9 +50,9 @@ namespace Mercurius.API {
                 throw new Exception(e.Message);
                 // Map to result
             }
-            return await JsonSerializer.DeserializeAsync<Project>((await res.Content.ReadAsStreamAsync()));
+            return await JsonSerializer.DeserializeAsync<CurseforgeProject>((await res.Content.ReadAsStreamAsync()));
         }  
-        private async Task<CurseforgeVersion> GetVersionAsync(string versionId, string projectId) {
+        private async Task<VersionModel> GetVersionAsync(string versionId, string projectId) {
             HttpResponseMessage res;
             try {
                 res = await _http.GetAsync(_baseUrl + $"mods/{projectId}/files/{versionId}");
@@ -61,9 +60,9 @@ namespace Mercurius.API {
                 throw new Exception(e.Message);
                 // Map to result
             }
-            return await JsonSerializer.DeserializeAsync<CurseforgeVersion>((await res.Content.ReadAsStreamAsync()));
+            return await JsonSerializer.DeserializeAsync<VersionModel>((await res.Content.ReadAsStreamAsync()));
         }
-        private async Task<CurseforgeVersionList> GetVersionListAsync(string id) {
+        private async Task<VersionModelList> GetVersionListAsync(string id) {
             HttpResponseMessage res;
             try {
                 res = await _http.GetAsync(_baseUrl + $"mods/{id}/files");
@@ -71,9 +70,9 @@ namespace Mercurius.API {
                 throw new Exception(e.Message);
                 // Map to result
             }
-            return await JsonSerializer.DeserializeAsync<CurseforgeVersionList>((await res.Content.ReadAsStreamAsync()));
+            return await JsonSerializer.DeserializeAsync<VersionModelList>((await res.Content.ReadAsStreamAsync()));
         }
-        private Mod ModFromVersion(CurseforgeVersion version) {
+        private Mod ModFromVersion(VersionModel version) {
             List<string> dependencies = new List<string>();
             foreach (FileDependency dep in version.data.dependencies) {
                 dependencies.Add(dep.modId.ToString());
@@ -91,6 +90,19 @@ namespace Mercurius.API {
             };
 
             return mod; // Mod doesn't seem to include a loader ??
+        }
+        private Project ConvertProject(ProjectModel project, ProjectType type) {
+            return new Project() {
+                Title = project.data.name,
+                Description = project.data.summary,
+                DownloadCount = project.data.downloadCount,
+                IconUrl = project.data.logo.url,
+                Id = project.data.id.ToString(),
+                Slug = project.data.slug,
+                LastModified = project.data.dateModified,
+                PageUrl = project.data.links.websiteUrl,
+                ProjectType = type                    
+            };
         }
     }
     [System.Serializable]

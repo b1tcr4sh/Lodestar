@@ -1,4 +1,4 @@
-namespace Mercurius.API.Modrinth {
+namespace Mercurius.API.Models.Modrinth {
     public struct SearchModel {
         public Hit[] hits { get; set; }
         public int offset { get; set; }

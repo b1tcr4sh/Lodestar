@@ -3,7 +3,7 @@ using System.Text.Json;
 using Serilog;
 
 using Mercurius.Profiles;
-using Mercurius.API.Modrinth;
+using Mercurius.API.Models.Modrinth;
 
 namespace Mercurius.API {
     public class ModrinthAPI : Repository {
@@ -12,14 +12,13 @@ namespace Mercurius.API {
             _objectPath = "/org/mercurius/modrinth";
         }
 
-        public override async Task<Mod[] /* Unified search result model array */> SearchModAsync(string query, string version, string loader) {
-            throw new NotImplementedException();
-            _logger.Debug($"Querying Labrynth with {query}...");
+        public override async Task<Project[]> SearchModAsync(string query, string version, string loader) {
+            _logger.Debug($"Searching Labrynth with {query}...");
 
             SearchModel deserializedRes;
 
             try {
-                Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"search?query={query}");
+                Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"search?query={query}" + $"?facets=[[\"project_type:mod\"],[\"versions:{version}\"],[\"categories:{loader.ToString()}\"]]");
                 deserializedRes = await JsonSerializer.DeserializeAsync<SearchModel>(responseStream);
             } catch (Exception e) {
                 _logger.Warning(e.Message);
@@ -32,27 +31,17 @@ namespace Mercurius.API {
                 throw new ApiException("No results found");
             }
 
-            // return deserializedRes;
-        }
-        internal override async Task<ProjectModel> GetModProjectAsync(string projectId) {
-            throw new NotImplementedException(); // Need to create some kind of unified project model
-            _logger.Debug($"Getting Project with ID {projectId}...");
-
-            ProjectModel deserializedRes = new ProjectModel();
-
-            try {
-                Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{projectId}");
-                deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
-            } catch (HttpRequestException e) {
-                if (e.StatusCode == HttpStatusCode.NotFound) {
-                    throw new ProjectInvalidException($"Project ID {projectId} is invalid!");
-                } else {
-                    throw new Exception($"Failed to connect...?  {e.Message}");
-                }
+            List<Project> projects = new List<Project>();
+            foreach (Hit hit in deserializedRes.hits) {
+                projects.Add(ProjectFromHit(hit, ProjectType.Mod));
             }
-            
+            return projects.ToArray<Project>();
+        }
+        internal override async Task<Project> GetModProjectAsync(string projectId) {
+            _logger.Debug($"Getting Project with ID {projectId}...");
+            ProjectModel project = await FetchProjectAsync(projectId);
 
-            return deserializedRes;
+            return ConvertProject(project, ProjectType.Mod);
         }
         internal override async Task<Mod> GetModVersionAsync(string versionId) {
             if (versionId is null) {
@@ -79,19 +68,34 @@ namespace Mercurius.API {
 
             return ModFromVersion(version, project);
         }
-        internal override async Task<Mod[]> ListModVersionsAsync(string id) {
+        internal override async Task<Mod[]> ListModVersionsAsync(string projectId) {
             List<Mod> mods = new List<Mod>();
             VersionModel[] deserializedRes;
 
-            Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{id}/version");
+            Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{projectId}/version");
             deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
            
             foreach (VersionModel version in deserializedRes) {
-                ProjectModel project = await GetModProjectAsync(version.project_id);
+                ProjectModel project = await FetchProjectAsync(version.project_id);
                 mods.Add(ModFromVersion(version, project));
             }
 
             return mods.ToArray<Mod>();
+        }
+        private async Task<ProjectModel> FetchProjectAsync(string projectId) {
+            ProjectModel deserializedRes = new ProjectModel();
+
+            try {
+                Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{projectId}");
+                deserializedRes = await JsonSerializer.DeserializeAsync<ProjectModel>(responseStream);
+            } catch (HttpRequestException e) {
+                if (e.StatusCode == HttpStatusCode.NotFound) {
+                    throw new ProjectInvalidException($"Project ID {projectId} is invalid!");
+                } else {
+                    throw new Exception($"Failed to connect...?  {e.Message}");
+                }
+            }
+            return deserializedRes;
         }
         private Mod ModFromVersion(VersionModel version, ProjectModel project) {
             Mod mod = new Mod();
@@ -153,6 +157,31 @@ namespace Mercurius.API {
             }
 
             return mod;
+        }
+        private Project ConvertProject(ProjectModel project, ProjectType type) {
+            return new Project() {
+                Id = project.id,
+                Title = project.title,
+                Description = project.description,
+                PageUrl = project.source_url,
+                Slug = project.slug,
+                IconUrl = project.icon_url,
+                ProjectType = type,
+                LastModified = project.updated
+            };
+        }
+        private Project ProjectFromHit(Hit hit, ProjectType type) {
+            return new Project() {
+                Id = hit.project_id,
+                Title = hit.title,
+                Description = hit.description,
+                Slug = hit.slug,
+                PageUrl = string.Empty, // Hits don't have link to page
+                IconUrl = hit.icon_url,
+                ProjectType = type,
+                DownloadCount = hit.downloads,
+                LastModified = hit.date_modified
+            };
         }
     }
 }

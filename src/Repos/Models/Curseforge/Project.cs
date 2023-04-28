@@ -1,56 +1,56 @@
-namespace Mercurius.API.Curseforge {
-    internal struct CurseforgeProject {
-        public Project data;
+namespace Mercurius.API.Models.Curseforge {
+    internal struct ProjectModel {
+        public CurseforgeProject data { get; set; }
     }
-    internal struct Project {
-        public int id;
-        public int gameId;
-        public string name;
-        public string slug;
-        public Links links;
-        public string summary;
-        public int status;
-        public int downloadCount;
-        public bool isFeatured;
-        public string primaryCategoryId;
-        public Category[] categories;
-        public int classId;
-        public Author[] authors;
+    internal struct CurseforgeProject {
+        public int id { get; set; }
+        public int gameId { get; set; }
+        public string name { get; set; }
+        public string slug { get; set; }
+        public Links links { get; set; }
+        public string summary { get; set; }
+        public int status { get; set; }
+        public int downloadCount { get; set; }
+        public bool isFeatured { get; set; }
+        public string primaryCategoryId { get; set; }
+        public Category[] categories { get; set; }
+        public int classId { get; set; }
+        public Author[] authors{ get; set; } 
         public Logo logo { get; set; }
-        public Screenshot[] screenshots;
-        public int mainFileId;
-        public ShortFile[] latestFiles;
-        public FileIndex[] latestFileIndexes;
-        public string dateCreated;
-        public string dateModified;
-        public string dateReleased;
-        public bool allowModDistribution;
-        public int gamePopularityRank;
-        public bool isAvailable;
-        public int thumbsUpCount;
+        public Screenshot[] screenshots { get; set; }
+        public int mainFileId { get; set; }
+        public ShortFile[] latestFiles { get; set; }
+        public FileIndex[] latestFileIndexes { get; set; }
+        public string dateCreated { get; set; }
+        public string dateModified { get; set; }
+        public string dateReleased { get; set; }
+        public bool allowModDistribution { get; set; }
+        public int gamePopularityRank { get; set; }
+        public bool isAvailable { get; set; }
+        public int thumbsUpCount { get; set; }
     }
     internal struct Links {
-        string websiteUrl;
-        string wikiUrl;
-        string issuesUrl;
-        string sourceUrl;
+        public string websiteUrl { get; set; }
+        public string wikiUrl { get; set; }
+        public string issuesUrl { get; set; }
+        public string sourceUrl { get; set; }
     }
     internal struct Category {
-        public int id;
-        public int gameId;
-        public string name;
-        public string slug;
-        public string url;
-        public string iconUrl;
-        public string dateModified;
-        public bool isClass;
-        public int classId;
-        public int parentCategoryId;
+        public int id { get; set; }
+        public int gameId { get; set; }
+        public string name { get; set; }
+        public string slug { get; set; }
+        public string url { get; set; }
+        public string iconUrl { get; set; }
+        public string dateModified { get; set; }
+        public bool isClass { get; set; }
+        public int classId { get; set; }
+        public int parentCategoryId { get; set; }
     }
     internal struct Author {
-        public int id;
-        public string name;
-        public string url;
+        public int id { get; set; }
+        public string name { get; set; }
+        public string url { get; set; }
     }
     internal struct Logo {
         public int id { get; set; }
@@ -62,50 +62,50 @@ namespace Mercurius.API.Curseforge {
     }
     internal struct Screenshot {}
     internal struct ShortFile {
-        public int id;
-        public int gameId;
-        public int modId;
-        public bool isAvailable;
-        public string displayName;
-        public string fileName;
-        public int releaseType;
-        public int fileStatus;
-        public Hash[] hashes;
-        public string fileDate;
-        public int fileLength;
-        public int downloadCount;
-        public string downloadUrl;
-        public string[] gameVersions;
-        public GameVersion[] sortableGameVersions;
-        public Dependency[] dependencies;
-        public int alternateFileId;
-        public bool isServerPack;
-        public int fileFingerprint;
-        public Module[] modules;
+        public int id { get; set; }
+        public int gameId { get; set; }
+        public int modId { get; set; }
+        public bool isAvailable { get; set; }
+        public string displayName { get; set; }
+        public string fileName { get; set; }
+        public int releaseType { get; set; }
+        public int fileStatus { get; set; }
+        public Hash[] hashes { get; set; }
+        public string fileDate { get; set; }
+        public int fileLength { get; set; }
+        public int downloadCount { get; set; }
+        public string downloadUrl { get; set; }
+        public string[] gameVersions { get; set; }
+        public GameVersion[] sortableGameVersions { get; set; }
+        public Dependency[] dependencies { get; set; }
+        public int alternateFileId { get; set; }
+        public bool isServerPack { get; set; }
+        public int fileFingerprint { get; set; }
+        public Module[] modules { get; set; }
     }
     internal struct Hash {
-        public string value;
-        public int algo;
+        public string value { get; set; }
+        public int algo { get; set; }
     }
     internal struct GameVersion {
-        public string gamerVersionName;
-        public string gameVersionPadded;
-        public string gameVersion;
-        public string gameVersionReleaseDate;
-        public int gameVersionTypeId;
+        public string gamerVersionName { get; set; }
+        public string gameVersionPadded { get; set; }
+        public string gameVersion { get; set; }
+        public string gameVersionReleaseDate { get; set; }
+        public int gameVersionTypeId { get; set; }
     }
     internal struct Dependency {}
     internal struct Module {
-        public string name;
-        public string fingerprint;
+        public string name { get; set; }
+        public string fingerprint { get; set; }
     }
     internal struct FileIndex {
-        public string gameVersion;
-        public int fileId;
-        public string fileName;
-        public int releaseType;
-        public int gameVersionTypeId;
-        public int modLoader;
+        public string gameVersion { get; set; }
+        public int fileId { get; set; }
+        public string fileName { get; set; }
+        public int releaseType { get; set; }
+        public int gameVersionTypeId { get; set; }
+        public int modLoader { get; set; }
     }
 }
 

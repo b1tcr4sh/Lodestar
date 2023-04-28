@@ -1,8 +1,6 @@
 using Mercurius.Configuration;
 using System.Runtime.InteropServices;
 
-using Mercurius.API.Modrinth;
-
 namespace Mercurius.Profiles {
     [StructLayout(LayoutKind.Sequential)]
     public struct Mod {
