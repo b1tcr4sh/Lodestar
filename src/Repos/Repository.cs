@@ -15,6 +15,7 @@ namespace Mercurius.API {
         public Repository(string baseUrl, HttpClient client, ILogger logger) {
             _baseUrl = baseUrl;
             _http = client;
+            _logger = logger;
         }
         public void Dispose() {}
         abstract public Task<Project[]> SearchModAsync(string query, string version, string loader);

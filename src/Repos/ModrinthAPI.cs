@@ -74,16 +74,16 @@ namespace Mercurius.API {
 
             Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{projectId}/version");
             deserializedRes = await JsonSerializer.DeserializeAsync<VersionModel[]>(responseStream);
-           
+            ProjectModel project = await FetchProjectAsync(projectId);
+
             foreach (VersionModel version in deserializedRes) {
-                ProjectModel project = await FetchProjectAsync(version.project_id);
                 mods.Add(ModFromVersion(version, project));
             }
 
             return mods.ToArray<Mod>();
         }
         private async Task<ProjectModel> FetchProjectAsync(string projectId) {
-            ProjectModel deserializedRes = new ProjectModel();
+            ProjectModel deserializedRes;
 
             try {
                 Stream responseStream = await _http.GetStreamAsync(_baseUrl + $@"project/{projectId}");
@@ -104,15 +104,16 @@ namespace Mercurius.API {
             mod.VersionId = version.id;
             mod.MinecraftVersion = version.game_versions[0];
             mod.ModVersion = version.version_number;
-            mod.DownloadURL = version.files.Where<modFile>((file) => file.primary).ToArray<modFile>()[0].url;
             mod.ClientDependency = RequiredBy.unknown;
             mod.DependencyVersions = new List<string>();
 
             modFile primaryFile = version.files[0];
             foreach (modFile file in version.files) {
                 if (file.primary) primaryFile = file;
+                break;
             }
             mod.FileName = primaryFile.filename;
+            mod.DownloadURL = primaryFile.url;
 
 
             string serverSideDependency = project.server_side;

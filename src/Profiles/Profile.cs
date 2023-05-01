@@ -166,7 +166,7 @@ namespace Mercurius.Profiles {
             Mod mod = viableVersions[0];
             // VersionModel version = await client.GetVersionInfoAsync(viableVersions[0].VersionId);
 
-            if (Mods.Any<Mod>(mod => mod.VersionId.Equals(mod.VersionId))) {
+            if (Mods.Any<Mod>(m => m.VersionId.Equals(mod.VersionId))) {
                 throw new ProfileException($"Profile already contains {project.Title}");
             }
 
