@@ -23,9 +23,9 @@ namespace Mercurius.API.Models.Modrinth {
         public string updated { get; set; }
         public int followers { get; set; }
         public string status { get; set; }
-        public license license { get; set; }
+        public License license { get; set; }
         public string[] versions { get; set; }
-        public gallery[] gallery { get; set; }
+        public Gallery[] gallery { get; set; }
     }
 
     public struct donation_url {
@@ -33,12 +33,12 @@ namespace Mercurius.API.Models.Modrinth {
         public string platform { get; set; }
         public string url { get; set; }
     }
-    public struct license {
+    public struct License {
         public string id { get; set; }
         public string name { get; set; }
         public string url { get; set; } 
     }
-    public struct gallery {
+    public struct Gallery {
         public string url { get; set; }
         public bool featured { get; set; }
         public string title { get; set; }

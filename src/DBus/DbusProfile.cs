@@ -71,57 +71,57 @@ namespace Mercurius.DBus {
         }
         // public async Task PruneAsync() {} // Search for and return a list of duplicates
 
-        public async Task<ValidityReport> VerifyAsync() { // Unstable
+        public Task<ValidityReport> VerifyAsync() { // Unstable
             throw new NotImplementedException();
 
-            Profile profile = await GetModelProfileAsync();
-            // ModrinthAPI client = APIManager.Modrinth;
-            List<Mod> toRemove = new List<Mod>();
-            List<string> toAdd = new List<string>();
-            bool repaired = true;
+            // Profile profile = await GetModelProfileAsync();
+            // // ModrinthAPI client = APIManager.Modrinth;
+            // List<Mod> toRemove = new List<Mod>();
+            // List<string> toAdd = new List<string>();
+            // bool repaired = true;
 
-            _logger.Debug("Verifying profile {0} upon request", profile.Name);
-            // Check for incompatible mods
-            IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion) || !mod.Loaders.Contains(profile.Loader));
-            _logger.Debug("Found {0} incompatible mods", incompatible.Count());
+            // _logger.Debug("Verifying profile {0} upon request", profile.Name);
+            // // Check for incompatible mods
+            // IEnumerable<Mod> incompatible = profile.Mods.Where<Mod>(mod => !mod.MinecraftVersion.Equals(profile.MinecraftVersion) || !mod.Loaders.Contains(profile.Loader));
+            // _logger.Debug("Found {0} incompatible mods", incompatible.Count());
 
-            if (incompatible.Count() > 0) {
-                foreach (Mod mod in incompatible) {
-                    toRemove.Add(mod);
+            // if (incompatible.Count() > 0) {
+            //     foreach (Mod mod in incompatible) {
+            //         toRemove.Add(mod);
 
-                    try {
-                        toAdd.Add(mod.ProjectId);
-                    } catch (Exception e) {
-                        _logger.Warning(e.Message);
-                        _logger.Warning(e.StackTrace);
-                        repaired = false;
-                    }
-                }
-            }
+            //         try {
+            //             toAdd.Add(mod.ProjectId);
+            //         } catch (Exception e) {
+            //             _logger.Warning(e.Message);
+            //             _logger.Warning(e.StackTrace);
+            //             repaired = false;
+            //         }
+            //     }
+            // }
 
-            await profile.RemoveModsFromListAsync(toRemove, true);
+            // await profile.RemoveModsFromListAsync(toRemove, true);
 
-            await profile.AddModsAsync(toAdd.ToArray<string>(), Remote.modrinth, false);
+            // await profile.AddModsAsync(toAdd.ToArray<string>(), Remote.modrinth, false);
 
 
-            // Check for duplicates 
-            _logger.Information("Pruning duplicates...");
-            toRemove = new List<Mod>();
-            foreach (Mod mod in profile.Mods) {
-                IEnumerable<Mod> matchingIds = profile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
+            // // Check for duplicates 
+            // _logger.Information("Pruning duplicates...");
+            // toRemove = new List<Mod>();
+            // foreach (Mod mod in profile.Mods) {
+            //     IEnumerable<Mod> matchingIds = profile.Mods.Where<Mod>(checking => mod.VersionId.Equals(checking.VersionId));
 
-                _logger.Debug("Found {0} duplicates of {1}", matchingIds.Count() - 1, mod.VersionId);
+            //     _logger.Debug("Found {0} duplicates of {1}", matchingIds.Count() - 1, mod.VersionId);
 
-                if (matchingIds.Count() > 1) {
-                    foreach(Mod duplicate in matchingIds.Skip(1)) {
-                        toRemove.Add(duplicate);
-                    }
-                }
-            }
-            await profile.RemoveModsFromListAsync(toRemove, true);
+            //     if (matchingIds.Count() > 1) {
+            //         foreach(Mod duplicate in matchingIds.Skip(1)) {
+            //             toRemove.Add(duplicate);
+            //         }
+            //     }
+            // }
+            // await profile.RemoveModsFromListAsync(toRemove, true);
 
-            // Resolve dependencies
-            IEnumerable<KeyValuePair<string, Remote>> installedDeps = await profile.ResolveDependenciesAsync();
+            // // Resolve dependencies
+            // IEnumerable<KeyValuePair<string, Remote>> installedDeps = await profile.ResolveDependenciesAsync();
 
             // return new ValidityReport {
             //     incompatible = incompatible.ToArray<Mod>(),

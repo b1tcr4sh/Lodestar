@@ -22,12 +22,12 @@ namespace Mercurius.API.Models.Modrinth {
         public string dependency_type { get; set; }
     }
     public struct modFile {
-        public hash hashes { get; set; }
+        public HashAlgo hashes { get; set; }
         public string url { get; set; }
         public string filename { get; set; }
         public bool primary { get; set; }
     }
-    public struct hash {
+    public struct HashAlgo {
         public string sha512 { get; set; }
         public string sha1 { get; set; }
     }
